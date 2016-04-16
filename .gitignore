@@ -1,0 +1,12 @@
+# compiled stuff
+build/
+build-*/
+Makefile
+*.o
+
+# qt stuff
+*.user
+
+# other stuff
+*~
+\#*#
