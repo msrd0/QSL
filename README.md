@@ -66,7 +66,7 @@ a `!`. A column definition could look like this:
 # Using QSL
 
 QSL will generate a file called `db_<db-name>.h` for every database. To use it, you first have
-to connect to a database. See [QSLDB](classqsl_1_1QSLDB.html#details) for an example how to do so.
+to connect to a database. See QSLDB for an example how to do so.
 
 Currently, only CMake as the build system is supported. Support for qmake may follow.
 
@@ -89,7 +89,7 @@ files and then adds it as a dependency to the original target.
 
 ## `qslc`
 
-If you don't like to use CMake for your build, you can involve `qslc` yourself.
+If you don't like to use CMake for your build, you can invoke `qslc` yourself.
 
 ```
 Usage: qslc [options] <file> [<file> ...]
