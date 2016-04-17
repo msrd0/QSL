@@ -1,0 +1,20 @@
+include(CMakeParseArguments)
+
+function(QSL_COMPILE)
+	
+	set(options)
+	set(oneValueArgs TARGET)
+	set(multiValueArgs FILES)
+	
+	cmake_parse_arguments(_QSLC "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+	
+	add_custom_target("${_QSLC_TARGET}_qslc")
+	add_custom_command(TARGET "${_QSLC_TARGET}_qslc" PRE_BUILD
+	                   COMMENT "Compiling ${_QSLC_FILES}"
+                       COMMAND qslc ARGS -d "${CMAKE_CURRENT_BINARY_DIR}" ${_QSLC_FILES}
+					   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+					   VERBATIM)
+	add_dependencies("${_QSLC_TARGET}" "${_QSLC_TARGET}_qslc")
+	target_link_libraries("${_QSLC_TARGET}" Qt5::Core Qt5::Sql qslcore)
+	
+endfunction()

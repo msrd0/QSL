@@ -1,0 +1,35 @@
+include(@CMAKE_INSTALL_PREFIX@/lib/cmake/QSL/QSLVersion.cmake)
+include(@CMAKE_INSTALL_PREFIX@/lib/cmake/QSL/QSLMacros.cmake)
+
+# lets find qt first
+if (NOT Qt5Core_FOUND)
+	find_package(Qt5Core 5.5)
+endif()
+if (NOT Qt5Sql_FOUND)
+	find_package(Qt5Sql 5.5)
+endif()
+if (NOT Qt5Core_FOUND OR NOT Qt5Sql_FOUND)
+	set(QSL_FOUND False)
+	return()
+endif()
+
+# search for QSLCore library
+if (NOT QSLCore_FOUND)
+	find_package(QSLCore @QSL_VERSION@)
+endif()
+if (NOT QSLCore_FOUND)
+	set(QSL_FOUND False)
+	return()
+endif()
+
+# search for QSL Compiler
+if (NOT QSLC_FOUND)
+	find_package(QSLC @QSL_VERSION@)
+endif()
+if (NOT QSLC_FOUND)
+	set(QSL_FOUND False)
+	return()
+endif()
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(QSL_INCLUDE_DIRS "${Qt5Sql_INCLUDE_DIRS}" "@CMAKE_INSTALL_PREFIX@/include/qsl")

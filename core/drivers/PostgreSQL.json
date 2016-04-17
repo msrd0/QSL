@@ -1,0 +1,14 @@
+{
+    "types": {
+        "int": { 16: "SMALLINT", 32: "INTEGER", 64: "BIGINT" },
+        "uint": { 15: "SMALLINT", 31: "INTEGER", 63: "BIGINT" },
+        "double": { 32: "REAL", 64: "DOUBLE PRECISION" },
+        "char": "CHARACTER [VARYING] ($)",
+        "text": "TEXT",
+        "byte": "BIT [VARYING] ($)",
+        "blob": "BYTEA",
+        "date": "DATE",
+        "time": "TIME",
+        "datetime": "TIMESTAMP"
+    }
+}

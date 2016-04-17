@@ -1,0 +1,5 @@
+
+add_library(qslcore SHARED IMPORTED)
+set_property(TARGET qslcore PROPERTY IMPORTED_LOCATION @CMAKE_INSTALL_PREFIX@/lib/qslcore.so.@QSL_MAJOR@)
+
+set(PACKAGE
