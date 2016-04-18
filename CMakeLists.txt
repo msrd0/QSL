@@ -18,10 +18,11 @@ find_package(Qt5Sql  REQUIRED)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 if(CMAKE_BUILD_TYPE MATCHES Debug)
-	add_definition("-DCMAKE_DEBUG")
+	add_definitions("-DCMAKE_DEBUG")
 endif()
 
 add_subdirectory(core)
+add_subdirectory(doc)
 add_subdirectory(parser)
 add_subdirectory(qslc)
 
