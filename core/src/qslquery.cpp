@@ -19,12 +19,8 @@ QJsonObject QSLQuery::driverJson(QSLDB::Driver driver)
 	QFile file(QString(":/drivers/") + e.valueToKey(driver) + ".json");
 	file.open(QIODevice::ReadOnly);
 	QByteArray a = file.readAll();
-//	qDebug() << a;
-//	QJsonParseError err;
 	QJsonDocument doc = QJsonDocument::fromJson(a);
-//	qDebug() << err.errorString();
 	file.close();
-//	qDebug() << doc.toJson();
 	_driverJson.insert(driver, doc.object());
 	return doc.object();
 }
@@ -32,29 +28,24 @@ QJsonObject QSLQuery::driverJson(QSLDB::Driver driver)
 QByteArray QSLQuery::driverType(QSLDB::Driver driver, QByteArray type)
 {
 	QJsonObject json = driverJson(driver);
-//	qDebug() << json;
 	QJsonObject types = json["types"].toObject();
-//	qDebug() << types;
-	QJsonValue val = types[type];
-	int minsize = -1;
+	uint minsize = std::numeric_limits<uint>::max();
 	if (type.contains('('))
 	{
-		minsize = type.mid(type.indexOf('(')+1, type.indexOf(')')-type.indexOf('(')-1).toInt();
+		minsize = type.mid(type.indexOf('(')+1, type.indexOf(')')-type.indexOf('(')-1).toUInt();
 		type = type.mid(0, type.indexOf('('));
 	}
+	QJsonValue val = types[type];
 	QByteArray dtype;
-	qDebug() << type << minsize;
-	if (val.isString())
-		dtype = val.toVariant().toByteArray();
-	else
+	if (val.isObject())
 	{
 		QJsonObject o = val.toObject();
 		QStringList keys = o.keys();
-//		qDebug() << keys;
+		if (keys.empty())
+			fprintf(stderr, "QSLQuery: WARNING: Empty Object for Type '%s'\n", type.data());
 		std::sort(keys.begin(), keys.end(), [](const QString &a, const QString &b) {
 			return a.toInt() < b.toInt();
 		});
-//		qDebug() << keys;
 		for (QString s : keys)
 			if (s.toInt() > minsize)
 			{
@@ -63,6 +54,19 @@ QByteArray QSLQuery::driverType(QSLDB::Driver driver, QByteArray type)
 			}
 		if (dtype.isEmpty() && keys.size() > 0)
 			dtype = o[keys.last()].toVariant().toByteArray();
+	}
+	else
+		dtype = val.toVariant().toByteArray();
+	dtype.replace('$', minsize);
+	if (dtype.contains('[') && dtype.contains(']'))
+	{
+		if (_tbl->db()->usevar())
+		{
+			dtype.remove(dtype.indexOf('['), 1);
+			dtype.remove(dtype.indexOf(']'), 1);
+		}
+		else
+			dtype.remove(dtype.indexOf('['), dtype.indexOf(']') - dtype.indexOf('['));
 	}
 	return dtype;
 }

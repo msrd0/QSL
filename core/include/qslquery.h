@@ -19,7 +19,7 @@ private:
 	static QHash<QSLDB::Driver, QJsonObject> _driverJson;
 public:
 	static QJsonObject driverJson(QSLDB::Driver driver);
-	static QByteArray driverType(QSLDB::Driver driver, QByteArray type);
+	QByteArray driverType(QSLDB::Driver driver, QByteArray type);
 	
 	/// The different types of queries that can be created.
 	enum Type

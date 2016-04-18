@@ -45,6 +45,11 @@ public:
 	/// Returns the driver of the database.
 	Driver driver() const { return _driver; }
 	
+	/// Returns the charset used by this database.
+	virtual const char* charset() const = 0;
+	/// Returns if the database uses variable data types.
+	virtual bool usevar() const = 0;
+	
 	/// Set the name of the Database. When using SQLite this is the filename.
 	void setName(const QString &name) { db.setDatabaseName(name); }
 	/// Set the host of the Database Server.

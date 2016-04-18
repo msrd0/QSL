@@ -17,6 +17,7 @@ public:
 	void addColumn(const QSLColumn &column);
 	
 	const char* name() const { return _name; }
+	QSLDB* db() { return _db; }
 	QList<QSLColumn> columns() const { return _columns; }
 	
 private:

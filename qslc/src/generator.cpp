@@ -27,9 +27,12 @@ bool qsl::qslc::generate(Database *db, const QDir &dir)
 	out.write("class " + db->name() + " : public QSLDB\n");
 	out.write("{\n");
 //	out.write("  Q_OBJECT\n");
+	out.write("private:\n");
+	out.write("  static constexpr const char* _charset = \"" + db->charset() + "\";\n");
+	out.write("  static constexpr const bool _usevar = " + QByteArray(db->usevar() ? "true" : "false") + ";\n");
 	out.write("public:\n");
-	out.write("  static constexpr const char* charset = \"" + db->charset() + "\";\n");
-	out.write("  static constexpr const bool usevar = " + QByteArray(db->usevar() ? "true" : "false") + ";\n\n");
+	out.write("  const char* charset() const { return _charset; }\n");
+	out.write("  bool usevar() const { return _usevar; }\n\n");
 	
 	for (Table *t : db->tables())
 	{
