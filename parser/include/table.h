@@ -3,6 +3,7 @@
 #include "qsl_global.h"
 #include "database.h"
 #include <qslcolumn.h>
+#include <qslnamespace.h>
 
 #include <QObject>
 #include <QString>
@@ -26,7 +27,7 @@ public:
 	uint8_t constraints() const { return _constraints; }
 	
 	
-	void setConstraint(QSLColumn::Constraint constraint) { _constraints |= constraint; }
+	void setConstraint(QSL::ColumnConstraint constraint) { _constraints |= constraint; }
 	void setConstraint(const QByteArray &constraint);
 	
 private:
@@ -37,7 +38,7 @@ private:
 	/// The type of the field as a C++ typename.
 	QByteArray _ctype;
 	/// The constraints for the field.
-	uint8_t _constraints = QSLColumn::none;
+	uint8_t _constraints = QSL::none;
 };
 
 class Table

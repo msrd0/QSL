@@ -71,7 +71,7 @@ bool qsl::qslc::generate(Database *db, const QDir &dir)
 	}
 	
 	out.write("public:\n");
-	out.write("  " + db->name() + "(Driver driver)\n");
+	out.write("  " + db->name() + "(QSL::Driver driver)\n");
 	out.write("    : QSLDB(\"" + db->name() + "\", driver)\n");
 	for (Table *t : db->tables())
 		out.write("    , _tbl_" + t->name() + "(\"" + t->name() + "\", this)\n");

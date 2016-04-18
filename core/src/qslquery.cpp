@@ -9,13 +9,13 @@
 
 using namespace qsl;
 
-QHash<QSLDB::Driver, QJsonObject> QSLQuery::_driverJson;
+QHash<QSL::Driver, QJsonObject> QSLQuery::_driverJson;
 
-QJsonObject QSLQuery::driverJson(QSLDB::Driver driver)
+QJsonObject QSLQuery::driverJson(QSL::Driver driver)
 {
 	if (_driverJson.contains(driver))
 		return _driverJson[driver];
-	static QMetaEnum e = QSLDB::staticMetaObject.enumerator(QSLDB::staticMetaObject.indexOfEnumerator("Driver"));
+	static QMetaEnum e = QSL::staticMetaObject.enumerator(QSL::staticMetaObject.indexOfEnumerator("Driver"));
 	QFile file(QString(":/drivers/") + e.valueToKey(driver) + ".json");
 	file.open(QIODevice::ReadOnly);
 	QByteArray a = file.readAll();
@@ -25,7 +25,7 @@ QJsonObject QSLQuery::driverJson(QSLDB::Driver driver)
 	return doc.object();
 }
 
-QByteArray QSLQuery::driverType(QSLDB::Driver driver, QByteArray type)
+QByteArray QSLQuery::driverType(QSL::Driver driver, QByteArray type)
 {
 	QJsonObject json = driverJson(driver);
 	QJsonObject types = json["types"].toObject();
@@ -71,20 +71,20 @@ QByteArray QSLQuery::driverType(QSLDB::Driver driver, QByteArray type)
 	return dtype;
 }
 
-QSLQuery::QSLQuery(QSLTable *tbl, Type type)
+QSLQuery::QSLQuery(QSLTable *tbl, QSL::QueryType type)
 	: _tbl(tbl)
 	, _type(type)
 {
 }
 
-QString QSLQuery::sql(QSLDB::Driver driver)
+QString QSLQuery::sql(QSL::Driver driver)
 {
 	switch (_type)
 	{
-	case CreateTable:
+	case QSL::CreateTable:
 		switch (driver)
 		{
-		case QSLDB::PostgreSQL: {
+		case QSL::PostgreSQL: {
 				QString sql = QString("CREATE TABLE ") + _tbl->name() + " (";
 				int i = 0;
 				for (QSLColumn c : _tbl->columns())
@@ -93,11 +93,11 @@ QString QSLQuery::sql(QSLDB::Driver driver)
 						sql += ", ";
 					printf("sql += '%s' + ' ' + '%s'\n", c.name().data(), driverType(driver, c.type()).data());
 					sql += c.name() + " " + driverType(driver, c.type());
-					if (c.constraints() & QSLColumn::primarykey != 0)
+					if (c.constraints() & QSL::primarykey != 0)
 						sql += " PRIMARY KEY";
-					if (c.constraints() & QSLColumn::unique != 0)
+					if (c.constraints() & QSL::unique != 0)
 						sql += " UNIQUE";
-					if (c.constraints() & QSLColumn::notnull != 0)
+					if (c.constraints() & QSL::notnull != 0)
 						sql += " NOT NULL";
 					i++;
 				}

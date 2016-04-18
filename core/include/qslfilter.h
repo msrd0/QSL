@@ -2,6 +2,7 @@
 
 #include "qsl_global.h"
 #include "qsldb.h"
+#include "qslnamespace.h"
 
 #include <QVariant>
 
@@ -15,7 +16,7 @@ class QSLFilter
 {
 public:
 	/// Returns an SQL expression for the given driver.
-	virtual QString sql(QSLDB::Driver driver) { return QString(); }
+	virtual QString sql(QSL::Driver driver) { return QString(); }
 };
 
 /**
@@ -26,7 +27,7 @@ class eq : public QSLFilter
 public:
 	eq(const char* column, const QVariant &val);
 	
-	virtual QString sql(QSLDB::Driver driver);
+	virtual QString sql(QSL::Driver driver);
 	
 protected:
 	QString _column;
@@ -41,7 +42,7 @@ class ne : public eq
 public:
 	ne(const char* column, const QVariant &val);
 	
-	virtual QString sql(QSLDB::Driver driver);
+	virtual QString sql(QSL::Driver driver);
 };
 
 }

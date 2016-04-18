@@ -7,20 +7,20 @@
 
 using namespace qsl;
 
-QString QSLDB::qDriverName(Driver driver)
+QString QSLDB::qDriverName(QSL::Driver driver)
 {
 	switch (driver)
 	{
-	case PostgreSQL:
+	case QSL::PostgreSQL:
 		return "QPSQL";
-	case MySQL:
+	case QSL::MySQL:
 		return "QMYSQL";
-	case SQLite:
+	case QSL::SQLite:
 		return "QSQLITE";
 	}
 }
 
-QSLDB::QSLDB(const char *name, Driver driver)
+QSLDB::QSLDB(const char *name, QSL::Driver driver)
 	: db(QSqlDatabase::addDatabase(qDriverName(driver)))
 	, _name(name)
 	, _driver(driver)
@@ -36,7 +36,7 @@ bool QSLDB::connect()
 	for (QSLTable *tbl : _tables)
 		if (!dbtables.contains(tbl->name()))
 		{
-			QSLQuery qq(tbl, QSLQuery::CreateTable);
+			QSLQuery qq(tbl, QSL::CreateTable);
 			QString sql = qq.sql(driver());
 #ifdef CMAKE_DEBUG
 			fprintf(stderr, "QSLDB: Executing SQL '%s'\n", qPrintable(sql));
@@ -48,6 +48,7 @@ bool QSLDB::connect()
 				db.close();
 				return false;
 			}
+			fprintf(stderr, "QSLDB: Created table %s.%s\n", name(), tbl->name());
 		}
 	return true;
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "qsl_global.h"
+#include "qslnamespace.h"
 
 #include <QObject>
 #include <QSqlDatabase>
@@ -29,21 +30,13 @@ class QSLDB : public QObject
 	Q_OBJECT
 	
 public:
-	/// This enum contains all supported drivers.
-	enum Driver
-	{
-		PostgreSQL,
-		MySQL,
-		SQLite
-	};
-	Q_ENUM(Driver)
 	/// Returns the qt driver name for the driver.
-	static QString qDriverName(Driver driver);
+	static QString qDriverName(QSL::Driver driver);
 	
 	/// Returns the name of the database.
 	const char* name() const { return _name; }
 	/// Returns the driver of the database.
-	Driver driver() const { return _driver; }
+	QSL::Driver driver() const { return _driver; }
 	
 	/// Returns the charset used by this database.
 	virtual const char* charset() const = 0;
@@ -64,7 +57,7 @@ public:
 	bool connect();
 	
 protected:
-	QSLDB(const char* name, Driver driver);
+	QSLDB(const char* name, QSL::Driver driver);
 	
 	/// Register a new table. If it doesn't exist it will be created as soon as the connection
 	/// to the database is established.
@@ -74,7 +67,7 @@ protected:
 	
 private:
 	const char* _name;
-	Driver _driver;
+	QSL::Driver _driver;
 	QList<QSLTable*> _tables;
 	
 };

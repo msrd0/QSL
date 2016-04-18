@@ -73,7 +73,7 @@ Column& Column::operator= (const Column &other)
 
 void Column::setConstraint(const QByteArray &constraint)
 {
-	static QMetaEnum e = QSLColumn::staticMetaObject.enumerator(QSLColumn::staticMetaObject.indexOfEnumerator("Constraint"));
+	static QMetaEnum e = QSL::staticMetaObject.enumerator(QSL::staticMetaObject.indexOfEnumerator("ColumnConstraint"));
 	_constraints |= e.keyToValue(constraint);
 }
 

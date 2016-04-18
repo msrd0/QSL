@@ -3,6 +3,8 @@
 #include "qsl_global.h"
 #include "qslcolumn.h"
 
+#include <QList>
+
 namespace qsl {
 class QSLDB;
 

@@ -2,6 +2,7 @@
 
 #include "qsl_global.h"
 #include "qslfilter.h"
+#include "qslnamespace.h"
 
 #include <QSqlDatabase>
 
@@ -16,31 +17,22 @@ class QSLTable;
 class QSLQuery
 {
 private:
-	static QHash<QSLDB::Driver, QJsonObject> _driverJson;
+	static QHash<QSL::Driver, QJsonObject> _driverJson;
 public:
-	static QJsonObject driverJson(QSLDB::Driver driver);
-	QByteArray driverType(QSLDB::Driver driver, QByteArray type);
+	static QJsonObject driverJson(QSL::Driver driver);
+	QByteArray driverType(QSL::Driver driver, QByteArray type);
 	
-	/// The different types of queries that can be created.
-	enum Type
-	{
-		CreateTable,
-		SelectTable,
-		InsertTable,
-		UpdateTable
-	};
-	
-	QSLQuery(QSLTable *tbl, Type type);
+	QSLQuery(QSLTable *tbl, QSL::QueryType type);
 	
 	/// Overwrite the filter used by `SELECT` queries.
 	QSLQuery& filter(const QSLFilter &filter) { _filter = filter; return *this; }
 	
 	/// Returns an SQL expression for the given driver.
-	QString sql(QSLDB::Driver driver);
+	QString sql(QSL::Driver driver);
 	
 private:
 	QSLTable *_tbl;
-	Type _type;
+	QSL::QueryType _type;
 	
 	QSLFilter _filter;
 };

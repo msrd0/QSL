@@ -8,13 +8,13 @@ eq::eq(const char *column, const QVariant &val)
 {
 }
 
-QString eq::sql(QSLDB::Driver driver)
+QString eq::sql(QSL::Driver driver)
 {
 	switch (driver)
 	{
-	case QSLDB::PostgreSQL:
-	case QSLDB::MySQL:
-	case QSLDB::SQLite:
+	case QSL::PostgreSQL:
+	case QSL::MySQL:
+	case QSL::SQLite:
 		return _column + "=='" + _val.toString().replace("'", "''") + "'";
 	}
 }
@@ -24,13 +24,13 @@ ne::ne(const char *column, const QVariant &val)
 {
 }
 
-QString ne::sql(QSLDB::Driver driver)
+QString ne::sql(QSL::Driver driver)
 {
 	switch (driver)
 	{
-	case QSLDB::PostgreSQL:
-	case QSLDB::MySQL:
-	case QSLDB::SQLite:
+	case QSL::PostgreSQL:
+	case QSL::MySQL:
+	case QSL::SQLite:
 		return _column + "!='" + _val.toString().replace("'", "''") + "'";
 	}
 }

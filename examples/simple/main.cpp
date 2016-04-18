@@ -4,7 +4,7 @@ using namespace qsl;
 
 int main()
 {
-  db::qsl_example e(QSLDB::PostgreSQL);
+  db::qsl_example e(QSL::PostgreSQL);
   e.setHost("localhost");
   e.setUser("postgres");
   e.setPassword("postgres");
