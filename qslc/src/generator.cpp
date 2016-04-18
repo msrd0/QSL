@@ -42,24 +42,24 @@ bool qsl::qslc::generate(Database *db, const QDir &dir)
 		
 		// ctor
 		out.write("    " + t->name() + "_t(" + db->name() + " *parent");
-		for (Field &f : t->fields())
+		for (Column &f : t->fields())
 		{
-			out.write(", " + f.type() + " " + f.name());
+			out.write(", " + f.cppType() + " " + f.name());
 		}
 		out.write(")\n");
 		out.write("      : _parent(parent)\n");
-		for (Field &f : t->fields())
+		for (Column &f : t->fields())
 			out.write("      , _" + f.name() + "(" + f.name() + ")\n");
 		out.write("    {\n");
 		out.write("    }\n");
 		
 		// variables & getters
-		for (Field &f : t->fields())
+		for (Column &f : t->fields())
 		{
 			out.write("  private:\n");
-			out.write("    " + f.type() + " _" + f.name() + ";\n");
+			out.write("    " + f.cppType() + " _" + f.name() + ";\n");
 			out.write("  public:\n");
-			out.write("    " + f.type() + " " + f.name() + "() const { return _" + f.name() + "; }\n");
+			out.write("    " + f.cppType() + " " + f.name() + "() const { return _" + f.name() + "; }\n");
 		}
 		
 		out.write("  };\n");
@@ -73,6 +73,12 @@ bool qsl::qslc::generate(Database *db, const QDir &dir)
 	for (Table *t : db->tables())
 		out.write("    , _tbl_" + t->name() + "(\"" + t->name() + "\", this)\n");
 	out.write("  {\n");
+	for (Table *t : db->tables())
+	{
+		for (Column &f : t->fields())
+			out.write("    _tbl_" + t->name() + ".addColumn(QSLColumn(\"" + f.name() + "\", \"" + f.type() + "\", " + QByteArray::number(f.constraints()) + "));\n");
+		out.write("    registerTable(&_tbl_" + t->name() + ");\n");
+	}
 	out.write("  }\n");
 	
 	out.write("};\n\n"); // class db->name()

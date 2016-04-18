@@ -2,6 +2,7 @@
 
 #include "qsl_global.h"
 #include "database.h"
+#include <qslcolumn.h>
 
 #include <QObject>
 #include <QString>
@@ -10,28 +11,22 @@ namespace qsl {
 namespace qslc {
 class Database;
 
-class Field : public QObject
+class Column : public QObject
 {
 	Q_OBJECT
 	
 public:
-	enum Constraint : uint8_t
-	{
-		none       = 0x0,
-		primarykey = 0x1,
-		unique     = 0x2
-	};
-	Q_ENUM(Constraint)
-	
-	Field(const QByteArray &name, const QByteArray &type);
-	Field(const Field &other);
-	Field& operator= (const Field &other);
+	Column(const QByteArray &name, const QByteArray &type);
+	Column(const Column &other);
+	Column& operator= (const Column &other);
 	
 	QByteArray name() const { return _name; }
 	QByteArray type() const { return _type; }
+	QByteArray cppType() const { return _ctype; }
 	uint8_t constraints() const { return _constraints; }
 	
-	void setConstraint(Field::Constraint constraint) { _constraints |= constraint; }
+	
+	void setConstraint(QSLColumn::Constraint constraint) { _constraints |= constraint; }
 	void setConstraint(const QByteArray &constraint);
 	
 private:
@@ -39,8 +34,10 @@ private:
 	QByteArray _name;
 	/// The type of the field.
 	QByteArray _type;
+	/// The type of the field as a C++ typename.
+	QByteArray _ctype;
 	/// The constraints for the field.
-	uint8_t _constraints = none;
+	uint8_t _constraints = QSLColumn::none;
 };
 
 class Table
@@ -50,9 +47,9 @@ public:
 	
 	Database* db() const { return _db; }
 	QByteArray name() const { return _name; }
-	QList<Field> fields() const { return _fields; }
+	QList<Column> fields() const { return _fields; }
 	
-	void addField(const Field &field);
+	void addField(const Column &field);
 	
 private:
 	/// The database containing this table.
@@ -62,7 +59,7 @@ private:
 	/// The primary key of the table.
 	QByteArray _pk;
 	/// All fields of the table.
-	QList<Field> _fields;
+	QList<Column> _fields;
 };
 
 }

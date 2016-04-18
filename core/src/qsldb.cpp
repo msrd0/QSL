@@ -51,3 +51,14 @@ bool QSLDB::connect()
 		}
 	return true;
 }
+
+void QSLDB::registerTable(QSLTable *tbl)
+{
+	Q_ASSERT(tbl);
+	if (db.isOpen())
+	{
+		fprintf(stderr, "QSLDB: Attempt to add table %s after database was opened\n", qPrintable(tbl->name()));
+		return;
+	}
+	_tables.append(tbl);
+}

@@ -4,30 +4,76 @@
 
 using namespace qsl::qslc;
 
-Field::Field(const QByteArray &name, const QByteArray &type)
+static QByteArray toCppType(QByteArray t)
+{
+	uint minsize = std::numeric_limits<uint>::max();
+	if (t.contains('('))
+	{
+		minsize = t.mid(t.indexOf('(')+1, t.indexOf(')')-t.indexOf('(')-1).toUInt();
+		t = t.mid(0, t.indexOf('('));
+	}
+	if (t == "int")
+	{
+		if (minsize <= 8)
+			return "int8_t";
+		else if (minsize <= 16)
+			return "int16_t";
+		else if (minsize <= 32)
+			return "int32_t";
+		else
+			return "int64_t";
+	}
+	else if (t == "uint")
+	{
+		if (minsize <= 8)
+			return "uint8_t";
+		else if (minsize <= 16)
+			return "uint16_t";
+		else if (minsize <= 32)
+			return "uint32_t";
+		else
+			return "uint64_t";
+	}
+	else if (t == "double")
+	{
+		if (minsize <= 4)
+			return "float";
+		else
+			return "double";
+	}
+	else if (t == "char" || t == "byte" || t == "text" || t == "blob")
+		return "std::string";
+	else
+		return "void*";
+}
+
+Column::Column(const QByteArray &name, const QByteArray &type)
 	: _name(name)
 	, _type(type)
 {
+	_ctype = toCppType(type);
 }
 
-Field::Field(const Field &other)
+Column::Column(const Column &other)
 	: _name(other.name())
 	, _type(other.type())
+	, _ctype(other.cppType())
 	, _constraints(other.constraints())
 {
 }
 
-Field& Field::operator= (const Field &other)
+Column& Column::operator= (const Column &other)
 {
 	_name = other.name();
 	_type = other.type();
+	_ctype = other.cppType();
 	_constraints = other.constraints();
 	return *this;
 }
 
-void Field::setConstraint(const QByteArray &constraint)
+void Column::setConstraint(const QByteArray &constraint)
 {
-	QMetaEnum e = metaObject()->enumerator(metaObject()->indexOfEnumerator(constraint.data()));
+	static QMetaEnum e = QSLColumn::staticMetaObject.enumerator(QSLColumn::staticMetaObject.indexOfEnumerator("Constraint"));
 	_constraints |= e.keyToValue(constraint);
 }
 
@@ -38,7 +84,7 @@ Table::Table(Database *db, const QByteArray &name)
 	Q_ASSERT(db);
 }
 
-void Table::addField(const Field &field)
+void Table::addField(const Column &field)
 {
 	_fields.append(field);
 }

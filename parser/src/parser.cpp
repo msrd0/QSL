@@ -96,7 +96,7 @@ Database* qsl::qslc::parse(QIODevice *in, const QString &filename)
 				name = line.mid(0, line.indexOf(' '));
 				line = line.mid(name.length()).trimmed();
 			}
-			Field f(name, type);
+			Column f(name, type);
 			while (!line.isEmpty())
 			{
 				if (!line.startsWith('!'))

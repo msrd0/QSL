@@ -5,7 +5,7 @@ usevar
 # a very easy table
 table "foo"
 - uint "id" !primarykey
-- char* "bar"
+- char(50) "bar"
 
 # an example users table
 #table "users"

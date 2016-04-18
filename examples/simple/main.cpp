@@ -9,7 +9,10 @@ int main()
   e.setUser("postgres");
   e.setPassword("postgres");
   if (!e.connect())
-    return 1;
+    {
+      printf("failed to connect :(\n");
+      return 1;
+    }
   printf("connected :)\n");
   
   return 0;
