@@ -25,16 +25,10 @@ QJsonObject QSLQuery::driverJson(QSL::Driver driver)
 	return doc.object();
 }
 
-QByteArray QSLQuery::driverType(QSL::Driver driver, QByteArray type)
+QByteArray QSLQuery::driverType(QSL::Driver driver, const QByteArray &type, uint32_t minsize)
 {
 	QJsonObject json = driverJson(driver);
 	QJsonObject types = json["types"].toObject();
-	uint minsize = std::numeric_limits<uint>::max();
-	if (type.contains('('))
-	{
-		minsize = type.mid(type.indexOf('(')+1, type.indexOf(')')-type.indexOf('(')-1).toUInt();
-		type = type.mid(0, type.indexOf('('));
-	}
 	QJsonValue val = types[type];
 	QByteArray dtype;
 	if (val.isObject())
@@ -91,8 +85,7 @@ QString QSLQuery::sql(QSL::Driver driver)
 				{
 					if (i > 0)
 						sql += ", ";
-					printf("sql += '%s' + ' ' + '%s'\n", c.name().data(), driverType(driver, c.type()).data());
-					sql += c.name() + " " + driverType(driver, c.type());
+					sql += c.name() + " " + driverType(driver, c.type(), c.minsize());
 					if (c.constraints() & QSL::primarykey != 0)
 						sql += " PRIMARY KEY";
 					if (c.constraints() & QSL::unique != 0)
@@ -105,5 +98,22 @@ QString QSLQuery::sql(QSL::Driver driver)
 				return sql;
 			}
 		}
+		return __FILE__ + QString::number(__LINE__);
+	case QSL::SelectTable:
+		switch (driver)
+		{
+		case QSL::PostgreSQL: {
+				QString filter = _filter.sql(driver);
+				QString sql = QString("SELECT * FROM ") + _tbl->name();
+				if (!filter.isEmpty())
+					sql += " " + filter;
+				if (_limit > 0)
+					sql += " LIMIT BY " + _limit;
+				return sql + ";";
+			}
+		}
+		return __FILE__ + QString::number(__LINE__);
+	default:
+		return __FILE__ + QString::number(__LINE__);
 	}
 }

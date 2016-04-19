@@ -56,14 +56,14 @@ public:
 	/// Establish a connection to the server, or return false.
 	bool connect();
 	
+	QSqlDatabase db;
+	
 protected:
 	QSLDB(const char* name, QSL::Driver driver);
 	
 	/// Register a new table. If it doesn't exist it will be created as soon as the connection
 	/// to the database is established.
 	void registerTable(QSLTable *tbl);
-	
-	QSqlDatabase db;
 	
 private:
 	const char* _name;

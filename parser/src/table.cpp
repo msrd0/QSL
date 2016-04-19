@@ -4,14 +4,8 @@
 
 using namespace qsl::qslc;
 
-static QByteArray toCppType(QByteArray t)
+static QByteArray toCppType(const QByteArray &t, uint32_t minsize)
 {
-	uint minsize = std::numeric_limits<uint>::max();
-	if (t.contains('('))
-	{
-		minsize = t.mid(t.indexOf('(')+1, t.indexOf(')')-t.indexOf('(')-1).toUInt();
-		t = t.mid(0, t.indexOf('('));
-	}
 	if (t == "int")
 	{
 		if (minsize <= 8)
@@ -44,31 +38,19 @@ static QByteArray toCppType(QByteArray t)
 	else if (t == "char" || t == "byte" || t == "text" || t == "blob")
 		return "std::string";
 	else
-		return "void*";
+		return "QVariant";
 }
 
 Column::Column(const QByteArray &name, const QByteArray &type)
 	: _name(name)
-	, _type(type)
 {
-	_ctype = toCppType(type);
-}
-
-Column::Column(const Column &other)
-	: _name(other.name())
-	, _type(other.type())
-	, _ctype(other.cppType())
-	, _constraints(other.constraints())
-{
-}
-
-Column& Column::operator= (const Column &other)
-{
-	_name = other.name();
-	_type = other.type();
-	_ctype = other.cppType();
-	_constraints = other.constraints();
-	return *this;
+	_type = type;
+	if (_type.contains('('))
+	{
+		_minsize = _type.mid(_type.indexOf('(')+1, _type.indexOf(')')-_type.indexOf('(')-1).toUInt();
+		_type = _type.mid(0, _type.indexOf('('));
+	}
+	_ctype = toCppType(_type, _minsize);
 }
 
 void Column::setConstraint(const QByteArray &constraint)

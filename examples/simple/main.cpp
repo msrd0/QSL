@@ -14,6 +14,9 @@ int main()
       return 1;
     }
   printf("connected :)\n");
+
+  QList<db::qsl_example::foo_t> r = e.foo().query();
+  printf("result size: %d\n", r.size());
   
   return 0;
 }
