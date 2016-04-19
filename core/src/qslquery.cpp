@@ -51,7 +51,7 @@ QByteArray QSLQuery::driverType(QSL::Driver driver, const QByteArray &type, uint
 	}
 	else
 		dtype = val.toVariant().toByteArray();
-	dtype.replace('$', minsize);
+	dtype.replace('$', QByteArray::number(minsize));
 	if (dtype.contains('[') && dtype.contains(']'))
 	{
 		if (_tbl->db()->usevar())

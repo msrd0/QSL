@@ -103,6 +103,7 @@ Database* qsl::qslc::parse(QIODevice *in, const QString &filename)
 					error("Syntax error near %s", line.mid(0,10).data())
 				line = line.mid(1);
 				QByteArray constraint = line.mid(0, line.indexOf(' '));
+				f.setConstraint(constraint);
 				line = line.mid(constraint.length()).trimmed();
 			}
 			tbl->addField(f);
