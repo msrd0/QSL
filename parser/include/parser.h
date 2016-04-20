@@ -9,8 +9,8 @@
 namespace qsl {
 namespace qslc {
 
-extern Database* parse(const QString &filename);
-extern Database* parse(QIODevice *in, const QString &filename = QString());
+extern Database* parse(const QString &filename, bool qtype = false);
+extern Database* parse(QIODevice *in, const QString &filename = QString(), bool qtype = false);
 
 }
 }

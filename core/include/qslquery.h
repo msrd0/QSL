@@ -41,7 +41,7 @@ private:
 	int _limit = -1;
 };
 
-template<typename T>
+template<typename T, typename container = std::vector<T>>
 class QSLSelectQuery : public QSLQuery
 {
 public:
@@ -50,7 +50,7 @@ public:
 	{
 	}
 	
-	virtual QList<T> query() = 0;
+	virtual container query() = 0;
 };
 
 }

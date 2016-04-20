@@ -4,7 +4,7 @@
 
 using namespace qsl::qslc;
 
-static QByteArray toCppType(const QByteArray &t, uint32_t minsize)
+static QByteArray toCppType(const QByteArray &t, uint32_t minsize, bool qtype)
 {
 	if (t == "int")
 	{
@@ -36,12 +36,21 @@ static QByteArray toCppType(const QByteArray &t, uint32_t minsize)
 			return "double";
 	}
 	else if (t == "char" || t == "byte" || t == "text" || t == "blob")
+	{
+		if (qtype)
+		{
+			if (t == "char" || t == "text")
+				return "QString";
+			else
+				return "QByteArray";
+		}
 		return "std::string";
+	}
 	else
 		return "QVariant";
 }
 
-Column::Column(const QByteArray &name, const QByteArray &type)
+Column::Column(const QByteArray &name, const QByteArray &type, bool qtype) 
 	: _name(name)
 {
 	_type = type;
@@ -50,7 +59,7 @@ Column::Column(const QByteArray &name, const QByteArray &type)
 		_minsize = _type.mid(_type.indexOf('(')+1, _type.indexOf(')')-_type.indexOf('(')-1).toUInt();
 		_type = _type.mid(0, _type.indexOf('('));
 	}
-	_ctype = toCppType(_type, _minsize);
+	_ctype = toCppType(_type, _minsize, qtype);
 }
 
 void Column::setConstraint(const QByteArray &constraint)

@@ -15,7 +15,7 @@ using namespace qsl::qslc;
 	return 0; \
 	}
 
-Database* qsl::qslc::parse(const QString &filename)
+Database* qsl::qslc::parse(const QString &filename, bool qtype)
 {
 	QFile file(filename);
 	if (!file.open(QIODevice::ReadOnly))
@@ -23,10 +23,10 @@ Database* qsl::qslc::parse(const QString &filename)
 		fprintf(stderr, "Failed to open file %s: %s\n", qPrintable(filename), qPrintable(file.errorString()));
 		return 0;
 	}
-	return parse(&file, filename);
+	return parse(&file, filename, qtype);
 }
 
-Database* qsl::qslc::parse(QIODevice *in, const QString &filename)
+Database* qsl::qslc::parse(QIODevice *in, const QString &filename, bool qtype)
 {
 	if (!in || !in->isOpen() || !in->isReadable())
 		return 0;
@@ -96,7 +96,7 @@ Database* qsl::qslc::parse(QIODevice *in, const QString &filename)
 				name = line.mid(0, line.indexOf(' '));
 				line = line.mid(name.length()).trimmed();
 			}
-			Column f(name, type);
+			Column f(name, type, qtype);
 			while (!line.isEmpty())
 			{
 				if (!line.startsWith('!'))

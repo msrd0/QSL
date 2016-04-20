@@ -20,6 +20,8 @@ int main(int argc, char **argv)
 	parser.addVersionOption();
 	QCommandLineOption targetDirOption(QStringList() << "d" << "dir", "The target directory to put the generated files", "dir", ".");
 	parser.addOption(targetDirOption);
+	QCommandLineOption qtypeOption(QStringList() << "q" << "qtype", "Use Qt types instead of std:: types");
+	parser.addOption(qtypeOption);
 	parser.addPositionalArgument("file", "The input file(s) to compile", "<file> [<file> ...]");
 	parser.process(app);
 	QStringList args = parser.positionalArguments();
@@ -36,11 +38,12 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Target directory %s doesn't exist", qPrintable(dir.absolutePath()));
 		return 1;
 	}
+	bool qtype = parser.isSet(qtypeOption);
 	
 	for (QString file : args)
 	{
-		Database *db = parse(file);
-		if (!generate(db, dir))
+		Database *db = parse(file, qtype);
+		if (!generate(db, dir, qtype))
 		{
 			fprintf(stderr, "Failed to process file %s\n", qPrintable(file));
 			return 1;

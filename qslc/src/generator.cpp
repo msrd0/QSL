@@ -5,7 +5,7 @@
 
 #include <QFile>
 
-bool qsl::qslc::generate(Database *db, const QDir &dir)
+bool qsl::qslc::generate(Database *db, const QDir &dir, bool qtype)
 {
 	if (!db)
 		return false;
@@ -35,6 +35,8 @@ bool qsl::qslc::generate(Database *db, const QDir &dir)
 	out.write("public:\n");
 	out.write("  const char* charset() const { return _charset; }\n");
 	out.write("  bool usevar() const { return _usevar; }\n\n");
+	
+	QByteArray list_t = qtype ? "QList" : "std::vector";
 	
 	for (Table *t : db->tables())
 	{
@@ -71,22 +73,22 @@ bool qsl::qslc::generate(Database *db, const QDir &dir)
 		out.write("  };\n");
 		
 		// class to create the query
-		out.write("  class " + t->name() + "_q : public QSLSelectQuery<" + t->name() + "_t>\n");
+		out.write("  class " + t->name() + "_q : public QSLSelectQuery<" + t->name() + "_t, " + list_t + "<" + t->name() + "_t>>\n");
 		out.write("  {\n");
 		out.write("  public:\n");
 		out.write("    " + t->name() + "_q(QSLTable *tbl)\n");
 		out.write("      : QSLSelectQuery(tbl)\n");
 		out.write("    {\n");
 		out.write("    }\n");
-		out.write("    virtual QList<" + t->name() + "_t> query()\n");
+		out.write("    virtual " + list_t + "<" + t->name() + "_t> query()\n");
 		out.write("    {\n");
 		out.write("      QSqlQuery q(_tbl->db()->db);\n");
 		out.write("      if (!q.exec(sql(_tbl->db()->driver())))\n");
 		out.write("      {\n");
 		out.write("        fprintf(stderr, \"QSLQuery: Failed to query " + db->name() + "." + t->name() + ": %s\\n\", qPrintable(q.lastError().text()));\n");
-		out.write("        return QList<" + t->name() + "_t>();\n");
+		out.write("        return " + list_t + "<" + t->name() + "_t>();\n");
 		out.write("      }\n");
-		out.write("      QList<" + t->name() + "_t> entries;\n");
+		out.write("      " + list_t + "<" + t->name() + "_t> entries;\n");
 		out.write("      while (q.next())\n");
 		out.write("      {\n");
 		out.write("        " + t->name() + "_t entry(dynamic_cast<" + db->name() + "*>(_tbl->db())\n");
@@ -117,10 +119,20 @@ bool qsl::qslc::generate(Database *db, const QDir &dir)
 					out.write("             .toDouble()\n");
 			}
 			else if (f.type() == "char" || f.type() == "text" || f.type() == "byte" || f.type() == "blob")
-				out.write("             .toByteArray().data()\n");
+			{
+				if (qtype)
+				{
+					if (f.type() == "char" || f.type() == "text")
+						out.write("             .toString()\n");
+					else
+						out.write("             .toByteArray()\n");
+				}
+				else
+					out.write("             .toByteArray().data()\n");
+			}
 		}
 		out.write("        );\n");
-		out.write("        entries << entry;\n");
+		out.write("        entries.push_back(entry);\n");
 		out.write("      }\n");
 		out.write("      return entries;\n");
 		out.write("    }\n");

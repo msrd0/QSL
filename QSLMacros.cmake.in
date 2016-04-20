@@ -2,16 +2,22 @@ include(CMakeParseArguments)
 
 function(QSL_COMPILE)
 	
-	set(options)
+	set(options QTYPE)
 	set(oneValueArgs TARGET)
 	set(multiValueArgs FILES)
 	
 	cmake_parse_arguments(_QSLC "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 	
+	if (_QSLC_QTYPE)
+		set(_QSLC_QTYPE_FLAG "-q")
+	else()
+		set(_QSLC_QTYPE_FLAG "")
+	endif()
+	
 	add_custom_target("${_QSLC_TARGET}_qslc")
 	add_custom_command(TARGET "${_QSLC_TARGET}_qslc" PRE_BUILD
 	                   COMMENT "Compiling ${_QSLC_FILES}"
-                       COMMAND qslc ARGS -d "${CMAKE_CURRENT_BINARY_DIR}" ${_QSLC_FILES}
+                       COMMAND qslc ARGS ${_QSLC_QTYPE_FLAG} -d "${CMAKE_CURRENT_BINARY_DIR}" ${_QSLC_FILES}
 					   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 					   VERBATIM)
 	add_dependencies("${_QSLC_TARGET}" "${_QSLC_TARGET}_qslc")

@@ -14,7 +14,7 @@ class Database;
 class Column
 {	
 public:
-	Column(const QByteArray &name, const QByteArray &type);
+	Column(const QByteArray &name, const QByteArray &type, bool qtype = false);
 	
 	QByteArray name() const { return _name; }
 	QByteArray type() const { return _type; }
