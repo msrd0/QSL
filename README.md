@@ -99,6 +99,7 @@ Options:
   -h, --help       Displays this help.
   -v, --version    Displays version information.
   -d, --dir <dir>  The target directory to put the generated files
+  -q, --qtype      Use Qt types instead of std:: types
 
 Arguments:
   file             The input file(s) to compile
