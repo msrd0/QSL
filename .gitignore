@@ -7,6 +7,10 @@ Makefile
 # qt stuff
 *.user
 
+# kdevelop stuff
+.kdev4/
+*.kdev4
+
 # other stuff
 *~
 \#*#
