@@ -18,5 +18,10 @@ int main()
   auto r = e.foo().query();
   printf("result size: %d\n", r.size());
   
+  std::string text = "example run at " + std::to_string(time(NULL));
+  if (!e.foo().insert({text}))
+    return 1;
+  printf("inserted: %s\n", text.data());
+  
   return 0;
 }

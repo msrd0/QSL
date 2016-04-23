@@ -20,6 +20,8 @@ public:
 	QByteArray type() const { return _type; }
 	uint32_t minsize() const { return _minsize; }
 	QByteArray cppType() const { return _ctype; }
+	bool cppReference() const { return _cref; }
+	QByteArray cppArgType() const { return (_cref ? "const " + cppType() + "&" : cppType()); }
 	uint8_t constraints() const { return _constraints; }
 	
 	void setConstraint(QSL::ColumnConstraint constraint) { _constraints |= constraint; }
@@ -34,6 +36,8 @@ private:
 	uint32_t _minsize = std::numeric_limits<uint32_t>::max();
 	/// The type of the field as a C++ typename.
 	QByteArray _ctype;
+	/// Whether the type should be passed via const reference.
+	bool _cref;
 	/// The constraints for the field.
 	uint8_t _constraints = QSL::none;
 };

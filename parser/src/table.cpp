@@ -4,50 +4,50 @@
 
 using namespace qsl::qslc;
 
-static QByteArray toCppType(const QByteArray &t, uint32_t minsize, bool qtype)
+static std::pair<QByteArray, bool> toCppType(const QByteArray &t, uint32_t minsize, bool qtype)
 {
 	if (t == "int")
 	{
 		if (minsize <= 8)
-			return "int8_t";
+			return {"int8_t", false};
 		else if (minsize <= 16)
-			return "int16_t";
+			return {"int16_t", false};
 		else if (minsize <= 32)
-			return "int32_t";
+			return {"int32_t", false};
 		else
-			return "int64_t";
+			return {"int64_t", false};
 	}
 	else if (t == "uint")
 	{
 		if (minsize <= 8)
-			return "uint8_t";
+			return {"uint8_t", false};
 		else if (minsize <= 16)
-			return "uint16_t";
+			return {"uint16_t", false};
 		else if (minsize <= 32)
-			return "uint32_t";
+			return {"uint32_t", false};
 		else
-			return "uint64_t";
+			return {"uint64_t", false};
 	}
 	else if (t == "double")
 	{
 		if (minsize <= 4)
-			return "float";
+			return {"float", false};
 		else
-			return "double";
+			return {"double", false};
 	}
 	else if (t == "char" || t == "byte" || t == "text" || t == "blob")
 	{
 		if (qtype)
 		{
 			if (t == "char" || t == "text")
-				return "QString";
+				return {"QString", true};
 			else
-				return "QByteArray";
+				return {"QByteArray", true};
 		}
-		return "std::string";
+		return {"std::string", true};
 	}
 	else
-		return "QVariant";
+		return {"QVariant", true};
 }
 
 Column::Column(const QByteArray &name, const QByteArray &type, bool qtype) 
@@ -59,7 +59,9 @@ Column::Column(const QByteArray &name, const QByteArray &type, bool qtype)
 		_minsize = _type.mid(_type.indexOf('(')+1, _type.indexOf(')')-_type.indexOf('(')-1).toUInt();
 		_type = _type.mid(0, _type.indexOf('('));
 	}
-	_ctype = toCppType(_type, _minsize, qtype);
+	auto ct = toCppType(_type, _minsize, qtype);
+	_ctype = ct.first;
+	_cref  = ct.second;
 }
 
 void Column::setConstraint(const QByteArray &constraint)

@@ -44,15 +44,13 @@ bool qsl::qslc::generate(Database *db, const QDir &dir, bool qtype)
 		out.write("  class " + t->name() + "_t\n");
 		out.write("  {\n");
 		out.write("  private:\n");
-		out.write("    " + db->name() + " *_parent;\n");
+		out.write("    QSLTable *_parent;\n");
 		out.write("  public:\n");
 		
-		// ctor
-		out.write("    " + t->name() + "_t(" + db->name() + " *parent");
+		// ctor for select
+		out.write("    " + t->name() + "_t(QSLTable *parent");
 		for (Column &f : t->fields())
-		{
-			out.write(", " + f.cppType() + " " + f.name());
-		}
+			out.write(", " + f.cppArgType() + " " + f.name());
 		out.write(")\n");
 		out.write("      : _parent(parent)\n");
 		for (Column &f : t->fields())
@@ -61,6 +59,29 @@ bool qsl::qslc::generate(Database *db, const QDir &dir, bool qtype)
 		out.write("      Q_ASSERT(parent);\n");
 		out.write("    }\n");
 		
+		// ctor for insert
+		out.write("    " + t->name() + "_t(");
+		int i = 0;
+		for (Column &f : t->fields())
+		{
+			if (f.constraints() & QSL::primarykey != 0)
+				continue;
+			if (i > 0)
+				out.write(", ");
+			out.write(f.cppArgType() + " " + f.name());
+		}
+		out.write(")\n");
+		out.write("      : _parent(0)\n");
+		i = 0;
+		for (Column &f : t->fields())
+		{
+			if (f.constraints() & QSL::primarykey != 0)
+				continue;
+			out.write("      , _" + f.name() + "(" + f.name() + ")\n");
+		}
+		out.write("    {\n");
+		out.write("    }\n\n");
+		
 		// variables & getters
 		for (Column &f : t->fields())
 		{
@@ -68,20 +89,41 @@ bool qsl::qslc::generate(Database *db, const QDir &dir, bool qtype)
 			out.write("    " + f.cppType() + " _" + f.name() + ";\n");
 			out.write("  public:\n");
 			out.write("    " + f.cppType() + " " + f.name() + "() const { return _" + f.name() + "; }\n");
+			out.write("    void set" + f.name().mid(0,1).toUpper() + f.name().mid(1) + "(" + f.cppArgType() + " " + f.name() + ") { _" + f.name() + " = " + f.name() + "; }\n\n");
 		}
+		
+		// method to create a QVector<QVariant>
+		out.write("  public:\n");
+		out.write("    QVector<QVariant> toVector() const\n");
+		out.write("    {\n");
+		out.write("      QVector<QVariant> v(" + QByteArray::number(t->fields().size() - 1) + ");\n");
+		i = 0;
+		for (Column &f : t->fields())
+		{
+			if (f.constraints() & QSL::primarykey != 0)
+				continue;
+			out.write("      v[" + QByteArray::number(i) + "] = _" + f.name());
+			if (f.cppType() == "std::string")
+				out.write(".data()");
+			out.write(";\n");
+			i++;
+		}
+		out.write("      return v;\n");
+		out.write("    }\n");
 		
 		out.write("  };\n");
 		
 		// class to create the query
-		out.write("  class " + t->name() + "_q : public QSLSelectQuery<" + t->name() + "_t, " + list_t + "<" + t->name() + "_t>>\n");
+		out.write("  class " + t->name() + "_q : public QSLTableQuery<" + t->name() + "_t, " + list_t + "<" + t->name() + "_t>>\n");
 		out.write("  {\n");
 		out.write("  public:\n");
 		out.write("    " + t->name() + "_q(QSLTable *tbl)\n");
-		out.write("      : QSLSelectQuery(tbl)\n");
+		out.write("      : QSLTableQuery(tbl)\n");
 		out.write("    {\n");
 		out.write("    }\n");
 		out.write("    virtual " + list_t + "<" + t->name() + "_t> query()\n");
 		out.write("    {\n");
+		out.write("      _type = QSL::SelectQuery;\n");
 		out.write("      QSqlQuery q(_tbl->db()->db);\n");
 		out.write("      if (!q.exec(sql(_tbl->db()->driver())))\n");
 		out.write("      {\n");
@@ -91,7 +133,7 @@ bool qsl::qslc::generate(Database *db, const QDir &dir, bool qtype)
 		out.write("      " + list_t + "<" + t->name() + "_t> entries;\n");
 		out.write("      while (q.next())\n");
 		out.write("      {\n");
-		out.write("        " + t->name() + "_t entry(dynamic_cast<" + db->name() + "*>(_tbl->db())\n");
+		out.write("        " + t->name() + "_t entry(_tbl\n");
 		for (Column &f : t->fields())
 		{
 			out.write("          , q.value(\"" + f.name() + "\")\n");
@@ -135,6 +177,30 @@ bool qsl::qslc::generate(Database *db, const QDir &dir, bool qtype)
 		out.write("        entries.push_back(entry);\n");
 		out.write("      }\n");
 		out.write("      return entries;\n");
+		out.write("    }\n");
+		out.write("    virtual bool insert(const " + t->name() + "_t &row)\n");
+		out.write("    {\n");
+		out.write("      _type = QSL::InsertQuery;\n");
+		out.write("      _rows.push_back(row.toVector());\n");
+		out.write("      printf(\"SQL: %s\\n\", qPrintable(sql(_tbl->db()->driver())));\n");
+		out.write("      QSqlQuery q(_tbl->db()->db);\n");
+		out.write("      if (!q.exec(sql(_tbl->db()->driver())))\n");
+		out.write("      {\n");
+		out.write("        fprintf(stderr, \"QSLQuery: Failed to query " + db->name() + "." + t->name() + ": %s\\n\", qPrintable(q.lastError().text()));\n");
+		out.write("        return false;\n");
+		out.write("      }\n");
+		out.write("      return true;\n");
+		out.write("    }\n");
+		out.write("    template<typename ForwardIterator>\n");
+		out.write("    bool insert(const ForwardIterator &begin, const ForwardIterator &end)\n");
+		out.write("    {\n");
+		out.write("      _type = QSL::InsertQuery;\n");
+		out.write("      return false;\n");
+		out.write("    }\n");
+		out.write("    template<typename Container>\n");
+		out.write("    bool insert(const Container &container)\n");
+		out.write("    {\n");
+		out.write("      return insert(container.begin(), container.end());\n");
 		out.write("    }\n");
 		out.write("  };\n");
 		

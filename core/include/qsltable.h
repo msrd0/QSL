@@ -10,16 +10,24 @@ class QSLDB;
 
 /**
  * This class is used by generated database classes to represent the tables in the database.
+ * After the table is completely constructed it needs to be registered via `QSLDB::registerTable()`.
  */
 class QSLTable
 {
 public:
+	/// Creates a new table with the given name for the given database. Please note that the
+	/// database won't be notified of this table; you have to do so explicitly via `QSLDB::registerTable()`.
 	QSLTable(const char *name, QSLDB *db);
 	
+	/// Adds a new column to the table. This should be called before the table is added
+	/// to the database using `QSLDB::registerTable()`.
 	void addColumn(const QSLColumn &column);
 	
+	/// Returns the name of the table.
 	const char* name() const { return _name; }
+	/// Returns the parent `QSLDB`.
 	QSLDB* db() { return _db; }
+	/// Returns all columns in this table.
 	QList<QSLColumn> columns() const { return _columns; }
 	
 private:

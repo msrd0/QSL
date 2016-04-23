@@ -20,6 +20,13 @@ public:
 };
 
 /**
+ * This namespace contains a lot of filters that can be used in conjunction with `QSLQuery`. Note that
+ * you can only pass one filter to the `QSLQuery` class, subsequent calls to `QSLQuery::filter` will
+ * overwrite the old one.
+ */
+namespace filters {
+
+/**
  * This class is a QSLFilter that compares a column with a value and returns true if the value matches.
  */
 class eq : public QSLFilter
@@ -45,4 +52,5 @@ public:
 	virtual QString sql(QSL::Driver driver);
 };
 
+}
 }

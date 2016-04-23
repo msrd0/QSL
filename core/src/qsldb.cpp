@@ -36,7 +36,7 @@ bool QSLDB::connect()
 	for (QSLTable *tbl : _tables)
 		if (!dbtables.contains(tbl->name()))
 		{
-			QSLQuery qq(tbl, QSL::CreateTable);
+			QSLQuery qq(tbl, QSL::CreateTableQuery);
 			QString sql = qq.sql(driver());
 #ifdef CMAKE_DEBUG
 			fprintf(stderr, "QSLDB: Executing SQL '%s'\n", qPrintable(sql));

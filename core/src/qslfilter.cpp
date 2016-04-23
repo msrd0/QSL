@@ -1,6 +1,7 @@
 #include "qslfilter.h"
 
 using namespace qsl;
+using namespace qsl::filters;
 
 eq::eq(const char *column, const QVariant &val)
 	: _column(column)

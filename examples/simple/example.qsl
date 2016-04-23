@@ -1,11 +1,11 @@
 database "qsl_example"
-charset "utf-16"
+charset "utf-8"
 usevar
 
 # a very easy table
 table "foo"
 - uint "id" !primarykey
-- char(50) "bar"
+- char(50) "bar" !unique
 
 # an example users table
 #table "users"

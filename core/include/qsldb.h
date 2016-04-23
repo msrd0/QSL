@@ -56,9 +56,12 @@ public:
 	/// Establish a connection to the server, or return false.
 	bool connect();
 	
+	/// The underlying Qt database. Don't use it. **This field can change its
+	/// visibility at any time.**
 	QSqlDatabase db;
 	
 protected:
+	/// Creates a new database with the given name and the given driver.
 	QSLDB(const char* name, QSL::Driver driver);
 	
 	/// Register a new table. If it doesn't exist it will be created as soon as the connection
