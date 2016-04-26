@@ -18,6 +18,9 @@ find_package(Qt5Sql  REQUIRED)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 if(CMAKE_BUILD_TYPE MATCHES Debug)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -fsanitize=undefined")
+	add_definitions("-D_GLIBCXX_DEBUG")
+	add_definitions("-DQT_SHAREDPOINTER_TRACK_POINTERS")
 	add_definitions("-DCMAKE_DEBUG")
 endif()
 
