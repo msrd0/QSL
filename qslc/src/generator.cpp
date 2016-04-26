@@ -121,6 +121,8 @@ bool qsl::qslc::generate(Database *db, const QDir &dir, bool qtype)
 		out.write("      : QSLTableQuery(tbl)\n");
 		out.write("    {\n");
 		out.write("    }\n");
+		out.write("    template<typename F>\n");
+		out.write("    " + t->name() + "_q& filter(const F &filter) { applyFilter(filter); return *this; }\n");
 		out.write("    virtual " + list_t + "<" + t->name() + "_t> query()\n");
 		out.write("    {\n");
 		out.write("      _type = QSL::SelectQuery;\n");

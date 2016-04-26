@@ -27,18 +27,19 @@ public:
 	static QJsonObject driverJson(QSL::Driver driver);
 	/// Returns the SQL typename of the given type that should have at least minsize
 	/// elements/bits if the database supports.
-	QByteArray driverType(QSL::Driver driver, const QByteArray &type, uint32_t minsize);
+	QByteArray driverType(QSL::Driver driver, const QByteArray &type, uint32_t minsize) const;
 	
 	/// Creates a new `QSLQuery` for the given `QSLTable` with the given type.
 	QSLQuery(QSLTable *tbl, QSL::QueryType type);
 	
 	/// Overwrite the filter used by `SELECT` queries.
-	QSLQuery& filter(const QSLFilter &filter) { _filter = filter; return *this; }
+	template<typename F>
+	void applyFilter(const F &filter) { _filter = QSharedPointer<QSLFilter>(new F(filter)); }
 	/// Overwrite the limit of resulting columns.
 	void limit(int l) { _limit = l; }
 	
 	/// Returns an SQL expression for the given driver.
-	QString sql(QSL::Driver driver);
+	QString sql(QSL::Driver driver) const;
 	
 protected:
 	/// Creates a new `QSLQuery` for the given `QSLTable`. Note that the type will be set
@@ -54,7 +55,7 @@ protected:
 	QList<QVector<QVariant>> _rows;
 	
 private:
-	QSLFilter _filter;
+	QSharedPointer<QSLFilter> _filter = QSharedPointer<QSLFilter>(new QSLFilter);
 	int _limit = -1;
 };
 

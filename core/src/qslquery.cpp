@@ -25,7 +25,7 @@ QJsonObject QSLQuery::driverJson(QSL::Driver driver)
 	return doc.object();
 }
 
-QByteArray QSLQuery::driverType(QSL::Driver driver, const QByteArray &type, uint32_t minsize)
+QByteArray QSLQuery::driverType(QSL::Driver driver, const QByteArray &type, uint32_t minsize) const
 {
 	QJsonObject json = driverJson(driver);
 	QJsonObject types = json["types"].toObject();
@@ -78,7 +78,7 @@ QSLQuery::QSLQuery(QSLTable *tbl)
 {
 }
 
-QString QSLQuery::sql(QSL::Driver driver)
+QString QSLQuery::sql(QSL::Driver driver) const
 {
 	Q_ASSERT(_type != QSL::UnknownQueryType);
 	switch (_type)
@@ -111,12 +111,16 @@ QString QSLQuery::sql(QSL::Driver driver)
 		switch (driver)
 		{
 		case QSL::PostgreSQL: {
-				QString filter = _filter.sql(driver);
+				QString filter = _filter->sql(driver);
 				QString sql = QString("SELECT * FROM ") + _tbl->name();
 				if (!filter.isEmpty())
-					sql += " " + filter;
+				{
+					qDebug() << "Filter:" << filter;
+					sql += " WHERE " + filter;
+				}
 				if (_limit > 0)
 					sql += " LIMIT BY " + _limit;
+				qDebug() << "select query:" << sql;
 				return sql + ";";
 			}
 		}
