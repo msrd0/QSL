@@ -6,6 +6,7 @@ service:
 before_script:
  - export reponame=`basename $PWD`
  - pushd ..
+ - sed -i "s/@qsl@/$reponame" $reponame/docker/ubuntu/Dockerfile
  - sudo docker build -t qsl-ubuntu -f $reponame/docker/ubuntu/Dockerfile .
  - popd
 script:
