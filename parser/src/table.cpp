@@ -64,10 +64,12 @@ Column::Column(const QByteArray &name, const QByteArray &type, bool qtype)
 	_cref  = ct.second;
 }
 
-void Column::setConstraint(const QByteArray &constraint)
+int Column::setConstraint(const QByteArray &constraint)
 {
 	static QMetaEnum e = QSL::staticMetaObject.enumerator(QSL::staticMetaObject.indexOfEnumerator("ColumnConstraint"));
-	_constraints |= e.keyToValue(constraint);
+	int val = e.keyToValue(constraint);
+	_constraints |= val;
+	return val;
 }
 
 Table::Table(Database *db, const QByteArray &name)

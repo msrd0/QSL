@@ -25,7 +25,7 @@ public:
 	uint8_t constraints() const { return _constraints; }
 	
 	void setConstraint(QSL::ColumnConstraint constraint) { _constraints |= constraint; }
-	void setConstraint(const QByteArray &constraint);
+	int setConstraint(const QByteArray &constraint);
 	
 private:
 	/// The name of the field.
@@ -50,6 +50,9 @@ public:
 	Database* db() const { return _db; }
 	QByteArray name() const { return _name; }
 	QList<Column> fields() const { return _fields; }
+	QByteArray primaryKey() const { return _pk; }
+	
+	void setPrimaryKey(const QByteArray &pk) { _pk = pk; }
 	
 	void addField(const Column &field);
 	

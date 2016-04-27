@@ -19,7 +19,8 @@ bool qsl::qslc::generate(Database *db, const QDir &dir, bool qtype)
 	out.write("#pragma once\n\n");
 	out.write("#include <qsldb.h>\n");
 	out.write("#include <qslquery.h>\n");
-	out.write("#include <qsltable.h>\n\n");
+	out.write("#include <qsltable.h>\n");
+	out.write("#include <qslvariant.h>\n\n");
 	out.write("#include <QSqlError>\n");
 	out.write("#include <QSqlQuery>\n\n");
 	
@@ -40,6 +41,9 @@ bool qsl::qslc::generate(Database *db, const QDir &dir, bool qtype)
 	
 	for (Table *t : db->tables())
 	{
+		if (t->primaryKey().isEmpty())
+			fprintf(stderr, "WARNING: No primary key found in table %s, some features may not be available\n", t->name().data());
+		
 		out.write("public:\n");
 		out.write("  class " + t->name() + "_t\n");
 		out.write("  {\n");
@@ -89,7 +93,32 @@ bool qsl::qslc::generate(Database *db, const QDir &dir, bool qtype)
 			out.write("    " + f.cppType() + " _" + f.name() + ";\n");
 			out.write("  public:\n");
 			out.write("    " + f.cppType() + " " + f.name() + "() const { return _" + f.name() + "; }\n");
-			out.write("    void set" + f.name().mid(0,1).toUpper() + f.name().mid(1) + "(" + f.cppArgType() + " " + f.name() + ") { _" + f.name() + " = " + f.name() + "; }\n\n");
+			if ((f.constraints() & QSL::primarykey) == 0)
+			{
+				out.write("    bool set" + f.name().mid(0,1).toUpper() + f.name().mid(1) + "(" + f.cppArgType() + " " + f.name() + ")\n");
+				out.write("    {\n");
+				out.write("      _" + f.name() + " = " + f.name() + ";\n");
+				if (!t->primaryKey().isEmpty())
+				{
+					
+					out.write("      QSLQuery qq(_parent, QSL::UpdateQuery);\n");
+					out.write("      qq.updateq(\"" + f.name() + "\", qslvariant(" + f.name() + "), qslvariant(_" + t->primaryKey() + "));\n");
+					out.write("      QSqlQuery q(_parent->db()->db);\n");
+					out.write("      if (!q.exec(qq.sql(_parent->db()->driver())))\n");
+					out.write("      {\n");
+					out.write("        fprintf(stderr, \"QSLQuery: Failed to update " + db->name() + "." + t->name() + ": %s\\n\", qPrintable(q.lastError().text()));\n");
+					out.write("        return false;\n");
+					out.write("      }\n");
+					out.write("      else\n");
+					out.write("        return true;\n");
+				}
+				else
+				{
+					out.write("      fprintf(stderr, \"WARNING: " + db->name() + "." + t->name() + " has no primary key, won't update table\\n\");\n");
+					out.write("      return false;\n");
+				}
+				out.write("    }\n\n");
+			}
 		}
 		
 		// method to create a QVector<QVariant>
@@ -102,10 +131,7 @@ bool qsl::qslc::generate(Database *db, const QDir &dir, bool qtype)
 		{
 			if (f.constraints() & QSL::primarykey != 0)
 				continue;
-			out.write("      v[" + QByteArray::number(i) + "] = _" + f.name());
-			if (f.cppType() == "std::string")
-				out.write(".data()");
-			out.write(";\n");
+			out.write("      v[" + QByteArray::number(i) + "] = qslvariant(_" + f.name() + ");\n");
 			i++;
 		}
 		out.write("      return v;\n");
@@ -215,7 +241,7 @@ bool qsl::qslc::generate(Database *db, const QDir &dir, bool qtype)
 	out.write("  " + db->name() + "(QSL::Driver driver)\n");
 	out.write("    : QSLDB(\"" + db->name() + "\", driver)\n");
 	for (Table *t : db->tables())
-		out.write("    , _tbl_" + t->name() + "(\"" + t->name() + "\", this)\n");
+		out.write("    , _tbl_" + t->name() + "(\"" + t->name() + "\", \"" + t->primaryKey() + "\", this)\n");
 	out.write("  {\n");
 	for (Table *t : db->tables())
 	{

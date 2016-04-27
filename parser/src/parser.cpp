@@ -103,7 +103,12 @@ Database* qsl::qslc::parse(QIODevice *in, const QString &filename, bool qtype)
 					error("Syntax error near %s", line.mid(0,10).data())
 				line = line.mid(1);
 				QByteArray constraint = line.mid(0, line.indexOf(' '));
-				f.setConstraint(constraint);
+				if (f.setConstraint(constraint) == QSL::primarykey)
+				{
+					if (!tbl->primaryKey().isEmpty())
+						error("A table may only have one primary key, but two columns with primary key found: %s and %s", tbl->primaryKey().data(), f.name().data());
+					tbl->setPrimaryKey(f.name());
+				}
 				line = line.mid(constraint.length()).trimmed();
 			}
 			tbl->addField(f);

@@ -4,8 +4,9 @@
 
 using namespace qsl;
 
-QSLTable::QSLTable(const char *name, QSLDB *db)
+QSLTable::QSLTable(const char *name, const char *pk, QSLDB *db)
 	: _name(name)
+	, _pk(pk)
 	, _db(db)
 {
 }

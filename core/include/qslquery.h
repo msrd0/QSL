@@ -37,6 +37,8 @@ public:
 	void applyFilter(const F &filter) { _filter = QSharedPointer<QSLFilter>(new F(filter)); }
 	/// Overwrite the limit of resulting columns.
 	void limit(int l) { _limit = l; }
+	/// Set the corresponding values for an `UPDATE` query.
+	void updateq(const QString &col, const QVariant &val, const QVariant &pk);
 	
 	/// Returns an SQL expression for the given driver.
 	QString sql(QSL::Driver driver) const;
@@ -51,8 +53,14 @@ protected:
 	QSLTable *_tbl;
 	/// The type of the query.
 	QSL::QueryType _type;
-	/// The rows to be inserted if `_type` is `QSL::InsertQuery`.
+	/// The value of the rows to be inserted if `_type` is `QSL::InsertQuery`.
 	QList<QVector<QVariant>> _rows;
+	/// The name of the column that should be updated if `_type` is `QSL::UpdateQuery`.
+	QString _ucol;
+	/// The value of the column that should be updated if `_type` is `QSL::UpdateQuery`.
+	QVariant _uval;
+	/// The primary key of the row that should be updated if `_type` is `QSL::UpdateQuery`.
+	QVariant _upk;
 	
 private:
 	QSharedPointer<QSLFilter> _filter = QSharedPointer<QSLFilter>(new QSLFilter);

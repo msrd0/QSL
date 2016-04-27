@@ -31,5 +31,12 @@ int main()
 	r = e.foo().filter(a(sw("bar", "example run at"), co("bar", (qlonglong)t))).query();
 	printf("result size for insert: %d\n", r.size());
 	
+	if (r.size() != 1)
+		return 1;
+	if (!r[0].setBar(text + " (updated)"))
+		return 1;
+	printf("updated text\n");
+	
+	printf(" --- DONE\n");
 	return 0;
 }

@@ -78,6 +78,13 @@ QSLQuery::QSLQuery(QSLTable *tbl)
 {
 }
 
+void QSLQuery::updateq(const QString &col, const QVariant &val, const QVariant &pk)
+{
+	_ucol = col;
+	_uval = val;
+	_upk  = pk;
+}
+
 QString QSLQuery::sql(QSL::Driver driver) const
 {
 	Q_ASSERT(_type != QSL::UnknownQueryType);
@@ -154,6 +161,16 @@ QString QSLQuery::sql(QSL::Driver driver) const
 					sql += ")";
 				}
 				return sql + ";";
+			}
+		}
+	case QSL::UpdateQuery:
+		switch (driver)
+		{
+		case QSL::PostgreSQL: {
+				if (_ucol.isEmpty() || _uval.isNull() || _upk.isNull())
+					return QString();
+				return QString("UPDATE ") + _tbl->name() + " SET " + _ucol + "='" + _uval.toString().replace("'", "''")
+						+ "' WHERE " + _tbl->primaryKey() + "='" + _upk.toString().replace("'", "''") + "';";
 			}
 		}
 
