@@ -74,7 +74,7 @@ Currently, only CMake as the build system is supported. Support for qmake may fo
 
 To use QSL with CMake, just add the following to your `CMakeLists.txt`:
 
-```
+```cmake
 find_package(QSL REQUIRED)
 include_directories(${QSL_INCLUDE_DIRS})
 
