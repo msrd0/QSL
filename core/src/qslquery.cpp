@@ -115,12 +115,10 @@ QString QSLQuery::sql(QSL::Driver driver) const
 				QString sql = QString("SELECT * FROM ") + _tbl->name();
 				if (!filter.isEmpty())
 				{
-					qDebug() << "Filter:" << filter;
 					sql += " WHERE " + filter;
 				}
 				if (_limit > 0)
 					sql += " LIMIT BY " + _limit;
-				qDebug() << "select query:" << sql;
 				return sql + ";";
 			}
 		}

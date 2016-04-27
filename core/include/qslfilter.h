@@ -63,7 +63,6 @@ namespace filters {
 		template<typename F, typename ... Types> \
 		void addfilter(const F &filter, Types ... rest) \
 		{ \
-			printf(#name ": adding a filter: %s\n", qPrintable(filter.sql(QSL::PostgreSQL))); \
 			_filters.push_back(QSharedPointer<QSLFilter>(new F(filter))); \
 			addfilter(rest...); \
 		} \

@@ -184,7 +184,6 @@ bool qsl::qslc::generate(Database *db, const QDir &dir, bool qtype)
 		out.write("    {\n");
 		out.write("      _type = QSL::InsertQuery;\n");
 		out.write("      _rows.push_back(row.toVector());\n");
-		out.write("      printf(\"SQL: %s\\n\", qPrintable(sql(_tbl->db()->driver())));\n");
 		out.write("      QSqlQuery q(_tbl->db()->db);\n");
 		out.write("      if (!q.exec(sql(_tbl->db()->driver())))\n");
 		out.write("      {\n");
