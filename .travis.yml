@@ -1,0 +1,23 @@
+language: c++
+compiler:
+ - gcc
+ - clang
+
+sudo: required
+dist: trusty
+addons:
+  apt:
+    packages:
+      - doxygen
+      - qt5-default
+
+script:
+ - mkdir build
+ - cd build
+ - cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+ - make doc
+ - sudo make install
+ - cd ../examples/simple
+ - cmake .
+ - make
+ 
