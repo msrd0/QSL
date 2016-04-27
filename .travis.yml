@@ -9,9 +9,12 @@ addons:
   apt:
     packages:
       - doxygen
+      - graphviz
       - qt5-default
+      - tree
 
 script:
+ - tree
  - mkdir build
  - cd build
  - cmake -DCMAKE_INSTALL_PREFIX=/usr ..
