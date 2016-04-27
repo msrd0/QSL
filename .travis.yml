@@ -1,26 +1,13 @@
-language: c++
-compiler:
- - gcc
- - clang
-
 sudo: required
 dist: trusty
-addons:
-  apt:
-    packages:
-      - doxygen
-      - graphviz
-      - qt5-default
-      - tree
+service:
+ - docker
 
+before_script:
+ - export reponame=`basename $PWD`
+ - pushd ..
+ - sudo docker build -t qsl-ubuntu -f $reponame/docker/ubuntu/Dockerfile .
+ - popd
 script:
- - tree
- - mkdir build
- - cd build
- - cmake -DCMAKE_INSTALL_PREFIX=/usr ..
- - make doc
- - sudo make install
- - cd ../examples/simple
- - cmake .
- - make
+ - sudo docker run qsl-ubuntu
  
