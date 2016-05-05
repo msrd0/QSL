@@ -9,32 +9,34 @@ static std::pair<QByteArray, bool> toCppType(const QByteArray &t, uint32_t minsi
 	if (t == "int")
 	{
 		if (minsize <= 8)
-			return {"int8_t", false};
+			return {qtype ? "qint8" : "int8_t", false};
 		else if (minsize <= 16)
-			return {"int16_t", false};
+			return {qtype ? "qint16" : "int16_t", false};
 		else if (minsize <= 32)
-			return {"int32_t", false};
+			return {qtype ? "qint32" : "int32_t", false};
 		else
-			return {"int64_t", false};
+			return {qtype ? "qint64" : "int64_t", false};
 	}
 	else if (t == "uint")
 	{
 		if (minsize <= 8)
-			return {"uint8_t", false};
+			return {qtype ? "quint8" : "uint8_t", false};
 		else if (minsize <= 16)
-			return {"uint16_t", false};
+			return {qtype ? "quint16" : "uint16_t", false};
 		else if (minsize <= 32)
-			return {"uint32_t", false};
+			return {qtype ? "quint32" : "uint32_t", false};
 		else
-			return {"uint64_t", false};
+			return {qtype ? "quint64" : "uint64_t", false};
 	}
 	else if (t == "double")
 	{
 		if (minsize <= 4)
 			return {"float", false};
 		else
-			return {"double", false};
+			return {qtype ? "qreal" : "double", false};
 	}
+	else if (t == "bool")
+		return {"bool", false};
 	else if (t == "char" || t == "byte" || t == "text" || t == "blob")
 	{
 		if (qtype)
