@@ -1,0 +1,16 @@
+{
+	"types": {
+		"int": "INTEGER",
+		"uint": "INTEGER",
+		"double": "REAL",
+		"bool": "BOOLEAN",
+		"char": "[VARYING] CHARACTER ($)",
+		"text": "TEXT",
+		"password": "TEXT",
+		"byte": "[VARYING] CHARACTER ($)",
+		"blob": "BLOB",
+		"date": "DATE",
+		"time": "DATE",
+		"datetime": "DATETIME"
+	}
+}

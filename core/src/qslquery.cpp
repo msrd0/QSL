@@ -85,6 +85,17 @@ void QSLQuery::updateq(const QString &col, const QVariant &val, const QVariant &
 	_upk  = pk;
 }
 
+#ifdef CMAKE_DEBUG
+#  define ret(x) \
+	{ \
+	QString __ret = (x); \
+	qDebug() << "QSLQuery: DEBUG: sql(" << driver << _type << "):" << __ret; \
+	return __ret; \
+	}
+#else
+#  define ret(x) return (x);
+#endif
+
 QString QSLQuery::sql(QSL::Driver driver) const
 {
 	Q_ASSERT(_type != QSL::UnknownQueryType);
@@ -110,10 +121,29 @@ QString QSLQuery::sql(QSL::Driver driver) const
 					i++;
 				}
 				sql += ");";
-				return sql;
+				ret(sql);
+			}
+		case QSL::SQLite: {
+				QString sql = QString("CREATE TABLE ") + _tbl->name() + " (";
+				int i = 0;
+				for (QSLColumn c : _tbl->columns())
+				{
+					if (c.constraints() & QSL::primarykey != 0)
+						continue; // pkey is added as 'rowid' automatically
+					if (i > 0)
+						sql += ", ";
+					sql += c.name() + " " + driverType(driver, c.type(), c.minsize());
+					if (c.constraints() & QSL::unique != 0)
+						sql += " UNIQUE";
+					if (c.constraints() & QSL::notnull != 0)
+						sql += " NOT NULL";
+					i++;
+				}
+				sql += ");";
+				ret(sql);
 			}
 		}
-		return __FILE__ + QString::number(__LINE__);
+		ret(__FILE__ + QString::number(__LINE__));
 	case QSL::SelectQuery:
 		switch (driver)
 		{
@@ -126,14 +156,24 @@ QString QSLQuery::sql(QSL::Driver driver) const
 				}
 				if (_limit > 0)
 					sql += " LIMIT BY " + _limit;
-				return sql + ";";
+				ret(sql + ";");
+			}
+		case QSL::SQLite: {
+				QString filter = _filter->sql(driver);
+				QString sql = QString("SELECT *, rowid AS ") + _tbl->primaryKey() + " FROM " + _tbl->name();
+				if (!filter.isEmpty())
+					sql += " WHERE " + filter;
+				if (_limit > 0)
+					sql += " LIMIT BY " + _limit;
+				ret(sql + ";");
 			}
 		}
-		return __FILE__ + QString::number(__LINE__);
+		ret(__FILE__ + QString::number(__LINE__));
 	case QSL::InsertQuery:
 		switch (driver)
 		{
-		case QSL::PostgreSQL: {
+		case QSL::PostgreSQL:
+		case QSL::SQLite: {
 				if (_rows.empty())
 					return QString();
 				QString sql = QString("INSERT INTO ") + _tbl->name() + " (";
@@ -157,24 +197,33 @@ QString QSLQuery::sql(QSL::Driver driver) const
 						if (i > 0)
 							sql += ", ";
 						sql += "'" + c.toString().replace("'", "''") + "'";
+						i++;
 					}
 					sql += ")";
 				}
-				return sql + ";";
+				ret(sql + ";");
 			}
 		}
+		ret(__FILE__ + QString::number(__LINE__));
 	case QSL::UpdateQuery:
 		switch (driver)
 		{
 		case QSL::PostgreSQL: {
 				if (_ucol.isEmpty() || _uval.isNull() || _upk.isNull())
 					return QString();
-				return QString("UPDATE ") + _tbl->name() + " SET " + _ucol + "='" + _uval.toString().replace("'", "''")
-						+ "' WHERE " + _tbl->primaryKey() + "='" + _upk.toString().replace("'", "''") + "';";
+				ret(QString("UPDATE ") + _tbl->name() + " SET " + _ucol + "='" + _uval.toString().replace("'", "''")
+						+ "' WHERE " + _tbl->primaryKey() + "='" + _upk.toString().replace("'", "''") + "';");
+			}
+		case QSL::SQLite: {
+				if (_ucol.isEmpty() || _uval.isNull() || _upk.isNull())
+					return QString();
+				ret(QString("UPDATE ") + _tbl->name() + " SET " + _ucol + "='" + _uval.toString().replace("'", "''")
+						+ "' WHERE rowid='" + _upk.toString().replace("'", "''") + "';");
 			}
 		}
+		ret(__FILE__ + QString::number(__LINE__));
 
 	default:
-		return __FILE__ + QString::number(__LINE__);
+		ret(__FILE__ + QString::number(__LINE__));
 	}
 }
