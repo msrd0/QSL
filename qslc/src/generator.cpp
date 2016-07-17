@@ -73,7 +73,7 @@ bool qsl::qslc::generate(Database *db, const QDir &dir, bool qtype)
 		int i = 0;
 		for (Column &f : t->fields())
 		{
-			if (f.constraints() & QSL::primarykey != 0)
+			if ((f.constraints() & QSL::primarykey) != 0)
 				continue;
 			if (i > 0)
 				out.write(", ");
@@ -85,7 +85,7 @@ bool qsl::qslc::generate(Database *db, const QDir &dir, bool qtype)
 		i = 0;
 		for (Column &f : t->fields())
 		{
-			if (f.constraints() & QSL::primarykey != 0)
+			if ((f.constraints() & QSL::primarykey) != 0)
 				continue;
 			out.write("      , _" + f.name() + "(" + f.name() + ")\n");
 		}
@@ -135,7 +135,7 @@ bool qsl::qslc::generate(Database *db, const QDir &dir, bool qtype)
 		i = 0;
 		for (Column &f : t->fields())
 		{
-			if (f.constraints() & QSL::primarykey != 0)
+			if ((f.constraints() & QSL::primarykey) != 0)
 				continue;
 			out.write("      v[" + QByteArray::number(i) + "] = qslvariant(_" + f.name() + ");\n");
 			i++;
@@ -173,19 +173,27 @@ bool qsl::qslc::generate(Database *db, const QDir &dir, bool qtype)
 			out.write("          , q.value(\"" + f.name() + "\")\n");
 			if (f.type() == "int")
 			{
-				out.write("#if INT_MAX >= " + QByteArray::number(((qulonglong)1) << (f.minsize() - 1) - 1) + "\n");
-				out.write("             .toInt()\n");
-				out.write("#else\n");
+				if (f.minsize() < 64)
+				{
+					out.write("#if INT_MAX >= " + QByteArray::number((((qulonglong)1) << (f.minsize() - 1)) - 1) + "\n");
+					out.write("             .toInt()\n");
+					out.write("#else\n");
+				}
 				out.write("             .toLongLong()\n");
-				out.write("#endif\n");
+				if (f.minsize() < 64)
+					out.write("#endif\n");
 			}
 			else if (f.type() == "uint")
 			{
-				out.write("#if UINT_MAX >= " + QByteArray::number(((qulonglong)1) << f.minsize() - 1) + "\n");
-				out.write("             .toUInt()\n");
-				out.write("#else\n");
+				if (f.minsize() < 64)
+				{
+					out.write("#if UINT_MAX >= " + QByteArray::number((((qulonglong)1) << f.minsize()) - 1) + "\n");
+					out.write("             .toUInt()\n");
+					out.write("#else\n");
+				}
 				out.write("             .toULongLong()\n");
-				out.write("#endif\n");
+				if (f.minsize() < 64)
+					out.write("#endif\n");
 			}
 			else if (f.type() == "double")
 			{

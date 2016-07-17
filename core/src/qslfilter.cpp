@@ -7,7 +7,7 @@ using namespace qsl::filters;
 
 QString QSLFilter::sql(QSL::Driver driver) const
 {
-//	fprintf(stderr, "QSLFilter: WARNING: Called sql() on an empty filter.\n");
+	Q_UNUSED(driver);
 	return QString();
 }
 
@@ -19,6 +19,8 @@ QString eq::sql(QSL::Driver driver) const
 	case QSL::MySQL:
 	case QSL::SQLite:
 		return _column + "=='" + _val.toString().replace("'", "''") + "'";
+	default:
+		return QString();
 	}
 }
 
@@ -30,6 +32,8 @@ QString ne::sql(QSL::Driver driver) const
 	case QSL::MySQL:
 	case QSL::SQLite:
 		return _column + "!='" + _val.toString().replace("'", "''") + "'";
+	default:
+		return QString();
 	}
 }
 
@@ -41,6 +45,8 @@ QString sw::sql(QSL::Driver driver) const
 	case QSL::MySQL:
 	case QSL::SQLite:
 		return _column + " LIKE '" + _val.toString().replace("'", "''") + "%'";
+	default:
+		return QString();
 	}
 }
 
@@ -52,6 +58,8 @@ QString ew::sql(QSL::Driver driver) const
 	case QSL::MySQL:
 	case QSL::SQLite:
 		return _column + " LIKE '%" + _val.toString().replace("'", "''") + "'";
+	default:
+		return QString();
 	}
 }
 
@@ -63,6 +71,8 @@ QString co::sql(QSL::Driver driver) const
 	case QSL::MySQL:
 	case QSL::SQLite:
 		return _column + " LIKE '%" + _val.toString().replace("'", "''") + "%'";
+	default:
+		return QString();
 	}
 }
 
@@ -83,6 +93,8 @@ QString a::sql(QSL::Driver driver) const
 			}
 			return sql;
 		}
+	default:
+		return QString();
 	}
 }
 
@@ -103,5 +115,7 @@ QString o::sql(QSL::Driver driver) const
 			}
 			return sql;
 		}
+	default:
+		return QString();
 	}
 }

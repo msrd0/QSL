@@ -112,11 +112,11 @@ QString QSLQuery::sql(QSL::Driver driver) const
 					if (i > 0)
 						sql += ", ";
 					sql += c.name() + " " + driverType(driver, c.type(), c.minsize());
-					if (c.constraints() & QSL::primarykey != 0)
+					if ((c.constraints() & QSL::primarykey) != 0)
 						sql += QString(" PRIMARY KEY DEFAULT nextval('") + _tbl->db()->name() + "_" + _tbl->name() + "_pkey_seq')";
-					if (c.constraints() & QSL::unique != 0)
+					if ((c.constraints() & QSL::unique) != 0)
 						sql += " UNIQUE";
-					if (c.constraints() & QSL::notnull != 0)
+					if ((c.constraints() & QSL::notnull) != 0)
 						sql += " NOT NULL";
 					i++;
 				}
@@ -128,14 +128,14 @@ QString QSLQuery::sql(QSL::Driver driver) const
 				int i = 0;
 				for (QSLColumn c : _tbl->columns())
 				{
-					if (c.constraints() & QSL::primarykey != 0)
+					if ((c.constraints() & QSL::primarykey) != 0)
 						continue; // pkey is added as 'rowid' automatically
 					if (i > 0)
 						sql += ", ";
 					sql += c.name() + " " + driverType(driver, c.type(), c.minsize());
-					if (c.constraints() & QSL::unique != 0)
+					if ((c.constraints() & QSL::unique) != 0)
 						sql += " UNIQUE";
-					if (c.constraints() & QSL::notnull != 0)
+					if ((c.constraints() & QSL::notnull) != 0)
 						sql += " NOT NULL";
 					i++;
 				}
@@ -180,7 +180,7 @@ QString QSLQuery::sql(QSL::Driver driver) const
 				int i = 0;
 				for (QSLColumn c : _tbl->columns())
 				{
-					if (c.constraints() & QSL::primarykey != 0)
+					if ((c.constraints() & QSL::primarykey) != 0)
 						continue;
 					if (i > 0)
 						sql += ", ";
