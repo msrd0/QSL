@@ -1,6 +1,6 @@
 include_directories(include)
-set(QSLCORE_HEADERS include/qslcolumn.h include/qsldb.h include/qslfilter.h include/qslnamespace.h include/qslquery.h include/qsltable.h include/qslvariant.h)
-set(QSLCORE_SOURCES     src/qslcolumn.cpp   src/qsldb.cpp   src/qslfilter.cpp                          src/qslquery.cpp   src/qsltable.cpp)
+set(QSLCORE_HEADERS include/qslcolumn.h include/qsldb.h include/qslfilter.h include/qslnamespace.h include/qslpassword.h include/qslquery.h include/qsltable.h include/qslvariant.h)
+set(QSLCORE_SOURCES     src/qslcolumn.cpp   src/qsldb.cpp   src/qslfilter.cpp                          src/qslpassword.cpp   src/qslquery.cpp   src/qsltable.cpp   src/qslvariant.cpp)
 qt5_add_resources(QSLCORE_RCC drivers/drivers.qrc)
 add_library(qslcore SHARED
         ${QSLCORE_HEADERS}

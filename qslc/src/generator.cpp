@@ -54,11 +54,16 @@ bool qsl::qslc::generate(Database *db, const QDir &dir, bool qtype)
 		// ctor for select
 		out.write("    " + t->name() + "_t(QSLTable *parent");
 		for (Column &f : t->fields())
-			out.write(", " + f.cppArgType() + " " + f.name());
+			out.write(", " + (f.type()=="password" ? "const QByteArray&" : f.cppArgType()) + " " + f.name());
 		out.write(")\n");
 		out.write("      : _parent(parent)\n");
 		for (Column &f : t->fields())
-			out.write("      , _" + f.name() + "(" + f.name() + ")\n");
+		{
+			if (f.type() == "password")
+				out.write("      , _" + f.name() + "(PasswordEntry{" + f.name() + "})\n");
+			else
+				out.write("      , _" + f.name() + "(" + f.name() + ")\n");
+		}
 		out.write("    {\n");
 		out.write("      Q_ASSERT(parent);\n");
 		out.write("    }\n");
@@ -73,6 +78,7 @@ bool qsl::qslc::generate(Database *db, const QDir &dir, bool qtype)
 			if (i > 0)
 				out.write(", ");
 			out.write(f.cppArgType() + " " + f.name());
+			i++;
 		}
 		out.write(")\n");
 		out.write("      : _parent(0)\n");
@@ -188,7 +194,9 @@ bool qsl::qslc::generate(Database *db, const QDir &dir, bool qtype)
 				else
 					out.write("             .toDouble()\n");
 			}
-			else if (f.type() == "char" || f.type() == "text" || f.type() == "byte" || f.type() == "blob")
+			else if (f.type() == "bool")
+				out.write("             .toBool()\n");
+			else if (f.type() == "char" || f.type() == "text" || f.type() == "byte" || f.type() == "blob" || f.type() == "password")
 			{
 				if (qtype)
 				{
@@ -250,6 +258,10 @@ bool qsl::qslc::generate(Database *db, const QDir &dir, bool qtype)
 					  + ", " + QByteArray::number(f.constraints()) + "));\n");
 		out.write("    registerTable(&_tbl_" + t->name() + ");\n");
 	}
+	out.write("  }\n");
+	out.write("  " + db->name() + "(const char* driver)\n");
+	out.write("    : " + db->name() + "(QSLDB::toDriver(driver))\n");
+	out.write("  {\n");
 	out.write("  }\n");
 	
 	out.write("};\n\n"); // class db->name()

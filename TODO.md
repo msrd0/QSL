@@ -6,5 +6,4 @@ Before contributing please read the [contribution guidelines](./Contribution.md)
 - check the integrity of a table and not only whether it exists
 - alter a table if the integrity don't match
 - a tool to create a .qsl file from an existing database
-- implement the password type
 - add support for MySQL and SQLite

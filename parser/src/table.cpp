@@ -48,6 +48,8 @@ static std::pair<QByteArray, bool> toCppType(const QByteArray &t, uint32_t minsi
 		}
 		return {"std::string", true};
 	}
+	else if (t == "password")
+		return {"qsl::Password", true};
 	else
 		return {"QVariant", true};
 }

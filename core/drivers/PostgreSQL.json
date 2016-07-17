@@ -6,6 +6,7 @@
         "bool": "BOOLEAN",
         "char": "CHARACTER [VARYING] ($)",
         "text": "TEXT",
+        "password": "TEXT",
         "byte": "BIT [VARYING] ($)",
         "blob": "BYTEA",
         "date": "DATE",
