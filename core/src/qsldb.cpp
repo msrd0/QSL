@@ -2,10 +2,17 @@
 #include "qslquery.h"
 #include "qsltable.h"
 
+#include <QMetaEnum>
 #include <QSqlError>
 #include <QSqlQuery>
 
 using namespace qsl;
+
+QSL::Driver QSLDB::toDriver(const char* driver)
+{
+	static QMetaEnum me = QSL::staticMetaObject.enumerator(QSL::staticMetaObject.indexOfEnumerator("Driver"));
+	return (QSL::Driver) me.keyToValue(driver);
+}
 
 QString QSLDB::qDriverName(QSL::Driver driver)
 {
@@ -18,6 +25,8 @@ QString QSLDB::qDriverName(QSL::Driver driver)
 	case QSL::SQLite:
 		return "QSQLITE";
 	}
+	fprintf(stderr, "QSLDB: ERROR: Unknown driver specified\n");
+	return "ERROR";
 }
 
 QSLDB::QSLDB(const char *name, QSL::Driver driver)

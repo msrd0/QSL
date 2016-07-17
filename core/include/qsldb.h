@@ -64,6 +64,9 @@ protected:
 	/// Creates a new database with the given name and the given driver.
 	QSLDB(const char* name, QSL::Driver driver);
 	
+	/// Convert the string to a valid driver.
+	static QSL::Driver toDriver(const char* driver);
+	
 	/// Register a new table. If it doesn't exist it will be created as soon as the connection
 	/// to the database is established.
 	void registerTable(QSLTable *tbl);
