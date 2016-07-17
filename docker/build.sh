@@ -6,6 +6,14 @@ mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=/usr ..
 make doc install
-cd ../examples/simple
-cmake .
-make
+
+for dir in ../examples/*
+do
+    if [ -d "$dir" ]
+    then
+	pushd $dir
+	cmake .
+	make
+	popd
+    fi
+done
