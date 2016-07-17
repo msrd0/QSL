@@ -3,6 +3,7 @@
 #include "qsl_global.h"
 #include "qsldb.h"
 #include "qslnamespace.h"
+#include "qslvariant.h"
 
 #include <QSharedPointer>
 #include <QVariant>
@@ -34,8 +35,9 @@ namespace filters {
 	{ \
 	public: \
 		/** Constructs the filter for the given column and the given value to match against. */ \
-		name (const char *column, const QVariant &val) \
-			: _column(column), _val(val) \
+		template <typename V> \
+		name (const char *column, const V &val) \
+			: _column(column), _val(qslvariant(val)) \
 		{ \
 		} \
 		virtual QString sql(QSL::Driver driver) const; \
