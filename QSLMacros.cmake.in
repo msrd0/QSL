@@ -21,6 +21,7 @@ function(QSL_COMPILE)
 					   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 					   VERBATIM)
 	add_dependencies("${_QSLC_TARGET}" "${_QSLC_TARGET}_qslc")
+	target_include_directories("${_QSLC_TARGET}" PRIVATE "${CMAKE_CURRENT_BINARY_DIR}" "${QSL_INCLUDE_DIRS}")
 	target_link_libraries("${_QSLC_TARGET}" Qt5::Core Qt5::Sql qslcore)
 	
 endfunction()
