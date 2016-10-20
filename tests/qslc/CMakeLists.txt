@@ -8,7 +8,7 @@ add_test(NAME qslc-complete-compile
 		         -isystem ${CMAKE_CURRENT_SOURCE_DIR}/../../core/
 		         ${QT_CFLAGS}
 		         -L${CMAKE_CURRENT_BINARY_DIR}/../../core/
-		         -L${CMAKE_CURRENT_BINARY_DIR}/../../core/drivers/
+		         -L${CMAKE_CURRENT_BINARY_DIR}/../../core/driver/
 		         -lqsld -lqslcore
 				 ${QT_LDFLAGS}
 		 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
