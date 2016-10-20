@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 cd /qsl
 test -d build && rm -rf build
@@ -6,7 +6,7 @@ mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=/usr ..
 make
-make test
+ctest --verbose
 make install
 
 for dir in ../examples/*
