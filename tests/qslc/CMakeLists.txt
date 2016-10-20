@@ -6,10 +6,9 @@ add_test(NAME qslc-complete-compile
 		         -I${CMAKE_CURRENT_BINARY_DIR}
 		         -isystem ${CMAKE_CURRENT_BINARY_DIR}/../../
 		         -isystem ${CMAKE_CURRENT_SOURCE_DIR}/../../core/
-		         -isystem /usr/include/qt
-		         -isystem /usr/include/qt/QtCore
-		         -isystem /usr/include/qt/QtSql
+		         ${QT_CFLAGS}
 		         -L${CMAKE_CURRENT_BINARY_DIR}/../../core/
 		         -L${CMAKE_CURRENT_BINARY_DIR}/../../core/drivers/
-		         -lqsld -lqslcore -lQt5Core -lQt5Sql
+		         -lqsld -lqslcore
+				 ${QT_LDFLAGS}
 		 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
