@@ -14,15 +14,6 @@ class QSL : public QObject
 	
 public:
 	
-	/// This enum contains all supported drivers.
-	enum Driver
-	{
-		PostgreSQL,
-		MySQL,
-		SQLite
-	};
-	Q_ENUM(Driver)
-	
 	/// A list of constraints that can be used to describe a column.
 	enum ColumnConstraint : uint8_t
 	{

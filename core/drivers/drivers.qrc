@@ -1,6 +1,0 @@
-<RCC>
-    <qresource prefix="/drivers">
-        <file>PostgreSQL.json</file>
-        <file>SQLite.json</file>
-    </qresource>
-</RCC>

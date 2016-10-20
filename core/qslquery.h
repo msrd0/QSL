@@ -10,6 +10,8 @@
 namespace qsl {
 class QSLTable;
 
+namespace driver { class Driver; }
+
 /**
  * This class helps creating an SQL Query for a QSLTable. It provides methods
  * for creating SQL queries for different drivers, but it doesn't execute
@@ -19,16 +21,7 @@ class QSLTable;
  */
 class QSLQuery
 {
-private:
-	static QHash<QSL::Driver, QJsonObject> _driverJson;
 public:
-	/// Returns the json for the driver. See the contents of the core/drivers directory
-	/// for more information.
-	static QJsonObject driverJson(QSL::Driver driver);
-	/// Returns the SQL typename of the given type that should have at least minsize
-	/// elements/bits if the database supports.
-	QByteArray driverType(QSL::Driver driver, const QByteArray &type, uint32_t minsize) const;
-	
 	/// Creates a new `QSLQuery` for the given `QSLTable` with the given type.
 	QSLQuery(QSLTable *tbl, QSL::QueryType type);
 	
@@ -41,7 +34,7 @@ public:
 	void updateq(const QString &col, const QVariant &val, const QVariant &pk);
 	
 	/// Returns an SQL expression for the given driver.
-	QString sql(QSL::Driver driver) const;
+	QString sql(qsl::driver::Driver *driver) const;
 	
 protected:
 	/// Creates a new `QSLQuery` for the given `QSLTable`. Note that the type will be set
@@ -61,9 +54,9 @@ protected:
 	QVariant _uval;
 	/// The primary key of the row that should be updated if `_type` is `QSL::UpdateQuery`.
 	QVariant _upk;
-	
-private:
+	/// The filter to be used in a SELECT query.
 	QSharedPointer<QSLFilter> _filter = QSharedPointer<QSLFilter>(new QSLFilter);
+	/// The maximum rows to be fetched in a SELECT query.
 	int _limit = -1;
 };
 

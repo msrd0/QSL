@@ -1,20 +1,32 @@
-include_directories(include)
-set(QSLCORE_HEADERS include/qslcolumn.h include/qsldb.h include/qslfilter.h include/qslnamespace.h include/qslpassword.h include/qslquery.h include/qsltable.h include/qslvariant.h)
-set(QSLCORE_SOURCES     src/qslcolumn.cpp   src/qsldb.cpp   src/qslfilter.cpp                          src/qslpassword.cpp   src/qslquery.cpp   src/qsltable.cpp   src/qslvariant.cpp)
-qt5_add_resources(QSLCORE_RCC drivers/drivers.qrc)
+set(QSLCORE_HEADERS
+	qslcolumn.h
+	qsldb.h
+	qslfilter.h
+	qslnamespace.h
+	qslpassword.h
+	qslquery.h
+	qsltable.h
+	qslvariant.h)
+set(QSLCORE_SOURCES
+	qsldb.cpp
+	qslfilter.cpp
+	qslpassword.cpp
+	qslquery.cpp
+	qslvariant.cpp)
+
+add_subdirectory(driver)
+
 add_library(qslcore SHARED
         ${QSLCORE_HEADERS}
 		${QSLCORE_SOURCES}
-		${QSLCORE_RCC}
     )
-target_link_libraries(qslcore Qt5::Core Qt5::Sql)
+target_link_libraries(qslcore Qt5::Core Qt5::Sql qsld)
 set_target_properties(qslcore PROPERTIES VERSION ${QSL_VERSION} SOVERSION ${QSL_MAJOR})
 
 install(TARGETS qslcore
 	    EXPORT QSLCoreConfig
 	    RUNTIME DESTINATION bin
-		LIBRARY DESTINATION lib
-		PUBLIC_HEADER DESTINATION include/qsl)
+		LIBRARY DESTINATION lib)
 install(FILES ${QSLCORE_HEADERS}
 	    DESTINATION include/qsl)
 install(EXPORT QSLCoreConfig

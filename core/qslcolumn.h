@@ -14,7 +14,13 @@ class QSLColumn
 public:
 	/// Creates a new column with the given name, type, type's minsize and constraints
 	/// (see `QSL::ColumnConstraint`).
-	QSLColumn(const char* name, const char* type, uint32_t minsize, uint8_t constraints);
+	constexpr QSLColumn(const char* name, const char* type, uint32_t minsize, uint8_t constraints)
+		: _constraints(constraints)
+		, _name(name)
+		, _type(type)
+		, _minsize(minsize)
+	{
+	}
 	
 	/// Returns the name of the column.
 	QByteArray name() const { return _name; }
@@ -25,11 +31,16 @@ public:
 	/// Returns the constraints of the column.
 	uint8_t constraints() const { return _constraints; }
 	
+	// these functions are present to enable the use of QSLColumn inside a map
+	bool operator< (const QSLColumn &other) const { return name() < other.name(); }
+	
+protected:
+	uint8_t _constraints;
+	
 private:
-	QByteArray _name;
+	const char* _name;
 	const char* _type;
 	uint32_t _minsize;
-	uint8_t _constraints;
 };
 
 }

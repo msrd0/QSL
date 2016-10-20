@@ -5,7 +5,9 @@ test -d build && rm -rf build
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=/usr ..
-make doc install
+make
+make test
+make install
 
 for dir in ../examples/*
 do

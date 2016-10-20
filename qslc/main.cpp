@@ -1,6 +1,6 @@
 #include "generator.h"
 
-#include <parser.h>
+#include "parser/parser.h"
 
 #include <QCommandLineOption>
 #include <QCommandLineParser>

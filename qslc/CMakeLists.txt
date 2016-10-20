@@ -1,10 +1,9 @@
-include_directories(../core/include)
-include_directories(../parser/include)
-include_directories(include)
-add_executable(qslc
-	    include/generator.h
-        src/generator.cpp src/main.cpp
-    )
+set(QSLC_HEADERS
+	generator.h)
+set(QSLC_SOURCES
+	generator.cpp
+	main.cpp)
+add_executable(qslc ${QSLC_HEADERS} ${QSLC_SOURCES})
 target_link_libraries(qslc qslparser Qt5::Core)
 
 install(TARGETS qslc

@@ -17,11 +17,19 @@ class QSLTable
 public:
 	/// Creates a new table with the given name for the given database. Please note that the
 	/// database won't be notified of this table; you have to do so explicitly via `QSLDB::registerTable()`.
-	QSLTable(const char *name, const char *pk, QSLDB *db);
+	QSLTable(const char *name, const char *pk, QSLDB *db = 0)
+		: _name(name)
+		, _pk(pk)
+		, _db(db)
+	{
+	}
 	
 	/// Adds a new column to the table. This should be called before the table is added
 	/// to the database using `QSLDB::registerTable()`.
-	void addColumn(const QSLColumn &column);
+	void addColumn(const QSLColumn &column)
+	{
+		_columns.append(column);
+	}
 	
 	/// Returns the name of the table.
 	const char* name() const { return _name; }

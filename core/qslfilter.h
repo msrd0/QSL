@@ -11,6 +11,8 @@
 
 namespace qsl {
 
+namespace driver { class Driver; }
+
 /**
  * This class is used to filter the results of a `SELECT` query. Subclasses should overwrite the `sql(QSLDB::Driver)`
  * method. By default, it returns an empty string.
@@ -19,7 +21,7 @@ class QSLFilter
 {
 public:
 	/// Returns an SQL expression for the given driver.
-	virtual QString sql(QSL::Driver driver) const;
+	virtual QString sql(qsl::driver::Driver *driver) const;
 };
 
 /**
@@ -40,7 +42,7 @@ namespace filters {
 			: _column(column), _val(qslvariant(val)) \
 		{ \
 		} \
-		virtual QString sql(QSL::Driver driver) const; \
+		virtual QString sql(qsl::driver::Driver *driver) const override; \
 	private: \
 		QString _column; \
 		QVariant _val; \
@@ -59,7 +61,7 @@ namespace filters {
 		{ \
 			addfilter(filter, rest...); \
 		} \
-		virtual QString sql(QSL::Driver driver) const; \
+		virtual QString sql(qsl::driver::Driver *driver) const override; \
 	private: \
 		void addfilter() {} \
 		template<typename F, typename ... Types> \

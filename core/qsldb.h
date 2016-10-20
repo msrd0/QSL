@@ -9,6 +9,11 @@
 namespace qsl {
 class QSLTable;
 
+namespace driver {
+class Database;
+class Driver;
+}
+
 /**
  * This class is the superclass of every generated QSL Database. It defines methods
  * to specify the database connection and to establish the connection. To connect
@@ -30,13 +35,10 @@ class QSLDB : public QObject
 	Q_OBJECT
 	
 public:
-	/// Returns the qt driver name for the driver.
-	static QString qDriverName(QSL::Driver driver);
-	
 	/// Returns the name of the database.
 	const char* name() const { return _name; }
 	/// Returns the driver of the database.
-	QSL::Driver driver() const { return _driver; }
+	driver::Driver *driver() const { return _driver; }
 	
 	/// Returns the charset used by this database.
 	virtual const char* charset() const = 0;
@@ -44,28 +46,27 @@ public:
 	virtual bool usevar() const = 0;
 	
 	/// Set the name of the Database. When using SQLite this is the filename.
-	void setName(const QString &name) { db.setDatabaseName(name); }
+	void setName(const QString &name);
 	/// Set the host of the Database Server.
-	void setHost(const QString &host) { db.setHostName(host); }
+	void setHost(const QString &host);
 	/// Set the port of the Database Server.
-	void setPort(int port) { db.setPort(port); }
+	void setPort(int port);
 	/// Set the user to access the Database.
-	void setUser(const QString &user) { db.setUserName(user); }
+	void setUser(const QString &user);
 	/// Set the password for the user.
-	void setPassword(const QString &password) { db.setPassword(password); }
+	void setPassword(const QString &password);
 	/// Establish a connection to the server, or return false.
 	bool connect();
 	
-	/// The underlying Qt database. Don't use it. **This field can change its
+	/// The underlying database. Don't use it. **This field can change its
 	/// visibility at any time.**
-	QSqlDatabase db;
+	driver::Database *db;
 	
 protected:
 	/// Creates a new database with the given name and the given driver.
-	QSLDB(const char* name, QSL::Driver driver);
-	
-	/// Convert the string to a valid driver.
-	static QSL::Driver toDriver(const char* driver);
+	QSLDB(const char* name, const QString &driver);
+	/// Creates a new database with the given name and the given driver.
+	QSLDB(const char* name, driver::Driver *driver);
 	
 	/// Register a new table. If it doesn't exist it will be created as soon as the connection
 	/// to the database is established.
@@ -73,7 +74,7 @@ protected:
 	
 private:
 	const char* _name;
-	QSL::Driver _driver;
+	driver::Driver *_driver;
 	QList<QSLTable*> _tables;
 	
 };
