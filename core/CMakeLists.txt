@@ -35,7 +35,7 @@ install(TARGETS qslcore qslvariant
 	    EXPORT QSLCoreConfig
 	    RUNTIME DESTINATION bin
 		LIBRARY DESTINATION lib)
-install(FILES ${QSLCORE_HEADERS}
+install(FILES ${QSLCORE_HEADERS} ${QSLVARIANT_HEADERS}
 	    DESTINATION include/qsl)
 install(EXPORT QSLCoreConfig
 	    NAMESPACE QSLCore_
