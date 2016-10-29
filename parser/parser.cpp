@@ -145,7 +145,8 @@ static const QSet<QByteArray> legalTypes = {
 	"password",
 	"text",
 	"time",
-	"uint"
+	"uint",
+	"variant"
 };
 
 static bool checkType(const QByteArray &type)

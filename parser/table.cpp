@@ -1,5 +1,6 @@
 #include "table.h"
 
+#include <QDebug>
 #include <QMetaEnum>
 
 using namespace qsl::qslc;
@@ -50,8 +51,21 @@ static std::pair<QByteArray, bool> toCppType(const QByteArray &t, uint32_t minsi
 	}
 	else if (t == "password")
 		return {"qsl::Password", true};
-	else
+	else if (!qtype && (t == "date" || t == "time" || t == "datetime"))
+		return {"std::chrono::system_clock::time_point", true};
+	else if (t == "date")
+		return {"QDate", true};
+	else if (t == "time")
+		return {"QTime", true};
+	else if (t == "datetime")
+		return {"QDateTime", true};
+	else if (t == "variant")
 		return {"QVariant", true};
+	else
+	{
+		qCritical() << "QSL[Parser]: Unknown type" << t << "(in " __FILE__ " line" << __LINE__ << ")";
+		return {"void*", false};
+	}
 }
 
 Column::Column(const QByteArray &name, const QByteArray &type, bool qtype) 

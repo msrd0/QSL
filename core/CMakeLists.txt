@@ -3,27 +3,35 @@ set(QSLCORE_HEADERS
 	qsldb.h
 	qslfilter.h
 	qslnamespace.h
-	qslpassword.h
 	qslquery.h
-	qsltable.h
-	qslvariant.h)
+	qsltable.h)
 set(QSLCORE_SOURCES
 	qsldb.cpp
 	qslfilter.cpp
+	qslquery.cpp)
+set(QSLVARIANT_HEADERS
+	qslpassword.h
+	qslvariant.h)
+set(QSLVARIANT_SOURCES
 	qslpassword.cpp
-	qslquery.cpp
 	qslvariant.cpp)
 
 add_subdirectory(driver)
 
+add_library(qslvariant SHARED
+		${QSLVARIANT_HEADERS}
+		${QSLVARIANT_SOURCES}
+	)
+target_link_libraries(qslvariant Qt5::Core)
+set_target_properties(qslvariant PROPERTIES VERSION ${QSL_VERSION} SOVERSION ${QSL_MAJOR})
 add_library(qslcore SHARED
         ${QSLCORE_HEADERS}
 		${QSLCORE_SOURCES}
     )
-target_link_libraries(qslcore Qt5::Core Qt5::Sql qsld)
+target_link_libraries(qslcore Qt5::Core Qt5::Sql qsld qslvariant)
 set_target_properties(qslcore PROPERTIES VERSION ${QSL_VERSION} SOVERSION ${QSL_MAJOR})
 
-install(TARGETS qslcore
+install(TARGETS qslcore qslvariant
 	    EXPORT QSLCoreConfig
 	    RUNTIME DESTINATION bin
 		LIBRARY DESTINATION lib)

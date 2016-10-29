@@ -48,10 +48,9 @@ QByteArray SQLiteTypes::fromSQL(const QByteArray &type)
 	if (t == "datetime")
 		return "datetime";
 	
-	// and there are columns without a type - but a string (or QByteArray) should be capable of
-	// it, there is no better way (currently) to handle them
+	// and there are columns without a type
 	if (t.isEmpty())
-		return "blob";
+		return "variant";
 	
 	// rest
 	qCritical() << "QSL[SQLite]: Critical: Unable to parse SQL type" << type << "(in " __FILE__ " line" << __LINE__ << ")";

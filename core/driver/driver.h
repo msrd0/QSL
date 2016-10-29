@@ -4,8 +4,13 @@
 #include "qslfilter.h"
 #include "qsltable.h"
 
+#include <chrono>
+
+#include <QDate>
+#include <QDateTime>
 #include <QHash>
 #include <QSharedPointer>
+#include <QTime>
 
 namespace qsl {
 
@@ -48,9 +53,34 @@ public:
 private:
 	static QHash<QString, Driver*> exportedDrivers;
 	
-public:	
+public:
+	/** Creates a new Database instance with this driver. */
 	virtual Database *newDatabase() = 0;
 	
+	/** Converts the Database-specific date format into a QDate. */
+	virtual QDate toQDate(const QVariant &date) = 0;
+	/** Converts the Database-specific date format into a stl's chrono time_point. */
+	virtual std::chrono::system_clock::time_point toChronoDate(const QVariant &date) = 0;
+	/** Converts the Database-specific time format into a QTime. */
+	virtual QTime toQTime(const QVariant &time) = 0;
+	/** Converts the Database-specific time format into a stl's chrono time_point. */
+	virtual std::chrono::system_clock::time_point toChronoTime(const QVariant &time) = 0;
+	/** Converts the Database-specific datetime format into a QDateTime. */
+	virtual QDateTime toQDateTime(const QVariant &datetime) = 0;
+	/** Converts the Database-specific datetime format into a stl's chrono time_point. */
+	virtual std::chrono::system_clock::time_point toChronoDateTime(const QVariant &datetime) = 0;
+	/** Converts the QDate to the Database-specific date format. */
+	virtual QVariant fromQDate(const QDate &date) = 0;
+	/** Converts the QTime to the Database-specific time format. */
+	virtual QVariant fromQTime(const QTime &time) = 0;
+	/** Converts the QDateTime to the Database-specific datetime format. */
+	virtual QVariant fromQDateTime(const QDateTime &datetime) = 0;
+	/** Converts the stl's chrono time_point to the Database-specific date format. */
+	virtual QVariant fromChronoDate(const std::chrono::system_clock::time_point &date) = 0;
+	/** Converts the stl's chrono time_point to the Database-specific time format. */
+	virtual QVariant fromChronoTime(const std::chrono::system_clock::time_point &time) = 0;
+	/** Converts the stl's chrono time_point to the Database-specific datetime format. */
+	virtual QVariant fromChronoDateTime(const std::chrono::system_clock::time_point &datetime) = 0;
 };
 
 }

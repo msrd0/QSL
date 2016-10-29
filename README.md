@@ -48,6 +48,7 @@ data type used. The following datatypes are supported:
  - `date`
  - `time`
  - `datetime`
+ - `variant` (if the sql system doesn't support this, the `blob` type will be used)
  
 Most of them can be followed by a number in parentheses to specify the minimum size of the
 type. Those numbers can also be suffixed with `K`, `M` or `G` to avoid writing to many `0` behind

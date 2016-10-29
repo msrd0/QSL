@@ -8,7 +8,7 @@ set(QSLDSQLITE_SOURCES
 	sqlitedriver.cpp
 	sqlitetypes.cpp)
 add_library(qsldsqlite SHARED ${QSLDSQLITE_HEADERS} ${QSLDSQLITE_SOURCES})
-target_link_libraries(qsldsqlite qsld)
+target_link_libraries(qsldsqlite qsld qslvariant)
 set_target_properties(qsldsqlite PROPERTIES VERSION ${QSL_VERSION} SOVERSION ${QSL_MAJOR})
 
 install(TARGETS qsldsqlite

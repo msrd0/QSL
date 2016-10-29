@@ -17,11 +17,14 @@ bool qsl::qslc::generate(Database *db, const QDir &dir, bool qtype)
 	}
 	out.write("/* GENERATED FILE - DO NOT EDIT */\n");
 	out.write("#pragma once\n\n");
+	// qsl headers
 	out.write("#include <driver/db.h>\n");
+	out.write("#include <driver/driver.h>\n");
 	out.write("#include <qsldb.h>\n");
 	out.write("#include <qslquery.h>\n");
 	out.write("#include <qsltable.h>\n");
 	out.write("#include <qslvariant.h>\n\n");
+	// qt headers
 	out.write("#include <QSqlError>\n");
 	out.write("#include <QSqlQuery>\n\n");
 	
@@ -56,13 +59,26 @@ bool qsl::qslc::generate(Database *db, const QDir &dir, bool qtype)
 		// ctor for select
 		out.write("    " + t->name() + "_t(QSLTable *parent");
 		for (Column &f : t->fields())
-			out.write(", " + (f.type()=="password" ? "const QByteArray&" : f.cppArgType()) + " " + f.name());
+		{
+			out.write(", ");
+			if (f.type() == "password")
+				out.write("const QByteArray&");
+			else if (f.type() == "date" || f.type() == "time" || f.type() == "datetime")
+				out.write("const QVariant&");
+			else
+				out.write(f.cppArgType());
+			out.write(" " + f.name());
+		}
 		out.write(")\n");
 		out.write("      : _parent(parent)\n");
 		for (Column &f : t->fields())
 		{
 			if (f.type() == "password")
 				out.write("      , _" + f.name() + "(PasswordEntry{" + f.name() + "})\n");
+			else if (f.type() == "date" || f.type() == "time" || f.type() == "datetime")
+				out.write("      , _" + f.name() + "(parent->db()->driver()->to" + (qtype ? "Q" : "Chrono")
+						  + (f.type()=="time" ? "Time" : (f.type()=="date" ? "Date" : "DateTime"))
+						  + "(" + f.name() + "))\n");
 			else
 				out.write("      , _" + f.name() + "(" + f.name() + ")\n");
 		}
@@ -113,7 +129,18 @@ bool qsl::qslc::generate(Database *db, const QDir &dir, bool qtype)
 				out.write("    {\n");
 				out.write("      if (!_parent)\n");
 				out.write("        return false;\n");
-				out.write("      bool success = _parent->db()->db->updateTable(*_parent, col_" + f.name() + "(), qslvariant(" + f.name() + "), qslvariant(_" + t->primaryKey() + "));\n");
+				
+				out.write("      bool success = _parent->db()->db->updateTable(*_parent, col_" + f.name() + "(), ");
+				if (f.type() == "date")
+					out.write("_parent->db()->driver()->from" + QByteArray(qtype ? "Q" : "Chrono") + "Date(" + f.name() + ")");
+				else if (f.type() == "time")
+					out.write("_parent->db()->driver()->from" + QByteArray(qtype ? "Q" : "Chrono") + "Time(" + f.name() + ")");
+				else if (f.type() == "datetime")
+					out.write("_parent->db()->driver()->from" + QByteArray(qtype ? "Q" : "Chrono") + "DateTime(" + f.name() + ")");
+				else
+					out.write("qslvariant(" + f.name() + ")");
+				out.write(", qslvariant(_" + t->primaryKey() + "));\n");
+				
 				out.write("      if (success)\n");
 				out.write("        _" + f.name() + " = " + f.name() + ";\n");
 				out.write("      return success;\n");
@@ -132,7 +159,15 @@ bool qsl::qslc::generate(Database *db, const QDir &dir, bool qtype)
 		{
 			if ((f.constraints() & QSL::primarykey) != 0)
 				continue;
-			out.write("      v[" + QByteArray::number(i) + "] = qslvariant(_" + f.name() + ");\n");
+			out.write("      v[" + QByteArray::number(i) + "] = ");
+			if (f.type() == "date")
+				out.write("_parent->db()->driver()->from" + QByteArray(qtype ? "Q" : "Chrono") + "Date(_" + f.name() + ");\n");
+			else if (f.type() == "time")
+				out.write("_parent->db()->driver()->from" + QByteArray(qtype ? "Q" : "Chrono") + "Time(_" + f.name() + ");\n");
+			else if (f.type() == "datetime")
+				out.write("_parent->db()->driver()->from" + QByteArray(qtype ? "Q" : "Chrono") + "DateTime(_" + f.name() + ");\n");
+			else
+				out.write("qslvariant(_" + f.name() + ");\n");
 			i++;
 		}
 		out.write("      return v;\n");
@@ -223,13 +258,6 @@ bool qsl::qslc::generate(Database *db, const QDir &dir, bool qtype)
 		out.write("    {\n");
 		out.write("      _type = QSL::InsertQuery;\n");
 		out.write("      _rows.push_back(row.toVector());\n");
-//		out.write("      QSqlQuery q(_tbl->db()->db);\n");
-//		out.write("      if (!q.exec(sql(_tbl->db()->driver())))\n");
-//		out.write("      {\n");
-//		out.write("        fprintf(stderr, \"QSLQuery: Failed to query " + db->name() + "." + t->name() + ": %s\\n\", qPrintable(q.lastError().text()));\n");
-//		out.write("        return false;\n");
-//		out.write("      }\n");
-//		out.write("      return true;\n");
 		out.write("      return false;\n");
 		out.write("    }\n");
 		out.write("    template<typename ForwardIterator>\n");
