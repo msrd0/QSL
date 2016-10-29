@@ -244,7 +244,7 @@ private:
 	
 	QSqlDatabase _db;
 	
-	QHash<QByteArray, QSLTable> _tables;
+	QMap<QByteArray, QSLTable> _tables;
 	
 };
 

@@ -74,7 +74,7 @@ void SQLiteDatabase::loadTableInfo()
 		}
 		
 		// create the columns. note that tblInfo.first() was already called
-		QHash<QByteArray, MutableColumn> columns;
+		QMap<QByteArray, MutableColumn> columns;
 		do
 		{
 			MutableColumn col(tblInfo.value("name").toByteArray(), SQLiteTypes::fromSQL(tblInfo.value("type").toByteArray()), -1);

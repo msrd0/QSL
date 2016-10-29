@@ -2,7 +2,7 @@
 
 #include "qsl_global.h"
 
-#include <QHash>
+#include <QMap>
 #include <QString>
 
 namespace qsl {
@@ -35,7 +35,7 @@ private:
 	bool _usevar = false;
 	
 	/// All tables in this database, sorted by their name.
-	QHash<QByteArray, Table*> _tables;
+	QMap<QByteArray, Table*> _tables;
 };
 
 }
