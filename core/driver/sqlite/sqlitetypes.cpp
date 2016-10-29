@@ -6,7 +6,7 @@ using namespace qsl::driver;
 
 QByteArray SQLiteTypes::fromSQL(const QByteArray &type)
 {
-	QByteArray t = type.toLower();
+	QByteArray t = type.trimmed().toLower();
 	
 	// integers
 	if (t.contains("int"))
@@ -47,6 +47,11 @@ QByteArray SQLiteTypes::fromSQL(const QByteArray &type)
 		return "date";
 	if (t == "datetime")
 		return "datetime";
+	
+	// and there are columns without a type - but a string (or QByteArray) should be capable of
+	// it, there is no better way (currently) to handle them
+	if (t.isEmpty())
+		return "blob";
 	
 	// rest
 	qCritical() << "QSL[SQLite]: Critical: Unable to parse SQL type" << type << "(in " __FILE__ " line" << __LINE__ << ")";
