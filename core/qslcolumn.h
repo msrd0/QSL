@@ -19,7 +19,24 @@ public:
 		, _name(name)
 		, _type(type)
 		, _minsize(minsize)
+		, malloced(false)
 	{
+	}
+	
+	/// Creates a new column with the given name, type, type's minsize and constraints
+	/// (see `QSL::ColumnConstraint`).
+	QSLColumn(const QByteArray &name, const QByteArray &type, uint32_t minsize, uint8_t constraints)
+		: _constraints(constraints)
+		, _minsize(minsize)
+		, malloced(true)
+	{
+		char *nname = new char[name.size()+1];
+		strcpy(nname, name);
+		_name = nname;
+		
+		char *ntype = new char[type.size()+1];
+		strcpy(ntype, type);
+		_type = ntype;
 	}
 	
 	/// Returns the name of the column.
@@ -41,6 +58,8 @@ private:
 	const char* _name;
 	const char* _type;
 	uint32_t _minsize;
+	
+	bool malloced;
 };
 
 }

@@ -31,6 +31,13 @@ public:
 	{
 	}
 	
+	/// Creates a new column with the given name, type, type's minsize and, if given, constraints
+	/// (see `QSL::ColumnConstraint`).
+	MutableColumn(const QByteArray &name, const QByteArray &type, uint32_t minsize, uint8_t constraints = 0)
+		: QSLColumn(name, type, minsize, constraints)
+	{
+	}
+	
 	/** Adds the given constraint to the constraints. This method has no effect if the constraint is already present. */
 	void addConstraint(uint8_t constraint)
 	{

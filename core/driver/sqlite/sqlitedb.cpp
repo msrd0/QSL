@@ -1,9 +1,14 @@
 #include "sqlitedb.h"
+#include "sqlitetypes.h"
 #include "qsltable.h"
 
 #include <unistd.h>
 
 #include <QSqlError>
+
+#ifdef CMAKE_DEBUG
+#  include <QDebug>
+#endif
 
 using namespace qsl;
 using namespace qsl::driver;
@@ -33,6 +38,9 @@ SQLiteDatabase::SQLiteDatabase()
 
 void SQLiteDatabase::loadTableInfo()
 {
+#ifdef CMAKE_DEBUG
+	qDebug() << "QSL[SQLite]: Starting loadTableInfo()";
+#endif
 	QSqlQuery tables(db());
 	if (!tables.exec("SELECT name FROM sqlite_master WHERE type='table';"))
 	{
@@ -45,6 +53,9 @@ void SQLiteDatabase::loadTableInfo()
 	do
 	{ 
 		QByteArray tblName = tables.value("name").toByteArray();
+#ifdef CMAKE_DEBUG
+		qDebug() << "QSL[SQLite]: Detecting table" << tblName;
+#endif
 		// query the table info
 		QSqlQuery tblInfo(db());
 		if (!tblInfo.exec("PRAGMA table_info(" + tblName + ");"))
@@ -66,7 +77,10 @@ void SQLiteDatabase::loadTableInfo()
 		QHash<QByteArray, MutableColumn> columns;
 		do
 		{
-			MutableColumn col(tblInfo.value("name").toByteArray().data(), tblInfo.value("type").toByteArray().data(), -1);
+			MutableColumn col(tblInfo.value("name").toByteArray(), SQLiteTypes::fromSQL(tblInfo.value("type").toByteArray()), -1);
+#ifdef CMAKE_DEBUG
+			qDebug() << "QSL[SQLite]: Adding column" << col.name();
+#endif
 			columns.insert(col.name(), col);
 		}
 		while (tblInfo.next());

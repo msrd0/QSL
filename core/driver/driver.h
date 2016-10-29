@@ -9,9 +9,11 @@
 
 namespace qsl {
 
-/** This namespace contains driver-related classes. You should not need to use this
+/**
+ * This namespace contains driver-related classes. You should not need to use this
  * namespace directly, however if you want to write your own driver take a look at
- * `qsl::driver::Driver`. */
+ * `qsl::driver::Driver`.
+ */
 namespace driver {
 
 /**

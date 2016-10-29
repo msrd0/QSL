@@ -198,5 +198,8 @@ QList<QSLTable> QtDatabase::tables() const
 }
 void QtDatabase::addTable(const QSLTable &tbl)
 {
+#ifdef CMAKE_DEBUG
+	qDebug() << "QSL[QtDatabase]: Going to add Table" << tbl.name();
+#endif
 	_tables.insert(tbl.name(), tbl);
 }

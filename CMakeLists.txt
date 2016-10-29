@@ -32,6 +32,7 @@ add_subdirectory(core)
 add_subdirectory(doc)
 add_subdirectory(parser)
 add_subdirectory(qslc)
+add_subdirectory(qsldump)
 
 configure_file(QSLConfig.cmake.in QSLConfig.cmake @ONLY)
 configure_file(QSLMacros.cmake.in QSLMacros.cmake @ONLY)

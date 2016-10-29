@@ -2,6 +2,10 @@
 
 #include <dlfcn.h>
 
+#ifdef CMAKE_DEBUG
+#  include <QDebug>
+#endif
+
 using namespace qsl;
 using namespace qsl::driver;
 
@@ -21,6 +25,9 @@ Driver* Driver::driver(const QString &name)
 		return exportedDrivers[name];
 	
 	QString libname = "libqsld" + name + ".so";
+#ifdef CMAKE_DEBUG
+	qDebug() << "QSL: Trying to load driver for" << name << "from" << libname;
+#endif
 	void *handle = dlopen(qPrintable(libname), RTLD_NOW);
 	if (!handle)
 	{

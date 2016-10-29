@@ -30,9 +30,9 @@ class Driver;
  *     // successfully connected
  * ```
  */
-class QSLDB : public QObject
+class QSLDB
 {
-	Q_OBJECT
+	Q_DISABLE_COPY(QSLDB)
 	
 public:
 	/// Returns the name of the database.

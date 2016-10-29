@@ -52,7 +52,7 @@ bool QSLDB::connect()
 	for (QSLTable *tbl : _tables)
 		if (!db->ensureTable(*tbl))
 		{
-			fprintf(stderr, "QSLDB: Unable to ensure table %s.%s\n", name(), tbl->name());
+			fprintf(stderr, "QSLDB: Unable to ensure table %s.%s\n", name(), tbl->name().data());
 			return false;
 		}
 	return true;
@@ -63,7 +63,7 @@ void QSLDB::registerTable(QSLTable *tbl)
 	Q_ASSERT(tbl);
 	if (db->isConnected())
 	{
-		fprintf(stderr, "QSLDB: Attempt to add table %s after database was opened\n", qPrintable(tbl->name()));
+		fprintf(stderr, "QSLDB: Attempt to add table %s after database was opened\n", tbl->name().data());
 		return;
 	}
 	_tables.append(tbl);
