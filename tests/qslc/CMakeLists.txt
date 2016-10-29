@@ -3,12 +3,5 @@ add_test(NAME qslc-complete-gen
 		 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_test(NAME qslc-complete-compile
 		 COMMAND ${CMAKE_CXX_COMPILER} -fPIC -std=c++11 -o ${CMAKE_CURRENT_BINARY_DIR}/qslc-complete main.cpp
-		         -I${CMAKE_CURRENT_BINARY_DIR}
-		         -isystem ${CMAKE_CURRENT_BINARY_DIR}/../../
-		         -isystem ${CMAKE_CURRENT_SOURCE_DIR}/../../core/
-		         ${QT_CFLAGS}
-		         -L${CMAKE_CURRENT_BINARY_DIR}/../../core/
-		         -L${CMAKE_CURRENT_BINARY_DIR}/../../core/driver/
-		         -lqsld -lqslcore
-				 ${QT_LDFLAGS}
+		         -I${CMAKE_CURRENT_BINARY_DIR} ${TEST_CFLAGS} ${TEST_LDFLAGS}
 		 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
