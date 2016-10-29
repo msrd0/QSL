@@ -58,6 +58,11 @@ bool QSLDB::connect()
 	return true;
 }
 
+void QSLDB::disconnect()
+{
+	db->disconnect();
+}
+
 void QSLDB::registerTable(QSLTable *tbl)
 {
 	Q_ASSERT(tbl);

@@ -57,6 +57,8 @@ public:
 	void setPassword(const QString &password);
 	/// Establish a connection to the server, or return false.
 	bool connect();
+	/// Disconnect from the database again. If not connected, does nothing.
+	void disconnect();
 	
 	/// The underlying database. Don't use it. **This field can change its
 	/// visibility at any time.**
