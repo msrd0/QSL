@@ -28,10 +28,10 @@ table datatypes
 
 - double d_double
 
-- char(50) d_char
+- char(5K) d_char
 - text     d_text
 - password d_pw
-- byte(50) d_byte
+- byte(5M) d_byte
 - blob     d_blob
 
 - date     d_date
