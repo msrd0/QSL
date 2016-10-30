@@ -62,6 +62,8 @@ int main(int argc, char **argv)
 	
 	db.exec("CREATE TABLE tbl3(id UNSIGNED BIGINT NOT NULL UNIQUE, fkey TEXT, time DATETIME, PRIMARY KEY(id), FOREIGN KEY(fkey) REFERENCES tbl2(key));");
 	
+	db.exec("CREATE TABLE tbl4(large varying character(1500000000));");
+	
 	db.close();
 #endif
 	
