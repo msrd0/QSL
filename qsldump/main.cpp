@@ -119,7 +119,29 @@ int main(int argc, char **argv)
 		fprintf(out, "table \"%s\"\n", tbl.name().data());
 		for (auto col : tbl.columns())
 		{
-			fprintf(out, "- %s \"%s\"", col.type(), col.name().data());
+			int minsize = col.minsize();
+			if (minsize == -1)
+				fprintf(out, "- %s \"%s\"", col.type(), col.name().data());
+			else
+			{
+				const char* suffix = "";
+				if (minsize%(int)1e9 == 0)
+				{
+					suffix = "G";
+					minsize /= 1e9;
+				}
+				else if (minsize%(int)1e6 == 0)
+				{
+					suffix = "M";
+					minsize /= 1e6;
+				}
+				else if (minsize%(int)1e3 == 0)
+				{
+					suffix = "K";
+					minsize /= 1e3;
+				}
+				fprintf(out, "- %s(%d%s) \"%s\"", col.type(), minsize, suffix, col.name().data());
+			}
 			
 			static const QMetaObject obj = QSL::staticMetaObject;
 			static const QMetaEnum cenum = obj.enumerator(obj.indexOfEnumerator("ColumnConstraint"));
