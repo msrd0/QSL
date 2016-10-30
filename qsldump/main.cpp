@@ -91,7 +91,18 @@ int main(int argc, char **argv)
 		fprintf(out, "## — Host: %s\n", qPrintable(parser.value(hostOption)));
 	fprintf(out, "## — Name: %s\n", qPrintable(name));
 	fprintf(out, "##                                                                          ##\n");
-	fprintf(out, "## QSL " QSL_VERSION_STR "                                                                ##\n");
+	fprintf(out, "## QSL %d.%d.%d", QSL_MAJOR, QSL_MINOR, QSL_PATCH);
+	QByteArray rem = "                                                             ";
+#if QSL_MAJOR < 10
+	rem += " ";
+#endif
+#if QSL_MINOR < 10
+	rem += " ";
+#endif
+#if QSL_PATCH < 10
+	rem += " ";
+#endif
+	fprintf(out, "%s##\n", rem.data());
 	fprintf(out, "##############################################################################\n\n");
 	
 	fprintf(out, "database \"%s\"\n", qPrintable(name));
