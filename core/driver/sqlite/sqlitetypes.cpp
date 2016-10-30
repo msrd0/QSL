@@ -2,11 +2,12 @@
 
 #include <QDebug>
 
+using namespace std;
 using namespace qsl::driver;
 
 // for more information, visit https://www.sqlite.org/datatype3.html
 
-QByteArray SQLiteTypes::fromSQL(const QByteArray &type)
+pair<QByteArray, int> SQLiteTypes::fromSQL(const QByteArray &type)
 {
 	QByteArray t = type.trimmed().toLower();
 	
@@ -21,14 +22,14 @@ QByteArray SQLiteTypes::fromSQL(const QByteArray &type)
 			size = 16;
 		else if (t.contains("big") || t.contains("8"))
 			size = 64;
-		return (nosign ? "uint(" : "int(") + QByteArray::number(size) + ")";
+		return {(nosign ? "uint" : "int"), size};
 	}
 	
 	// text & blob
 	if (t == "text" || t == "clob")
-		return "text";
+		return {"text", -1};
 	if (t == "blob")
-		return "blob";
+		return {"blob", -1};
 	if (t.contains("char"))
 	{
 		if (t.contains("var"))
@@ -39,35 +40,37 @@ QByteArray SQLiteTypes::fromSQL(const QByteArray &type)
 		if (in0 >= 0 && in1 > in0)
 		{
 			int size = t.mid(in0 + 1, in1 - in0 - 1).toInt();
-			return (byte ? "byte(" : "char(") + QByteArray::number(size) + ")";
+			return {(byte ? "byte" : "char"), size};
 		}
 		else
-			return (byte ? "text" : "blob");
+			return {(byte ? "text" : "blob"), -1};
 	}
 	
 	// real
-	if (t == "real" || t.contains("doub") || t.contains("floa"))
-		return "double";
+	if (t == "real" || t.contains("doub"))
+		return {"double", 8};
+	if (t.contains("floa"))
+		return {"double", 4};
 	
 	// numeric
 	if (t == "numeric")
-		return "int";
+		return {"int", -1};
 	if (t == "decimal")
-		return "double";
+		return {"double", -1};
 	if (t == "boolean")
-		return "bool";
+		return {"bool", -1};
 	if (t == "date")
-		return "date";
+		return {"date", -1};
 	if (t == "datetime")
-		return "datetime";
+		return {"datetime", -1};
 	
 	// and there are columns without a type
 	if (t.isEmpty())
-		return "variant";
+		return {"variant", -1};
 	
 	// rest
 	qCritical() << "QSL[SQLite]: Critical: Unable to parse SQL type" << type << "(in " __FILE__ " line" << __LINE__ << ")";
-	return type;
+	return {type, -1};
 }
 
 QByteArray SQLiteTypes::fromQSL(const QByteArray &type, int minsize, bool usevar)

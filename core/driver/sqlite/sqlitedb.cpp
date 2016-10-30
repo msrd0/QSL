@@ -123,7 +123,8 @@ void SQLiteDatabase::loadTableInfo()
 		QMap<QByteArray, MutableColumn> columns;
 		do
 		{
-			MutableColumn col(tblInfo.value("name").toByteArray(), SQLiteTypes::fromSQL(tblInfo.value("type").toByteArray()), -1);
+			auto type = SQLiteTypes::fromSQL(tblInfo.value("type").toByteArray());
+			MutableColumn col(tblInfo.value("name").toByteArray(), type.first, type.second);
 #ifdef CMAKE_DEBUG
 			qDebug() << "QSL[SQLite]: Adding column" << col.name();
 #endif
