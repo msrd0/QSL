@@ -31,7 +31,18 @@ QByteArray SQLiteTypes::fromSQL(const QByteArray &type)
 		return "blob";
 	if (t.contains("char"))
 	{
-#warning "TODO: SQLite SQL type parse for char"
+		if (t.contains("var"))
+			t.replace("var", "");
+		bool byte = t.contains("nchar") || t.contains("native");
+		int in0 = t.indexOf('(');
+		int in1 = t.indexOf(')');
+		if (in0 >= 0 && in1 > in0)
+		{
+			int size = t.mid(in0 + 1, in1 - in0 - 1).toInt();
+			return (byte ? "byte(" : "char(") + QByteArray::number(size) + ")";
+		}
+		else
+			return (byte ? "text" : "blob");
 	}
 	
 	// real
