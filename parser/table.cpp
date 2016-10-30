@@ -74,7 +74,18 @@ Column::Column(const QByteArray &name, const QByteArray &type, bool qtype)
 	_type = type;
 	if (_type.contains('('))
 	{
-		_minsize = _type.mid(_type.indexOf('(')+1, _type.indexOf(')')-_type.indexOf('(')-1).toUInt();
+		QByteArray ms = _type.mid(_type.indexOf('(')+1, _type.indexOf(')')-_type.indexOf('(')-1);
+		uint factor = 1;
+		if (ms.endsWith("K"))
+			factor = 1e3;
+		else if (ms.endsWith("M"))
+			factor = 1e6;
+		else if (ms.endsWith("G"))
+			factor = 1e9;
+		if (factor != 1)
+			ms = ms.mid(0, ms.size()-1);
+		_minsize = ms.toUInt() * factor;
+		
 		_type = _type.mid(0, _type.indexOf('('));
 	}
 	auto ct = toCppType(_type, _minsize, qtype);
