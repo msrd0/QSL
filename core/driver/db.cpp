@@ -76,6 +76,16 @@ SelectResult* Database::selectTable(const QSLTable &tbl,
 	return selectTable(tbl, tbl.columns(), filter, limit);
 }
 
+bool Database::insertIntoTable(const QSLTable &tbl, const QList<QSLColumn> &cols, const QVector<QVariant> &values)
+{
+	return insertIntoTable(tbl, cols, QVector<QVector<QVariant>>({values}));
+}
+
+bool Database::insertIntoTable(const QSLTable &tbl, const QMap<QSLColumn, QVariant> &values)
+{
+	return insertIntoTable(tbl, values.keys(), values.values().toVector());
+}
+
 bool Database::updateTable(const QSLTable &tbl, const QMap<QSLColumn, QVariant> &values,
 						   const QVariant &pk)
 {

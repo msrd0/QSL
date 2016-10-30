@@ -188,6 +188,32 @@ public:
 									  const QSharedPointer<QSLFilter> &filter,
 									  int limit = -1);
 	
+	/**
+	 * Inserts `values.size` rows into the given table, while for each row the
+	 * vector contains exactly `cols.size` values, matching the given columns.
+	 * Please make sure that these sizes match. It might not be checked or only
+	 * checked if asserts are turned on, depending on the driver. Also, the columns
+	 * must be present in the table, otherwise there might be an error message.
+	 */
+	virtual bool insertIntoTable(const QSLTable &tbl, const QList<QSLColumn> &cols,
+								 const QVector<QVector<QVariant>> &rows) = 0;
+	/**
+	 * Inserts one row into the given table, for each given column the given value.
+	 * Please make sure that `cols` and `values` have the same size. It might not be
+	 * checked or only checked if asserts are turned on, depending on the driver.
+	 * Also, the columns must be present in the table, otherwise there might be an
+	 * error message.
+	 */
+	virtual bool insertIntoTable(const QSLTable &tbl, const QList<QSLColumn> &cols,
+								 const QVector<QVariant> &values);
+	/**
+	 * Inserts one row into the given table, for each given column the given value.
+	 * Remember that the columns must be present in the table, otherwise there might
+	 * be an error message. This method is the slowest but failsafest of the insert
+	 * methods.
+	 */
+	virtual bool insertIntoTable(const QSLTable &tbl, const QMap<QSLColumn, QVariant> &values);
+	
 	/** Updates the values of the given table at the given indexes to the new values. */
 	virtual bool updateTable(const QSLTable &tbl, const QMap<QSLColumn, QVariant> &values,
 							 const QVector<QVariant> &pks) = 0;

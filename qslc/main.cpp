@@ -43,7 +43,7 @@ int main(int argc, char **argv)
 	for (QString file : args)
 	{
 		Database *db = parse(file, qtype);
-		if (!generate(db, dir, qtype))
+		if (!generate(db, file, dir, qtype))
 		{
 			fprintf(stderr, "Failed to process file %s\n", qPrintable(file));
 			return 1;

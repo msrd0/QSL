@@ -16,10 +16,15 @@ public:
 	
 	virtual SelectResult* selectTable(const QSLTable &tbl, const QList<QSLColumn> &cols, const QSharedPointer<QSLFilter> &filter, int limit) override;
 	
+	virtual bool insertIntoTable(const QSLTable &tbl, const QList<QSLColumn> &cols, const QVector<QVector<QVariant>> &rows) override;
+	
 	virtual bool updateTable(const QSLTable &tbl, const QMap<QSLColumn, QVariant> &values, const QVector<QVariant> &pks) override;
 	
 protected:
 	virtual void loadTableInfo() override;
+	
+private:
+	bool needsEnquote(const QByteArray &type);
 };
 
 }

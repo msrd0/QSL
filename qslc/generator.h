@@ -8,7 +8,7 @@ namespace qsl {
 namespace qslc {
 class Database;
 
-bool generate(Database *db, const QDir &dir, bool qtype = false);
+bool generate(Database *db, const QString &filename, const QDir &dir, bool qtype = false);
 
 }
 }

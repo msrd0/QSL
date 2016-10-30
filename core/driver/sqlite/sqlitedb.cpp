@@ -4,9 +4,10 @@
 
 #include <unistd.h>
 
+#include <QDebug>
+#include <QRegularExpression>
 #include <QSqlError>
 
-#include <QDebug>
 
 using namespace qsl;
 using namespace qsl::driver;
@@ -38,6 +39,9 @@ bool SQLiteDatabase::connect()
 {
 	if (!QtDatabase::connect())
 		return false;
+#ifdef CMAKE_DEBUG
+	qDebug() << "QSL[SQLite]: Conncted to" << db().databaseName();
+#endif
 	
 	// enable fkeys
 	QSqlQuery qfkey(db());
@@ -61,7 +65,7 @@ bool SQLiteDatabase::connect()
 	else
 	{
 		qWarning() << "QSL[SQLite]: Encoding" << enc << "is currently not supported. Please only report if";
-		qWarning() << "the encoding is listet at http://www.sqlite.org/pragma.html#pragma_encoding";
+		qWarning() << "             the encoding is listet at http://www.sqlite.org/pragma.html#pragma_encoding";
 		enc = "";
 	}
 	if (!enc.isEmpty())
@@ -175,7 +179,8 @@ bool SQLiteDatabase::ensureTable(const QSLTable &tbl)
 {
 	if (containsTable(tbl.name()))
 	{
-		
+		qCritical() << "QSL[SQLite]: TODO: implement " << __PRETTY_FUNCTION__ << " if table exists";
+		return false;
 	}
 	else
 	{
@@ -198,11 +203,75 @@ bool SQLiteDatabase::ensureTable(const QSLTable &tbl)
 	}
 }
 
+bool SQLiteDatabase::needsEnquote(const QByteArray &type)
+{
+	QByteArray t = type.trimmed().toLower();
+	return (t=="char" || t=="text" || t=="password" || t=="byte" || t=="blob" || t=="variant");
+}
+
 SelectResult* SQLiteDatabase::selectTable(const QSLTable &tbl, const QList<QSLColumn> &cols,
 										  const QSharedPointer<QSLFilter> &filter, int limit)
 {
-	// TODO
-	return 0;
+	qWarning() << "TODO: Handle filters in " << __PRETTY_FUNCTION__;
+	QSqlQuery q(db());
+	QString qq = "SELECT ";
+	for (int i = 0; i < cols.size(); i++)
+	{
+		if (i != 0)
+			qq += ", ";
+		qq += "\"" + cols[i].name() + "\"";
+	}
+	qq += " FROM \"" + tbl.name() + "\"";
+	if (limit > 0)
+		qq += " LIMIT " + QString::number(limit);
+	qq += ";";
+	if (!q.exec(qq))
+	{
+		DUMP_ERROR(q);
+		return 0;
+	}
+	return new QtSelectResult(q);
+}
+
+bool SQLiteDatabase::insertIntoTable(const QSLTable &tbl, const QList<QSLColumn> &cols,
+									 const QVector<QVector<QVariant>> &rows)
+{
+	Q_ASSERT(!cols.empty());
+	
+	QSqlQuery q(db());
+	QString qq = "INSERT INTO \"" + tbl.name() + "\" (";
+	for (int i = 0; i < cols.size(); i++)
+	{
+		if (i != 0)
+			qq += ",";
+		qq += "\"" + cols[i].name() + "\"";
+	}
+	qq += ") VALUES ";
+	for (int i = 0; i < rows.size(); i++)
+	{
+		if (i != 0)
+			qq += ",";
+		qq += "(";
+		auto row = rows[i];
+		for (int j = 0; j < cols.size(); j++)
+		{
+			if (j != 0)
+				qq += ",";
+			bool enquote = needsEnquote(cols[j].type());
+			if (enquote)
+				qq += "'" + row[j].toString().replace("'", "''") + "'";
+			else
+				qq += row[j].toString().replace(QRegularExpression("[^0-9a-zA-Z\\.,\\-+]"), "");
+		}
+		qq += ")";
+	}
+	qq += ";";
+	if (!q.exec(qq))
+	{
+		DUMP_ERROR(q);
+		return false;
+	}
+	return true;
 }
 
 bool SQLiteDatabase::updateTable(const QSLTable &tbl, const QMap<QSLColumn, QVariant> &values,
