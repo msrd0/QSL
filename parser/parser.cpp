@@ -218,7 +218,7 @@ Database* qsl::qslc::parse(QIODevice *in, const QString &filename, bool qtype)
 			if (name.startsWith('"') && name.endsWith('"'))
 				name = name.mid(1, name.length()-2);
 			if (!checkName(name))
-				error("The name of the table does not follow the identifier rules")
+				error("The name of the table (`%s') does not follow the identifier rules", name.data())
 			if (db->containsTable(name))
 				error("The database already contains a table called %s", name.data())
 			tbl = new Table(db, name);
@@ -250,7 +250,7 @@ Database* qsl::qslc::parse(QIODevice *in, const QString &filename, bool qtype)
 				line = line.mid(name.length()).trimmed();
 			}
 			if (!checkName(name))
-				error("The name of the column does not follow the identifier rules")
+				error("The name of the column (`%s') does not follow the identifier rules", name.data())
 			Column f(name, type, qtype);
 			while (!line.isEmpty())
 			{
