@@ -64,6 +64,30 @@ a `!`. A column definition could look like this:
 - char(50) "name" !unique !notnull
 ```
 
+## `qsldump`
+
+If you have an existing database and want to generate it's definition file, you can use the
+`qsldump` tool. It will connect to the database, load all tables and dump their structure.
+
+```
+Usage: qsldump [options] <db-name>
+Dump QSL for an existing database
+
+Options:
+  -h, --help             Displays this help.
+  -v, --version          Displays version information.
+  -d, --driver <driver>  The driver used to connect to the database
+  -p, --port <port>      The port of the database server if required
+  -u, --user <username>  The user used to connect to the database if required
+  --password <password>  The password used to connect to the database if
+                         required
+  --pw                   Ask for a password on the command line
+  -o, --out <file>       The file to write the qsl file (if - write to stdout)
+
+Arguments:
+  name                   The name (or filename) of the database
+```
+
 # Using QSL
 
 QSL will generate a file called `db_<db-name>.h` for every database. To use it, you first have
