@@ -233,8 +233,11 @@ class QtDatabase : public Database
 {
 	
 protected:
+	/** Creates a new QtDatabase with the given driver name. The driver name should be known by Qt. */
 	QtDatabase(const char *charset, bool usevar, const QString& qtDriverName);
+	/** Creates a new QtDatabase with the given qtsql driver. */
 	QtDatabase(const char *charset, bool usevar, QSqlDriver *driver);
+	/** Creates a new QtDatabase from the given `QSqlDatabase` object. */
 	QtDatabase(const char *charset, bool usevar, const QSqlDatabase &db);
 	
 public:
@@ -248,14 +251,21 @@ public:
 	virtual bool isConnected() const override;
 	
 	QList<QSLTable> tables() const override;
+	/** Checks whether this database contains the given table. */
 	bool containsTable(const QByteArray &name) const;
+	/** Returns the table with the given name. Undefined behaviour if the table doesn't exist. */
 	QSLTable table(const QByteArray &name) const;
 	
 protected:
+	/** Loads all tables in the database. This method is called after the connection to the database was
+	 * established. It is only called once in the livecycle of the database. */
 	virtual void loadTableInfo() = 0;
+	/** Adds a table to the database. Should only be called from `loadTableInfo()`. */
 	virtual void addTable(const QSLTable &tbl);
 	
+	/** Returns the underlying `QSqlDatabase`. */
 	QSqlDatabase& db() { return _db; }
+	/** Returns the underlying `QSqlDatabase`. */
 	const QSqlDatabase& db() const { return _db; }
 	
 private:
