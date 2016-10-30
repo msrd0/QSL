@@ -6,9 +6,7 @@
 
 #include <QSqlError>
 
-#ifdef CMAKE_DEBUG
-#  include <QDebug>
-#endif
+#include <QDebug>
 
 using namespace qsl;
 using namespace qsl::driver;
