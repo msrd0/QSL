@@ -55,7 +55,7 @@ private:
 	
 public:
 	/** Creates a new Database instance with this driver. */
-	virtual Database *newDatabase() = 0;
+	virtual Database *newDatabase(const char *charset, bool usevar) = 0;
 	
 	/** Converts the Database-specific date format into a QDate. */
 	virtual QDate toQDate(const QVariant &date) = 0;

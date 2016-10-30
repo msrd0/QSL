@@ -5,6 +5,8 @@
 #include <QCommandLineOption>
 #include <QCommandLineParser>
 #include <QCoreApplication>
+#include <QMetaEnum>
+#include <QMetaObject>
 
 using namespace qsl;
 using namespace qsl::driver;
@@ -56,7 +58,7 @@ int main(int argc, char **argv)
 	Driver *driver = Driver::driver(parser.value(driverOption));
 	if (!driver)
 		return 1;
-	Database *db = driver->newDatabase();
+	Database *db = driver->newDatabase("utf8", false); // we just pass the defaults - there is no way to find out what's used atm
 	Q_ASSERT(db);
 	db->setName(args[0]);
 	if (parser.isSet(hostOption))
@@ -93,6 +95,12 @@ int main(int argc, char **argv)
 	fprintf(out, "##############################################################################\n\n");
 	
 	fprintf(out, "database \"%s\"\n", qPrintable(name));
+	fprintf(out, "# The charset that is used when creating the database. There is no guarantee\n");
+	fprintf(out, "# that this encoding is used.\n");
+	fprintf(out, "charset \"utf-8\"\n");
+	fprintf(out, "# If uncommented, the varchar sql type will be used instead of char (the same\n");
+	fprintf(out, "# applies to byte)\n");
+	fprintf(out, "#usevar\n");
 	// TODO charset and usevar
 	for (auto tbl : db->tables())
 	{
@@ -101,6 +109,18 @@ int main(int argc, char **argv)
 		for (auto col : tbl.columns())
 		{
 			fprintf(out, "- %s \"%s\"", col.type(), col.name().data());
+			
+			static const QMetaObject obj = QSL::staticMetaObject;
+			static const QMetaEnum cenum = obj.enumerator(obj.indexOfEnumerator("ColumnConstraint"));
+			for (int i = 0; i < cenum.keyCount(); i++)
+			{
+				int val = cenum.value(i);
+				if (val == QSL::none)
+					continue;
+				if ((col.constraints() & val) == val)
+					fprintf(out, " !%s", cenum.key(i));
+			}
+			
 			fprintf(out, "\n");
 		}
 	}

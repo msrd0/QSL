@@ -133,15 +133,18 @@ QVariant QtSelectResult::value(const QString &col) const
 
 // ##################################################
 
-QtDatabase::QtDatabase(const QString &qtDriverName)
+QtDatabase::QtDatabase(const char *charset, bool usevar, const QString &qtDriverName)
+	: Database(charset, usevar)
 {
 	init(QSqlDatabase::addDatabase(qtDriverName));
 }
-QtDatabase::QtDatabase(QSqlDriver *driver)
+QtDatabase::QtDatabase(const char *charset, bool usevar, QSqlDriver *driver)
+	: Database(charset, usevar)
 {
 	init(QSqlDatabase::addDatabase(driver));
 }
-QtDatabase::QtDatabase(const QSqlDatabase &db)
+QtDatabase::QtDatabase(const char *charset, bool usevar, const QSqlDatabase &db)
+	: Database(charset, usevar)
 {
 	init(db);
 }
@@ -195,6 +198,14 @@ bool QtDatabase::isConnected() const
 QList<QSLTable> QtDatabase::tables() const
 {
 	return _tables.values();
+}
+bool QtDatabase::containsTable(const QByteArray &name) const
+{
+	return _tables.contains(name);
+}
+QSLTable QtDatabase::table(const QByteArray &name) const
+{
+	return _tables.value(name, QSLTable{"invalid", "invalid", 0});
 }
 void QtDatabase::addTable(const QSLTable &tbl)
 {

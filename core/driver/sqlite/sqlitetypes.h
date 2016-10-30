@@ -9,7 +9,7 @@ class SQLiteTypes
 {
 public:
 	static QByteArray fromSQL(const QByteArray &type);
-	static QByteArray fromQSL(const QByteArray &type);
+	static QByteArray fromQSL(const QByteArray &type, int minsize, bool usevar);
 	
 	// no ctors
 private:

@@ -7,9 +7,9 @@ using namespace qsl::driver;
 
 #define time_point SQLiteDriver::time_point
 
-Database* SQLiteDriver::newDatabase()
+Database* SQLiteDriver::newDatabase(const char *charset, bool usevar)
 {
-	return new SQLiteDatabase;
+	return new SQLiteDatabase(charset, usevar);
 }
 
 QString SQLiteDriver::sql_select(QSLTable *tbl, const QSharedPointer<QSLFilter> &filter, uint limit)

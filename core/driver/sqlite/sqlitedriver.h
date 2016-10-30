@@ -12,7 +12,7 @@ public:
 	// just to simplify coding
 	typedef std::chrono::system_clock::time_point time_point;
 	
-	virtual Database *newDatabase() override;
+	virtual Database *newDatabase(const char *charset, bool usevar) override;
 	
 	virtual QDate toQDate(const QVariant &date) override;
 	virtual QTime toQTime(const QVariant &time) override;

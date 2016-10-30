@@ -8,7 +8,9 @@ namespace driver {
 class SQLiteDatabase : public QtDatabase
 {
 public:
-	SQLiteDatabase();
+	SQLiteDatabase(const char *charset, bool usevar);
+	
+	virtual bool connect() override;
 	
 	virtual bool ensureTable(const QSLTable &tbl) override;
 	

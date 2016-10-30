@@ -60,9 +60,8 @@ public:
 	/// Disconnect from the database again. If not connected, does nothing.
 	void disconnect();
 	
-	/// The underlying database. Don't use it. **This field can change its
-	/// visibility at any time.**
-	driver::Database *db;
+	/// The underlying database.
+	driver::Database *db();
 	
 protected:
 	/// Creates a new database with the given name and the given driver.
@@ -78,6 +77,8 @@ private:
 	const char* _name;
 	driver::Driver *_driver;
 	QList<QSLTable*> _tables;
+	
+	driver::Database *_db;
 	
 };
 

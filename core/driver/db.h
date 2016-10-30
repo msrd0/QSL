@@ -120,6 +120,23 @@ class Database
 {
 	
 public:
+	/** Creates a database with the given encoding and the given usevar value. */
+	constexpr Database(const char *charset, bool usevar)
+		: _charset(charset)
+		, _usevar(usevar)
+	{
+	}
+
+	/** Returns the charset that should be used by this database. Note that there is no
+	 * guarantee that the charset is changed if the database was created with another
+	 * charset. */
+	const char *charset() const { return _charset; }
+	bool usevar() const { return _usevar; }
+private:
+	const char *_charset;
+	bool _usevar;
+	
+public:
 	/** Set the name of the database. */
 	virtual void setName(const QString &name) = 0;
 	/** Set the host of the database server. */
@@ -216,9 +233,9 @@ class QtDatabase : public Database
 {
 	
 protected:
-	QtDatabase(const QString& qtDriverName);
-	QtDatabase(QSqlDriver *driver);
-	QtDatabase(const QSqlDatabase &db);
+	QtDatabase(const char *charset, bool usevar, const QString& qtDriverName);
+	QtDatabase(const char *charset, bool usevar, QSqlDriver *driver);
+	QtDatabase(const char *charset, bool usevar, const QSqlDatabase &db);
 	
 public:
 	virtual void setName(const QString &name) override;
@@ -231,6 +248,8 @@ public:
 	virtual bool isConnected() const override;
 	
 	QList<QSLTable> tables() const override;
+	bool containsTable(const QByteArray &name) const;
+	QSLTable table(const QByteArray &name) const;
 	
 protected:
 	virtual void loadTableInfo() = 0;

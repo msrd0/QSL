@@ -130,7 +130,7 @@ bool qsl::qslc::generate(Database *db, const QDir &dir, bool qtype)
 				out.write("      if (!_parent)\n");
 				out.write("        return false;\n");
 				
-				out.write("      bool success = _parent->db()->db->updateTable(*_parent, col_" + f.name() + "(), ");
+				out.write("      bool success = _parent->db()->db()->updateTable(*_parent, col_" + f.name() + "(), ");
 				if (f.type() == "date")
 					out.write("_parent->db()->driver()->from" + QByteArray(qtype ? "Q" : "Chrono") + "Date(" + f.name() + ")");
 				else if (f.type() == "time")
@@ -190,7 +190,7 @@ bool qsl::qslc::generate(Database *db, const QDir &dir, bool qtype)
 		out.write("    }\n\n");
 		out.write("    virtual " + list_t + "<" + t->name() + "_t> query()\n");
 		out.write("    {\n");
-		out.write("      driver::SelectResult *result = _tbl->db()->db->selectTable(*_tbl, _filter, _limit);\n");
+		out.write("      driver::SelectResult *result = _tbl->db()->db()->selectTable(*_tbl, _filter, _limit);\n");
 		out.write("      if (!result)\n");
 		out.write("      {\n");
 		out.write("        fprintf(stderr, \"QSLQuery: Failed to query " + db->name() + "." + t->name() + "\\n\");\n");
@@ -300,9 +300,6 @@ bool qsl::qslc::generate(Database *db, const QDir &dir, bool qtype)
 	out.write("  {\n");
 	for (Table *t : db->tables())
 	{
-// 		for (Column &f : t->fields())
-// 			out.write("    _tbl_" + t->name() + ".addColumn(QSLColumn(\"" + f.name() + "\", \"" + f.type() + "\", " + QByteArray::number(f.minsize())
-// 					  + ", " + QByteArray::number(f.constraints()) + "));\n");
 		out.write("    setupTbl_" + t->name() + "();\n");
 		out.write("    registerTable(&_tbl_" + t->name() + ");\n");
 	}
