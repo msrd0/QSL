@@ -81,6 +81,8 @@ QByteArray SQLiteTypes::fromQSL(const QByteArray &type, int minsize, bool usevar
 	if (t == "int" || t == "uint")
 	{
 		QByteArray u = t=="uint" ? "unsigned " : "";
+		if (minsize < 0)
+			minsize = 64;
 		if (minsize <= 8)
 			return u + "tinyint";
 		if (minsize <= 16)
