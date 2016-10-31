@@ -1,9 +1,11 @@
 #include "sqlitedb.h"
 #include "sqlitetypes.h"
-#include "qsltable.h"
+#include "driver/diff.h"
 
 #include <unistd.h>
 
+#include <QCryptographicHash>
+#include <QDateTime>
 #include <QDebug>
 #include <QRegularExpression>
 #include <QSqlError>
@@ -178,26 +180,220 @@ void SQLiteDatabase::loadTableInfo()
 
 bool SQLiteDatabase::ensureTable(const QSLTable &tbl)
 {
-	if (containsTable(tbl.name()))
+	bool success = ensureTableImpl(tbl);
+	if (success)
+		addTable(tbl); // otherwise subsequent calls to ensureTable will repeat the changes
+	return success;
+}
+
+static QByteArray backupSuffixName(const QByteArray &name)
+{
+	return "___qslbackup_" + QCryptographicHash::hash(name + " @ " + QDateTime::currentDateTime().toString().toUtf8(), QCryptographicHash::Md5).toHex();
+}
+
+static QByteArray uniqueConstraintName(const QByteArray &tbl, const QByteArray &name)
+{
+	return "qsl_sqlite_driver_constraint_unique_" + name + "_" + QCryptographicHash::hash(tbl + "." + name + " !unique", QCryptographicHash::Md5).toHex();
+}
+
+bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
+{
+	bool needsNewTable = !containsTable(tbl.name());
+	const QByteArray backupSuffix = backupSuffixName(tbl.name());
+	bool hasBackup = false;
+	QList<QSLColumn> addedCols;
+	
+	if (!needsNewTable)
 	{
-		qCritical() << "QSL[SQLite]: TODO: implement " << __PRETTY_FUNCTION__ << " if table exists";
-		return false;
+		// if the table is empty there is no need to keep it
+		QSqlQuery emptyq(db());
+		if (emptyq.exec("SELECT * FROM \"" + tbl.name() + "\" LIMIT 1;"))
+		{
+			if (emptyq.first())
+			{
+				emptyq.finish(); // otherwise table is locked
+#ifdef CMAKE_DEBUG
+				qDebug() << "QSL[SQLite]: Dropping empty table" << tbl.name();
+#endif
+				QSqlQuery dropq(db());
+				if (dropq.exec("DROP TABLE \"" + tbl.name() + "\";"))
+					needsNewTable = true;
+				else
+					DUMP_ERROR(dropq);
+			}
+		}
+		else
+			DUMP_ERROR(emptyq);
 	}
-	else
+	
+	if (!needsNewTable)
 	{
-		QSqlQuery q(db());
-		QString query = "CREATE TABLE " + tbl.name() + "(";
+		TableDiff diff(table(tbl.name()), tbl);
+		
+		/*
+		 NOTE: Currently, SQLite only supports to add columns to a table when altering it. A
+		 new unique constraint can be added with the create index query. QSL doesn't enforce
+		 to remove removed columns from the database, so this will be fine as long as the
+		 column is nullable.
+		 => We need to create a new table if and only if:
+		    1. A constraint other than unique changed
+		    2. The type of a column changed
+		    3. A column with a not-null constraint was removed
+			4. If a column with a primary-key constraint was added
+		 => We need to fail if and only if:
+		    A. A new column without a default value but not nullable was added and the table is
+			   not empty
+		*/
+		
+		// check A.
+		//  (note that table is not empty if reaching this code)
+		//  (note that currently default values are not supported by QSL)
+		for (auto col : diff.addedCols())
+		{
+			if ((col.constraints() & QSL::notnull) == QSL::notnull)
+			{
+				qCritical() << "QSL[SQLite]: In Table" << tbl.name() << ": ERROR: Column" << col.name() << "was added with !notnull but without a default value";
+			}
+		}
+		
+		// check 2.
+		if (!diff.typeChanged().isEmpty())
+			needsNewTable = true;
+		
+		// check 1.
+		if (!needsNewTable) // othewise we can skip
+		{
+			for (auto constraintDiff : diff.constraintsChanged())
+			{
+				if (constraintDiff.constraintsAdded() != QSL::none && constraintDiff.constraintsAdded() != QSL::unique)
+				{
+					needsNewTable = true;
+					break;
+				}
+				if (constraintDiff.constraintsRemoved() != QSL::none && constraintDiff.constraintsRemoved() != QSL::unique)
+				{
+					needsNewTable = true;
+					break;
+				}
+			}
+		}
+		
+		// check 3.
+		if (!needsNewTable) // otherwise we can skip
+		{
+			for (auto col : diff.removedCols())
+				if ((col.constraints() & QSL::notnull) == QSL::notnull)
+				{
+					needsNewTable = true;
+					break;
+				}
+		}
+		
+		// check 4.
+		if (!needsNewTable) // otherwise we can skip
+		{
+			for (auto col : diff.addedCols())
+				if ((col.constraints() & QSL::primarykey) == QSL::primarykey)
+				{
+					needsNewTable = true;
+					break;
+				}
+		}
+		
+		// if we need a new table, rename the old one
+		if (needsNewTable)
+		{
+#ifdef CMAKE_DEBUG
+			qDebug() << "QSL[SQLite]: Creating backup of table" << tbl.name() << "-" << tbl.name() + backupSuffix;
+#endif
+			QSqlQuery renameq(db());
+			if (!renameq.exec("ALTER TABLE \"" + tbl.name() + "\" RENAME TO \"" + tbl.name() + backupSuffix + "\";"))
+			{
+				DUMP_ERROR(renameq);
+				return false;
+			}
+			hasBackup = true;
+			addedCols = diff.addedCols();
+		}
+		
+		// else, we need to alter the table according to the diff
+		else
+		{
+			// first, add all columns
+			for (auto col : diff.addedCols())
+			{
+#ifdef CMAKE_DEBUG
+				qDebug() << "QSL[SQLite]: Adding column" << col.name() << "to table" << tbl.name();
+#endif
+				QSqlQuery alterq(db());
+				if (!alterq.exec("ALTER TABLE \"" + tbl.name() + "\" ADD COLUMN \"" + col.name() + "\" " + SQLiteTypes::fromQSL(col.type(), col.minsize(), usevar()) + ";"))
+				{
+					DUMP_ERROR(alterq);
+					return false;
+				}
+				if ((col.constraints() & QSL::unique) == QSL::unique)
+				{
+#ifdef CMAKE_DEBUG
+					qDebug() << "QSL[SQLite]: Adding unique constraint to column" << col.name() << "of table" << tbl.name();
+#endif
+					QSqlQuery ciq(db());
+					if (!ciq.exec("CREATE UNIQUE INDEX \"" + uniqueConstraintName(tbl.name(), col.name()) + "\" ON \"" + tbl.name() + "\"(\"" + col.name() + "\");"))
+					{
+						DUMP_ERROR(ciq);
+						return false;
+					}
+				}
+			}
+			
+			// now, add all unique constraints on existing columns
+			for (auto constraintDiff : diff.constraintsChanged())
+			{
+				if ((constraintDiff.constraintsAdded() & QSL::unique) == QSL::unique)
+				{
+					QSqlQuery ciq(db());
+					if (!ciq.exec("CREATE UNIQUE INDEX \"" + uniqueConstraintName(tbl.name(), constraintDiff.colName()) + "\" ON \"" + tbl.name() + "\"(\"" + constraintDiff.colName() + "\");"))
+					{
+						DUMP_ERROR(ciq);
+						return false;
+					}
+				}
+			}
+		}
+	}
+	
+	if (needsNewTable)
+	{
+#ifdef CMAKE_DEBUG
+		qDebug() << "QSL[SQLite]: Creating table" << tbl.name();
+#endif
+		QSqlQuery createq(db());
+		QString query = "CREATE TABLE \"" + tbl.name() + "\"(";
 		for (int i = 0; i < tbl.columns().size(); i++)
 		{
 			if (i!=0)
 				query += ",";
 			QSLColumn col = tbl.columns()[i];
-			query += col.name() + " " + SQLiteTypes::fromQSL(col.type(), col.minsize(), usevar());
+			query += "\"" + col.name() + "\" " + SQLiteTypes::fromQSL(col.type(), col.minsize(), usevar());
+			if ((col.constraints() & QSL::notnull) == QSL::notnull)
+				query += " NOT NULL";
+			if ((col.constraints() & QSL::unique) == QSL::unique)
+				query += " UNIQUE";
 		}
+		if (!tbl.primaryKey().isEmpty())
+			query += ",PRIMARY KEY(\"" + tbl.primaryKey() + "\")";
 		query += ");";
-		if (!q.exec(query))
+		if (!createq.exec(query))
 		{
-			DUMP_ERROR(q);
+			DUMP_ERROR(createq);
+			
+			// if we had a backup, lets restore it
+			if (hasBackup)
+			{
+				QSqlQuery restoreq(db());
+				if (!restoreq.exec("ALTER TABLE \"" + tbl.name() + backupSuffix + "\" RENAME TO \"" + tbl.name() + "\";"))
+					DUMP_ERROR(restoreq);	
+			}
+			
 			return false;
 		}
 		return true;

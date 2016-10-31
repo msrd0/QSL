@@ -23,6 +23,8 @@ public:
 protected:
 	virtual void loadTableInfo() override;
 	
+	virtual bool ensureTableImpl(const QSLTable &tbl);
+	
 private:
 	bool needsEnquote(const QByteArray &type);
 };

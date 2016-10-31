@@ -1,8 +1,10 @@
 set(QSLD_HEADERS
 	db.h
+	diff.h
 	driver.h)
 set(QSLD_SOURCES
 	db.cpp
+	diff.cpp
 	driver.cpp)
 add_library(qsld SHARED ${QSLD_HEADERS} ${QSLD_SOURCES})
 target_link_libraries(qsld ${CMAKE_DL_LIBS} Qt5::Core Qt5::Sql)
