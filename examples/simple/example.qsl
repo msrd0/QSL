@@ -4,17 +4,5 @@ usevar
 
 # a very easy table
 table "foo"
-- uint "id" !primarykey
+- uint "id" !primarykey !unique !notnull
 - char(50) "bar" !unique
-
-# an example users table
-#table "users"
-#- uint(64) "id" !primarykey
-#- char(100) "name" !unique
-#- password "pw"
-
-# an example to store avatars for the users
-#table "avatars"
-#- unsigned int(64) "id" !primarykey
-#- &users.id "user"
-#- blob(1M)
