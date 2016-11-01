@@ -418,7 +418,7 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 	out.write("    bool success = QSLDB::connect();\n");
 	out.write("    if (!success)\n");
 	out.write("      return false;\n");
-	out.write("    driver::SelectResult *result = 0;\n");
+	out.write("    QSL_MAYBE_UNUSED driver::SelectResult *result = 0;\n");
 	for (Table *t : db->tables())
 	{
 		if (t->primaryKey().isEmpty())

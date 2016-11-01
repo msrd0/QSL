@@ -13,3 +13,11 @@
 #define QSL_PATCH @QSL_PATCH@
 #define QSL_VERSION ((@QSL_MAJOR@ << 4) | (@QSL_MINOR@ << 2) | @QSL_PATCH@)
 #define QSL_VERSION_STR "@QSL_MAJOR@.@QSL_MINOR@.@QSL_PATCH@"
+
+#if __STDC_VERSION__ >= 201500L
+#  define QSL_MAYBE_UNUSED [[maybe_unused]]
+#elif defined __GNUC__ && !defined __clang__
+#  define QSL_MAYBE_UNUSED __attribute__((unused))
+#else
+#  define QSL_MAYBE_UNUSED
+#endif
