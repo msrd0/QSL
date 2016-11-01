@@ -179,14 +179,14 @@ public:
 	virtual SelectResult* selectTable(const QSLTable &tbl,
 									  const QList<QSLColumn> &cols,
 									  const QSharedPointer<QSLFilter> &filter,
-									  int limit = -1) = 0;
+									  int limit = -1, bool asc = true) = 0;
 	/**
 	 * Selects all columns from the table that apply to the given filter. If
 	 * `limit` is greater than 0, a maximum of `limit` rows are retrieved.
 	 */
 	virtual SelectResult* selectTable(const QSLTable &tbl,
 									  const QSharedPointer<QSLFilter> &filter,
-									  int limit = -1);
+									  int limit = -1, bool asc = true);
 	
 	/**
 	 * Inserts `values.size` rows into the given table, while for each row the

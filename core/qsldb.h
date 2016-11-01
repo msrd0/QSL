@@ -56,9 +56,9 @@ public:
 	/// Set the password for the user.
 	void setPassword(const QString &password);
 	/// Establish a connection to the server, or return false.
-	bool connect();
+	virtual bool connect();
 	/// Disconnect from the database again. If not connected, does nothing.
-	void disconnect();
+	virtual void disconnect();
 	
 	/// The underlying database.
 	driver::Database *db();

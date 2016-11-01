@@ -54,6 +54,7 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 	// qsl headers
 	out.write("#include <driver/db.h>\n");
 	out.write("#include <driver/driver.h>\n");
+	out.write("#include <pk.h>\n");
 	out.write("#include <qsldb.h>\n");
 	out.write("#include <qslquery.h>\n");
 	out.write("#include <qsltable.h>\n");
@@ -76,11 +77,24 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 	out.write("  virtual bool usevar() const override { return _usevar; }\n\n");
 	
 	QByteArray list_t = qtype ? "QList" : "std::vector";
+	QHash<Table*, QByteArray> pkTypes;
+	QHash<Table*, QByteArray> pkCppTypes;
 	
 	for (Table *t : db->tables())
 	{
 		if (t->primaryKey().isEmpty())
 			fprintf(stderr, "WARNING: No primary key found in table %s, some features may not be available\n", t->name().data());
+		else
+		{
+			out.write("private:\n");
+			for (Column &f : t->fields())
+				if ((f.constraints() & QSL::primarykey) == QSL::primarykey)
+				{
+					pkTypes.insert(t, f.type());
+					pkCppTypes.insert(t, f.cppType());
+					out.write("  PrimaryKey<" + f.cppType() + "> _tbl_" + t->name() + "_pk;\n");
+				}
+		}
 		
 		out.write("public:\n");
 		out.write("  class " + t->name() + "_t\n");
@@ -213,9 +227,19 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 		// class to create the query
 		out.write("  class " + t->name() + "_q : public QSLTableQuery<" + t->name() + "_t, " + list_t + "<" + t->name() + "_t>>\n");
 		out.write("  {\n");
+		if (!t->primaryKey().isEmpty())
+		{
+			out.write("  private:\n");
+			out.write("    PrimaryKey<" + pkCppTypes[t] + "> *_pk;\n");
+		}
 		out.write("  public:\n");
-		out.write("    " + t->name() + "_q(QSLTable *tbl)\n");
+		if (t->primaryKey().isEmpty())
+			out.write("    " + t->name() + "_q(QSLTable *tbl)\n");
+		else
+			out.write("    " + t->name() + "_q(QSLTable *tbl, PrimaryKey<" + pkCppTypes[t] + "> *pk)\n");
 		out.write("      : QSLTableQuery(tbl)\n");
+		if (!t->primaryKey().isEmpty())
+			out.write("      , _pk(pk)\n");
 		out.write("    {\n");
 		out.write("    }\n\n");
 		
@@ -304,14 +328,23 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 			auto col = t->fields()[i];
 			if ((col.constraints() & QSL::primarykey) == 0)
 			{
-				out.write("        " + t->name() + "_t::_col_" + col.name());
-				if (i < t->fields().size() - 1)
+				out.write("        " + t->name() + "_t::col_" + col.name() + "()");
+				if (!t->primaryKey().isEmpty() || i < t->fields().size() - 1)
 					out.write(",");
 				out.write("\n");
 			}
 		}
+		if (!t->primaryKey().isEmpty())
+			out.write("        " + t->name() + "_t::col_" + t->primaryKey() + "()\n");
 		out.write("      });\n");
-		out.write("      return _tbl->db()->db()->insertIntoTable(*_tbl, cols, row);\n");
+		if (t->primaryKey().isEmpty())
+			out.write("      return _tbl->db()->db()->insertIntoTable(*_tbl, cols, row);\n");
+		else
+		{
+			out.write("      QVector<QVariant> insertRow = row;\n");
+			out.write("      insertRow.push_back(qslvariant(_pk->next()));\n");
+			out.write("      return _tbl->db()->db()->insertIntoTable(*_tbl, cols, insertRow);\n");
+		}
 		out.write("    }\n");
 		out.write("    virtual bool insert(const " + t->name() + "_t &row)\n");
 		out.write("    {\n");
@@ -349,10 +382,14 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 		out.write("public:\n");
 		out.write("  " + t->name() + "_q " + t->name() + "()\n");
 		out.write("  {\n");
-		out.write("    return " + t->name() + "_q(&_tbl_" + t->name() + ");\n");
+		out.write("    return " + t->name() + "_q(&_tbl_" + t->name());
+		if (!t->primaryKey().isEmpty())
+			out.write(", &_tbl_" + t->name() + "_pk");
+		out.write(");\n");
 		out.write("  }\n\n\n");
 	}
 	
+	// the db setup
 	out.write("public:\n");
 	out.write("  " + db->name() + "(driver::Driver *driver)\n");
 	out.write("    : QSLDB(\"" + db->name() + "\", driver)\n");
@@ -372,7 +409,32 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 		out.write("    setupTbl_" + t->name() + "();\n");
 		out.write("    registerTable(&_tbl_" + t->name() + ");\n");
 	}
-	out.write("  }\n");
+	out.write("  }\n\n");
+	
+	// and for the initialization of the primary keys
+	out.write("public:\n");
+	out.write("  virtual bool connect() override\n");
+	out.write("  {\n");
+	out.write("    bool success = QSLDB::connect();\n");
+	out.write("    if (!success)\n");
+	out.write("      return false;\n");
+	out.write("    driver::SelectResult *result = 0;\n");
+	for (Table *t : db->tables())
+	{
+		if (t->primaryKey().isEmpty())
+			continue;
+		out.write("    result = db()->selectTable(_tbl_" + t->name() + ", QList<QSLColumn>({" + t->name() + "_t::col_" + t->primaryKey() + "()}), "
+				  "QSharedPointer<QSLFilter>(new QSLFilter), 1, false);\n");
+		out.write("    if (result && result->first())\n");
+		out.write("      _tbl_" + t->name() + "_pk.used(result->value(\"" + t->primaryKey() + "\")");
+		if (pkTypes[t] == "int")
+			out.write(".toLongLong()");
+		else
+			out.write(".toULongLong()");
+		out.write(");\n");
+	}
+	out.write("    return true;\n");
+	out.write("  }\n\n");
 	
 	out.write("};\n\n"); // class db->name()
 	

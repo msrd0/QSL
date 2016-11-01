@@ -30,6 +30,10 @@ public:
 	void applyFilter(const F &filter) { _filter = QSharedPointer<QSLFilter>(new F(filter)); }
 	/// Overwrite the limit of resulting columns.
 	void limit(int l) { _limit = l; }
+	/// Return result of `SELECT` queries in ascending order.
+	void asc() { _asc = true; }
+	/// Return result of `SELECT` queries in descending order.
+	void desc() { _asc = false; }
 	/// Set the corresponding values for an `UPDATE` query.
 	void updateq(const QString &col, const QVariant &val, const QVariant &pk);
 	
@@ -58,6 +62,8 @@ protected:
 	QSharedPointer<QSLFilter> _filter = QSharedPointer<QSLFilter>(new QSLFilter);
 	/// The maximum rows to be fetched in a SELECT query.
 	int _limit = -1;
+	/// If true, a SELECT query will return in ascending order, otherwise descending.
+	bool _asc = true;
 };
 
 /**

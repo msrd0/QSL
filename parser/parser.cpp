@@ -262,6 +262,8 @@ Database* qsl::qslc::parse(QIODevice *in, const QString &filename, bool qtype)
 				{
 					if (!tbl->primaryKey().isEmpty())
 						error("A table may only have one primary key, but two columns with primary key found: %s and %s", tbl->primaryKey().data(), f.name().data());
+					if (f.type() != "int" && f.type() != "uint")
+						error("Only int and uint are allowed as type of a primary key, but %s was specified", f.type());
 					tbl->setPrimaryKey(f.name());
 				}
 				line = line.mid(constraint.length()).trimmed();

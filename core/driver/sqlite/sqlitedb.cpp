@@ -209,7 +209,7 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 		QSqlQuery emptyq(db());
 		if (emptyq.exec("SELECT * FROM \"" + tbl.name() + "\" LIMIT 1;"))
 		{
-			if (emptyq.first())
+			if (!emptyq.first())
 			{
 				emptyq.finish(); // otherwise table is locked
 #ifdef CMAKE_DEBUG
@@ -404,7 +404,7 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 		}
 		if (!tbl.primaryKey().isEmpty())
 			query += ",PRIMARY KEY(\"" + tbl.primaryKey() + "\")";
-		query += ");";
+		query += ") WITHOUT ROWID;";
 		if (!createq.exec(query))
 		{
 			DUMP_ERROR(createq);
@@ -430,7 +430,7 @@ bool SQLiteDatabase::needsEnquote(const QByteArray &type)
 }
 
 SelectResult* SQLiteDatabase::selectTable(const QSLTable &tbl, const QList<QSLColumn> &cols,
-										  const QSharedPointer<QSLFilter> &filter, int limit)
+										  const QSharedPointer<QSLFilter> &filter, int limit, bool asc)
 {
 	qWarning() << "TODO: Handle filters in " << __PRETTY_FUNCTION__;
 	QSqlQuery q(db());
@@ -442,6 +442,14 @@ SelectResult* SQLiteDatabase::selectTable(const QSLTable &tbl, const QList<QSLCo
 		qq += "\"" + cols[i].name() + "\"";
 	}
 	qq += " FROM \"" + tbl.name() + "\"";
+	if (!tbl.primaryKey().isEmpty())
+	{
+		qq += " ORDER BY \"" + tbl.primaryKey() + "\"";
+		if (asc)
+			qq += " ASC";
+		else
+			qq += " DESC";
+	}
 	if (limit > 0)
 		qq += " LIMIT " + QString::number(limit);
 	qq += ";";

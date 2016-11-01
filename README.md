@@ -64,6 +64,9 @@ a `!`. A column definition could look like this:
 - char(50) "name" !unique !notnull
 ```
 
+Currently only `int` and `uint` are supported as primary keys. In future versions, more types
+might be supported.
+
 ## `qsldump`
 
 If you have an existing database and want to generate it's definition file, you can use the

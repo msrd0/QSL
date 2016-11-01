@@ -1,4 +1,5 @@
 set(QSLCORE_HEADERS
+	pk.h
 	qslcolumn.h
 	qsldb.h
 	qslfilter.h
