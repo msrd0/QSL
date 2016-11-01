@@ -26,8 +26,6 @@ public:
 	virtual QVariant fromChronoDate(const time_point &date) override;
 	virtual QVariant fromChronoTime(const time_point &time) override;
 	virtual QVariant fromChronoDateTime(const time_point &datetime) override;
-	
-	virtual QString sql_select(QSLTable *tbl, const QSharedPointer<QSLFilter> &filter, uint limit);
 };
 
 }

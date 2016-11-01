@@ -37,9 +37,6 @@ public:
 	/// Set the corresponding values for an `UPDATE` query.
 	void updateq(const QString &col, const QVariant &val, const QVariant &pk);
 	
-	/// Returns an SQL expression for the given driver.
-	QString sql(qsl::driver::Driver *driver) const;
-	
 protected:
 	/// Creates a new `QSLQuery` for the given `QSLTable`. Note that the type will be set
 	/// to `QSL::UnknownQueryType`, this has to be overwritten by the subclass before the

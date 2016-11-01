@@ -12,17 +12,6 @@ Database* SQLiteDriver::newDatabase(const char *charset, bool usevar)
 	return new SQLiteDatabase(charset, usevar);
 }
 
-QString SQLiteDriver::sql_select(QSLTable *tbl, const QSharedPointer<QSLFilter> &filter, uint limit)
-{
-	QString f = filter->sql(this);
-	QString sql = QString("SELECT *, rowid AS ") + tbl->primaryKey() + " FROM " + tbl->name();
-	if (!f.isEmpty())
-		sql += " WHERE " + f;
-	if (limit > 0)
-		sql += " LIMIT BY " + QString::number(limit);
-	return (sql + ";");
-}
-
 QDate SQLiteDriver::toQDate(const QVariant &date)
 {
 	return toQDateTime(date).date();

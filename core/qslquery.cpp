@@ -29,9 +29,3 @@ void QSLQuery::updateq(const QString &col, const QVariant &val, const QVariant &
 	_uval = val;
 	_upk  = pk;
 }
-
-QString QSLQuery::sql(Driver*) const
-{
-	Q_ASSERT(_type != QSL::UnknownQueryType);
-	return "TODO";
-}
