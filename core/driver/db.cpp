@@ -73,7 +73,7 @@ SelectResult* Database::selectTable(const QSLTable &tbl,
 									const QSharedPointer<QSLFilter> &filter,
 									int limit, bool asc)
 {
-	return selectTable(tbl, tbl.columns(), filter, limit);
+	return selectTable(tbl, tbl.columns(), filter, limit, asc);
 }
 
 bool Database::insertIntoTable(const QSLTable &tbl, const QList<QSLColumn> &cols, const QVector<QVariant> &values)
