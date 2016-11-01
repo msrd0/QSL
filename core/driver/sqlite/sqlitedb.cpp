@@ -253,12 +253,20 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 			if ((col.constraints() & QSL::notnull) == QSL::notnull)
 			{
 				qCritical() << "QSL[SQLite]: In Table" << tbl.name() << ": ERROR: Column" << col.name() << "was added with !notnull but without a default value";
+				return false;
 			}
 		}
 		
 		// check 2.
 		if (!diff.typeChanged().isEmpty())
+		{
 			needsNewTable = true;
+#ifdef CMAKE_DEBUG
+			qDebug() << "QSL[SQLite]: The types of the following columns changed, need to re-create table" << tbl.name();
+			for (auto col : diff.typeChanged())
+				qDebug() << "             -" << col.name();
+#endif
+		}
 		
 		// check 1.
 		if (!needsNewTable) // othewise we can skip
@@ -276,6 +284,11 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 					break;
 				}
 			}
+			
+#ifdef CMAKE_DEBUG
+			if (needsNewTable)
+				qDebug() << "QSL[SQLite]: At least one constraint other than unique was added or removed, need to re-create table" << tbl.name();
+#endif
 		}
 		
 		// check 3.
@@ -284,6 +297,9 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 			for (auto col : diff.removedCols())
 				if ((col.constraints() & QSL::notnull) == QSL::notnull)
 				{
+#ifdef CMAKE_DEBUG
+					qDebug() << "QSL[SQLite]: At least one column with a notnull-constraint was removed, need to re-create table" << tbl.name();
+#endif
 					needsNewTable = true;
 					break;
 				}
@@ -295,6 +311,9 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 			for (auto col : diff.addedCols())
 				if ((col.constraints() & QSL::primarykey) == QSL::primarykey)
 				{
+#ifdef CMAKE_DEBUG
+					qDebug() << "QSL[SQLite]: The primary key changed, need to re-create table" << tbl.name();
+#endif
 					needsNewTable = true;
 					break;
 				}
@@ -358,6 +377,10 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 					}
 				}
 			}
+			
+			// TODO: remove unique constraints
+			
+			return true;
 		}
 	}
 	

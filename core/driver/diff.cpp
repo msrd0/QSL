@@ -54,7 +54,8 @@ void TableDiff::computeDiff()
 		QSLColumn cola = acols.value(colname, DUMMY_COLUMN);
 		QSLColumn colb = bcols.value(colname, DUMMY_COLUMN);
 		
-		if (cola.minsize() != colb.minsize() || strcoll(cola.type(), colb.type()) != 0)
+		if ((cola.minsize() != -1 && colb.minsize() != -1 && cola.minsize() != colb.minsize())
+				|| strcoll(cola.type(), colb.type()) != 0)
 			_typeChanged << colb;
 		
 		else if (cola.constraints() != colb.constraints())
