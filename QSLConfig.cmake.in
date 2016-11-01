@@ -6,7 +6,6 @@ if(CMAKE_VERSION VERSION_LESS 3.1)
 endif()
 
 include(@CMAKE_INSTALL_PREFIX@/lib/cmake/QSL/QSLVersion.cmake)
-include(@CMAKE_INSTALL_PREFIX@/lib/cmake/QSL/QSLMacros.cmake)
 
 # lets find qt first
 if (NOT Qt5Core_FOUND)
@@ -56,3 +55,5 @@ if ((NOT CMAKE_CXX_STANDARD) OR (CMAKE_CXX_STANDARD LESS 11))
 endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(QSL_INCLUDE_DIRS "${Qt5Sql_INCLUDE_DIRS}" "@CMAKE_INSTALL_PREFIX@/include/qsl")
+
+include(@CMAKE_INSTALL_PREFIX@/lib/cmake/QSL/QSLMacros.cmake)

@@ -17,9 +17,9 @@ function(QSL_COMPILE)
 	set(_QSLC_TIMESTAMP "${CMAKE_CURRENT_BINARY_DIR}/${_QSLC_TARGET}_qslc.timestamp")
 	add_custom_command(OUTPUT "${_QSLC_TIMESTAMP}"
 	                   COMMENT "Compiling ${_QSLC_FILES}"
-                       COMMAND qslc ARGS ${_QSLC_QTYPE_FLAG} -d "${CMAKE_CURRENT_BINARY_DIR}" ${_QSLC_FILES}
+                       COMMAND QSLC_qslc ARGS ${_QSLC_QTYPE_FLAG} -d "${CMAKE_CURRENT_BINARY_DIR}" ${_QSLC_FILES}
 					   COMMAND ${CMAKE_COMMAND} -E touch "${_QSLC_TIMESTAMP}"
-					   DEPENDS ${_QSLC_FILES}
+					   DEPENDS ${_QSLC_FILES} QSLC_qslc
 					   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 					   VERBATIM)
 	add_custom_target("${_QSLC_TARGET}_qslc" DEPENDS "${_QSLC_TIMESTAMP}")
