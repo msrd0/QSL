@@ -2,6 +2,8 @@
 
 #include "driver/db.h"
 
+#include <QHash>
+
 namespace qsl {
 namespace driver {
 
@@ -24,6 +26,9 @@ protected:
 	virtual void loadTableInfo() override;
 	
 	virtual bool ensureTableImpl(const QSLTable &tbl);
+	
+	// key is <tbl-name>.<col-name>
+	QHash<QByteArray, QByteArray> uniqueIndexNames;
 	
 private:
 	bool needsEnquote(const QByteArray &type);

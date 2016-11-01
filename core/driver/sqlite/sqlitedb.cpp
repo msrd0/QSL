@@ -161,6 +161,9 @@ void SQLiteDatabase::loadTableInfo()
 					if (!q.first())
 						continue;
 					
+					if (q.value("origin").toByteArray() == "c") // I only care about CREATE INDEX indexes
+						uniqueIndexNames.insert(tblName + "." + q.value("name").toByteArray(), indexList.value("name").toByteArray());
+					
 					auto it = columns.find(q.value("name").toByteArray());
 					if (it != columns.end())
 						it->addConstraint(QSL::unique);
@@ -239,7 +242,8 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 		    1. A constraint other than unique changed
 		    2. The type of a column changed
 		    3. A column with a not-null constraint was removed
-			4. If a column with a primary-key constraint was added
+			4. A column with a primary-key constraint was added
+			5. A unique-constraint was removed that was not created by a CREATE INDEX statement
 		 => We need to fail if and only if:
 		    A. A new column without a default value but not nullable was added and the table is
 			   not empty
@@ -319,6 +323,25 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 				}
 		}
 		
+		// check 5.
+		if (!needsNewTable) // otherwise we can skip
+		{
+			for (auto constraintDiff : diff.constraintsChanged())
+			{
+				if ((constraintDiff.constraintsRemoved() & QSL::unique) == QSL::unique)
+				{
+					if (!uniqueIndexNames.contains(tbl.name() + "." + constraintDiff.colName()))
+					{
+#ifdef CMAKE_DEBUG
+						qDebug() << "QSL[SQLite]: A unique-constraint not created by an CREATE INDEX statement was removed, need to re-create table" << tbl.name();
+#endif
+						needsNewTable = true;
+						break;
+					}
+				}
+			}
+		}
+		
 		// if we need a new table, rename the old one
 		if (needsNewTable)
 		{
@@ -364,7 +387,7 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 				}
 			}
 			
-			// now, add all unique constraints on existing columns
+			// now, add or remove all unique constraints on existing columns
 			for (auto constraintDiff : diff.constraintsChanged())
 			{
 				if ((constraintDiff.constraintsAdded() & QSL::unique) == QSL::unique)
@@ -376,9 +399,23 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 						return false;
 					}
 				}
+				
+				if ((constraintDiff.constraintsRemoved() & QSL::unique) == QSL::unique)
+				{
+					QByteArray indexName = uniqueIndexNames.value(tbl.name() + "." + constraintDiff.colName());
+					if (indexName.isEmpty())
+					{
+						qCritical() << "QSL[SQLite]: Attempt to remove unique constraint from" << tbl.name() + "." + constraintDiff.colName() + "but unable to find index name";
+						return false;
+					}
+					QSqlQuery diq(db());
+					if (!diq.exec("DROP INDEX \"" + indexName + "\";"))
+					{
+						DUMP_ERROR(diq);
+						return false;
+					}
+				}
 			}
-			
-			// TODO: remove unique constraints
 			
 			return true;
 		}
@@ -390,6 +427,7 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 		qDebug() << "QSL[SQLite]: Creating table" << tbl.name();
 #endif
 		QSqlQuery createq(db());
+		QList<QByteArray> createUniqueIndex;
 		QString query = "CREATE TABLE \"" + tbl.name() + "\"(";
 		for (int i = 0; i < tbl.columns().size(); i++)
 		{
@@ -400,14 +438,23 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 			if ((col.constraints() & QSL::notnull) == QSL::notnull)
 				query += " NOT NULL";
 			if ((col.constraints() & QSL::unique) == QSL::unique)
-				query += " UNIQUE";
+			{
+				if ((col.constraints() & QSL::primarykey) == QSL::primarykey)
+					query += " UNIQUE";
+				else
+					createUniqueIndex.push_back(col.name());
+			}
 		}
 		if (!tbl.primaryKey().isEmpty())
 			query += ",PRIMARY KEY(\"" + tbl.primaryKey() + "\")";
-		query += ") WITHOUT ROWID;";
+		query += ")";
+		if (!tbl.primaryKey().isEmpty())
+			query += " WITHOUT ROWID";
+		query += ";";
 		if (!createq.exec(query))
 		{
 			DUMP_ERROR(createq);
+			createq.finish();
 			
 			// if we had a backup, lets restore it
 			if (hasBackup)
@@ -419,6 +466,79 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 			
 			return false;
 		}
+		createq.finish();
+		
+		for (auto name : createUniqueIndex)
+		{
+			QSqlQuery ciq(db());
+			if (!ciq.exec("CREATE UNIQUE INDEX \"" + uniqueConstraintName(tbl.name(), name) + "\" ON \"" + tbl.name() + "\"(\"" + name + "\");"))
+			{
+				DUMP_ERROR(ciq);
+				ciq.finish();
+				
+				// if we had a backup, lets restore it
+				if (hasBackup)
+				{
+					QSqlQuery restoreq(db());
+					if (!restoreq.exec("ALTER TABLE \"" + tbl.name() + backupSuffix + "\" RENAME TO \"" + tbl.name() + "\";"))
+						DUMP_ERROR(restoreq);	
+				}
+				
+				return false;
+			}
+		}
+		
+		if (hasBackup)
+		{
+#ifdef CMAKE_DEBUG
+			qDebug() << "QSL[SQLite]: Trying to apply backup of table" << tbl.name();
+#endif
+			QSqlQuery restoreq(db());
+			QString cols;
+			QSet<QByteArray> commmonCols;
+			for (auto col : tbl.columns())
+				commmonCols.insert(col.name());
+			for (auto col : addedCols)
+				commmonCols.remove(col.name());
+			for (auto name : commmonCols)
+				cols += name + ",";
+			if (commmonCols.size() > 0)
+				cols = cols.mid(0, cols.size()-1);
+			if (!restoreq.exec("INSERT INTO \"" + tbl.name() + "\" (" + cols + ") SELECT " + cols + " FROM \"" + tbl.name() + backupSuffix + "\";"))
+			{
+				DUMP_ERROR(restoreq);
+				restoreq.finish();
+				
+				// to avoid data loss, lets restore the old table if possible
+				QSqlQuery dropq(db());
+				if (dropq.exec("DROP TABLE \"" + tbl.name() + "\";"))
+				{
+					dropq.finish();
+					QSqlQuery renameq(db());
+					if (renameq.exec("ALTER TABLE \"" + tbl.name() + backupSuffix + "\" RENAME TO \"" + tbl.name() + "\";"))
+					{
+#ifdef CMAKE_DEBUG
+						qDebug() << "QSL[SQLite]: Restored table" << tbl.name() << "after failure applying backup";
+#endif
+						return false;
+					}
+					else
+						DUMP_ERROR(renameq);
+				}
+				else
+					DUMP_ERROR(dropq);
+				qWarning() << "QSL[SQLite]: Unable to restore backup of table" << tbl.name() << "but the data is still available in a table called" << tbl.name() + backupSuffix;
+				// return true because I were able to ensure the table (with data loss)
+				return true;
+			}
+			restoreq.finish();
+			
+			// we no longer need the backup table
+			QSqlQuery dropq(db());
+			if (!dropq.exec("DROP TABLE \"" + tbl.name() + backupSuffix + "\";"))
+				DUMP_ERROR(dropq);
+		}
+		
 		return true;
 	}
 }
