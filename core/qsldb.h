@@ -35,6 +35,8 @@ class QSLDB
 	Q_DISABLE_COPY(QSLDB)
 	
 public:
+	~QSLDB();
+	
 	/// Returns the name of the database.
 	const char* name() const { return _name; }
 	/// Returns the driver of the database.
@@ -59,6 +61,8 @@ public:
 	virtual bool connect();
 	/// Disconnect from the database again. If not connected, does nothing.
 	virtual void disconnect();
+	/// Returns true if a connection to the database exists.
+	bool isConnected();
 	
 	/// The underlying database.
 	driver::Database *db();

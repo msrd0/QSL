@@ -23,6 +23,12 @@ QSLDB::QSLDB(const char *name, Driver *driver)
 	Q_ASSERT(driver);
 }
 
+QSLDB::~QSLDB()
+{
+	if (isConnected())
+		disconnect();
+}
+
 Database *QSLDB::db()
 {
 	if (!_db)
@@ -63,6 +69,7 @@ bool QSLDB::connect()
 		if (!db()->ensureTable(*tbl))
 		{
 			fprintf(stderr, "QSLDB: Unable to ensure table %s.%s\n", name(), tbl->name().data());
+			db()->disconnect();
 			return false;
 		}
 	return true;
@@ -71,6 +78,11 @@ bool QSLDB::connect()
 void QSLDB::disconnect()
 {
 	db()->disconnect();
+}
+
+bool QSLDB::isConnected()
+{
+	return db()->isConnected();
 }
 
 void QSLDB::registerTable(QSLTable *tbl)
