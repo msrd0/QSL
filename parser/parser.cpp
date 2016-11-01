@@ -119,6 +119,10 @@ static const QSet<QByteArray> keywords = {
 	"xor_eq"
 };
 
+static const QSet<QByteArray> forbidden = {
+	"db"
+};
+
 static bool checkName(const QByteArray &name)
 {
 	// everything with a double underscore or starting with an underscore followed
@@ -127,6 +131,9 @@ static bool checkName(const QByteArray &name)
 		return false;
 	// every C++ keyword is (of course) reserved
 	if (keywords.contains(name))
+		return false;
+	// the forbidden names are as the name says forbidden
+	if (forbidden.contains(name))
 		return false;
 	// of course normal rules apply: start with an underscore or a letter and only
 	// consists of only digits, underscores and letters
@@ -265,6 +272,8 @@ Database* qsl::qslc::parse(QIODevice *in, const QString &filename, bool qtype)
 					if (f.type() != "int" && f.type() != "uint")
 						error("Only int and uint are allowed as type of a primary key, but %s was specified", f.type().data());
 					tbl->setPrimaryKey(f.name());
+					// pkey implies unique
+					f.setConstraint(QSL::unique);
 				}
 				line = line.mid(constraint.length()).trimmed();
 			}
