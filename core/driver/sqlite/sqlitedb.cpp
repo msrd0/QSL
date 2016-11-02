@@ -1,3 +1,4 @@
+#include "qslfilter.h"
 #include "sqlitedb.h"
 #include "sqlitetypes.h"
 #include "driver/diff.h"
@@ -549,10 +550,85 @@ bool SQLiteDatabase::needsEnquote(const QByteArray &type)
 	return (t=="char" || t=="text" || t=="password" || t=="byte" || t=="blob" || t=="variant");
 }
 
-SelectResult* SQLiteDatabase::selectTable(const QSLTable &tbl, const QList<QSLColumn> &cols,
-										  const QSharedPointer<QSLFilter> &filter, int limit, bool asc)
+QString SQLiteDatabase::filterSQL(const QSLFilter &filter)
 {
-	qWarning() << "TODO: Handle filters in " << __PRETTY_FUNCTION__;
+	if (filter.op() == QSLFilter::noop)
+		return QString();
+	QString sql;
+	
+	if (filter.op() < 0x20)
+	{
+		sql += "(\"" + filter.arg(0) + "\"";
+		switch (filter.op())
+		{
+		case QSLFilter::eq: sql += " == "; break;
+		case QSLFilter::ne: sql += " <> "; break;
+		case QSLFilter::lt: sql += " <  "; break;
+		case QSLFilter::le: sql += " <= "; break;
+		case QSLFilter::gt: sql += " >  "; break;
+		case QSLFilter::ge: sql += " >= "; break;
+		case QSLFilter::like: sql += " LIKE "; break;
+		default:
+			fprintf(stderr, "QSL[SQLite]: Unknown filter operator value 0x%02x\n", filter.op());
+			return QString();
+		}
+		
+		QString arg = filter.arg(1);
+		if (arg.startsWith("int:") || arg.startsWith("double:"))
+			sql += arg.mid(arg.indexOf(':' + 1));
+		else if (arg.startsWith("'") && arg.endsWith("'"))
+			sql += "'" + arg.mid(1, arg.size() - 2).replace("'", "''") + "'";
+		else
+			sql += "\"" + arg.replace("\"", "\"\"") + "\"";
+		
+		sql += ")";
+	}
+	
+	else if (filter.op() < 0x30)
+	{
+		sql += "(\"" + filter.arg(0) + "\"";
+		switch (filter.op())
+		{
+		case QSLFilter::isnull: sql += " ISNULL "; break;
+		case QSLFilter::notnull: sql += " NOT NULL "; break;
+		default:
+			fprintf(stderr, "QSL[SQLite]: Unknown filter operator value 0x%02x\n", filter.op());
+			return QString();
+		}
+	}
+	
+	else if (filter.op() < 0x40)
+	{
+		sql += "(" + filterSQL(filter.filter(0));
+		switch (filter.op())
+		{
+		case QSLFilter::op_and: sql += " AND "; break;
+		case QSLFilter::op_or: sql += " OR "; break;
+		default:
+			fprintf(stderr, "QSL[SQLite]: Unknown filter operator value 0x%02x\n", filter.op());
+			return QString();
+		}
+		sql += filterSQL(filter.filter(1)) + ")";
+	}
+	
+	else
+	{
+		switch (filter.op())
+		{
+		case QSLFilter::op_not: sql += "NOT "; break;
+		default:
+			fprintf(stderr, "QSL[SQLite]: Unknown filter operator value 0x%02x\n", filter.op());
+			return QString();
+		}
+		sql += filterSQL(filter.filter(0));
+	}
+	
+	return sql;
+}
+
+SelectResult* SQLiteDatabase::selectTable(const QSLTable &tbl, const QList<QSLColumn> &cols,
+										  const QSLFilter &filter, int limit, bool asc)
+{
 	QSqlQuery q(db());
 	QString qq = "SELECT ";
 	for (int i = 0; i < cols.size(); i++)
@@ -562,6 +638,9 @@ SelectResult* SQLiteDatabase::selectTable(const QSLTable &tbl, const QList<QSLCo
 		qq += "\"" + cols[i].name() + "\"";
 	}
 	qq += " FROM \"" + tbl.name() + "\"";
+	QString fsql = filterSQL(filter);
+	if (!fsql.isEmpty())
+		qq += " WHERE " + fsql;
 	if (!tbl.primaryKey().isEmpty())
 	{
 		qq += " ORDER BY \"" + tbl.primaryKey() + "\"";

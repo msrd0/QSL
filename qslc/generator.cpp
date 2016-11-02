@@ -244,14 +244,29 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 		out.write("    }\n\n");
 		
 		// filters
-		out.write("    template<typename F>\n");
-		out.write("    " + t->name() + "_q& filter(const F &filter)\n");
+		out.write("  public:\n");
+		out.write("    template<typename... Arguments>\n");
+		out.write("    " + t->name() + "_q& filter(Arguments... args)\n");
 		out.write("    {\n");
-		out.write("      applyFilter(filter);\n");
+		out.write("      QList<QSLFilterExprType> list;\n");
+		out.write("      filter0(list, args...);\n");
 		out.write("      return *this;\n");
+		out.write("    }\n");
+		out.write("  private:\n"),
+		out.write("    template<typename T, typename... Arguments>\n");
+		out.write("    void filter0(QList<QSLFilterExprType> &list, const T &arg, Arguments... args)\n");
+		out.write("    {\n");
+		out.write("      list.push_back(QSLFilterExprType(arg));\n");
+		out.write("      filter0(list, args...);\n");
+		out.write("    }\n");
+		out.write("    void filter0(const QList<QSLFilterExprType> &list)\n");
+		out.write("    {\n");
+		out.write("      QSLFilter f = qsl_filter(list);\n");
+		out.write("      applyFilter(f);\n");
 		out.write("    }\n\n");
 		
 		// query
+		out.write("  public:\n");
 		out.write("    virtual " + list_t + "<" + t->name() + "_t> query()\n");
 		out.write("    {\n");
 		out.write("      driver::SelectResult *result = _tbl->db()->db()->selectTable(*_tbl, _filter, _limit);\n");
@@ -424,7 +439,7 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 		if (t->primaryKey().isEmpty())
 			continue;
 		out.write("    result = db()->selectTable(_tbl_" + t->name() + ", QList<QSLColumn>({" + t->name() + "_t::col_" + t->primaryKey() + "()}), "
-				  "QSharedPointer<QSLFilter>(new QSLFilter), 1, false);\n");
+				  "QSLFilter(), 1, false);\n");
 		out.write("    if (result && result->first())\n");
 		out.write("      _tbl_" + t->name() + "_pk.used(result->value(\"" + t->primaryKey() + "\")");
 		if (pkTypes[t] == "int")

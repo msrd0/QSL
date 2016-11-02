@@ -70,7 +70,7 @@ QVariant CopySelectResult::value(const QString &col) const
 // ##################################################
 
 SelectResult* Database::selectTable(const QSLTable &tbl,
-									const QSharedPointer<QSLFilter> &filter,
+									const QSLFilter &filter,
 									int limit, bool asc)
 {
 	return selectTable(tbl, tbl.columns(), filter, limit, asc);

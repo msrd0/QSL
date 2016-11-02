@@ -16,7 +16,7 @@ public:
 	
 	virtual bool ensureTable(const QSLTable &tbl) override;
 	
-	virtual SelectResult* selectTable(const QSLTable &tbl, const QList<QSLColumn> &cols, const QSharedPointer<QSLFilter> &filter, int limit, bool asc) override;
+	virtual SelectResult* selectTable(const QSLTable &tbl, const QList<QSLColumn> &cols, const QSLFilter &filter, int limit, bool asc) override;
 	
 	virtual bool insertIntoTable(const QSLTable &tbl, const QList<QSLColumn> &cols, const QVector<QVector<QVariant>> &rows) override;
 	
@@ -26,6 +26,8 @@ protected:
 	virtual void loadTableInfo() override;
 	
 	virtual bool ensureTableImpl(const QSLTable &tbl);
+	
+	static QString filterSQL(const QSLFilter &filter);
 	
 	// key is <tbl-name>.<col-name>
 	QHash<QByteArray, QByteArray> uniqueIndexNames;

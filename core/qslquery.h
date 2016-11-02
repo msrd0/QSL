@@ -27,7 +27,7 @@ public:
 	
 	/// Overwrite the filter used by `SELECT` queries.
 	template<typename F>
-	void applyFilter(const F &filter) { _filter = QSharedPointer<QSLFilter>(new F(filter)); }
+	void applyFilter(const F &filter) { _filter = filter; }
 	/// Overwrite the limit of resulting columns.
 	void limit(int l) { _limit = l; }
 	/// Return result of `SELECT` queries in ascending order.
@@ -56,7 +56,7 @@ protected:
 	/// The primary key of the row that should be updated if `_type` is `QSL::UpdateQuery`.
 	QVariant _upk;
 	/// The filter to be used in a SELECT query.
-	QSharedPointer<QSLFilter> _filter = QSharedPointer<QSLFilter>(new QSLFilter);
+	QSLFilter _filter;
 	/// The maximum rows to be fetched in a SELECT query.
 	int _limit = -1;
 	/// If true, a SELECT query will return in ascending order, otherwise descending.
