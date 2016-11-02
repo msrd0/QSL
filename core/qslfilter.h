@@ -195,6 +195,16 @@ public:
 		, _val(str)
 	{
 	}
+	QSLFilterExprType(const char *str)
+		: _isOperator(false)
+		, _val(str)
+	{
+	}
+	QSLFilterExprType(const std::string &str)
+		: _isOperator(false)
+		, _val(str.data())
+	{
+	}
 	QSLFilterExprType(int64_t i)
 		: _isOperator(false)
 		, _val("int:" + QString::number(i))
