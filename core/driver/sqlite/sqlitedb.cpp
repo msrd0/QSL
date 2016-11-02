@@ -422,40 +422,60 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 		}
 	}
 	
-	if (needsNewTable)
-	{
+	Q_ASSERT(needsNewTable);
+	
 #ifdef CMAKE_DEBUG
-		qDebug() << "QSL[SQLite]: Creating table" << tbl.name();
+	qDebug() << "QSL[SQLite]: Creating table" << tbl.name();
 #endif
-		QSqlQuery createq(db());
-		QList<QByteArray> createUniqueIndex;
-		QString query = "CREATE TABLE \"" + tbl.name() + "\"(";
-		for (int i = 0; i < tbl.columns().size(); i++)
+	QSqlQuery createq(db());
+	QList<QByteArray> createUniqueIndex;
+	QString query = "CREATE TABLE \"" + tbl.name() + "\"(";
+	for (int i = 0; i < tbl.columns().size(); i++)
+	{
+		if (i!=0)
+			query += ",";
+		QSLColumn col = tbl.columns()[i];
+		query += "\"" + col.name() + "\" " + SQLiteTypes::fromQSL(col.type(), col.minsize(), usevar());
+		if ((col.constraints() & QSL::notnull) == QSL::notnull)
+			query += " NOT NULL";
+		if ((col.constraints() & QSL::unique) == QSL::unique)
 		{
-			if (i!=0)
-				query += ",";
-			QSLColumn col = tbl.columns()[i];
-			query += "\"" + col.name() + "\" " + SQLiteTypes::fromQSL(col.type(), col.minsize(), usevar());
-			if ((col.constraints() & QSL::notnull) == QSL::notnull)
-				query += " NOT NULL";
-			if ((col.constraints() & QSL::unique) == QSL::unique)
-			{
-				if ((col.constraints() & QSL::primarykey) == QSL::primarykey)
-					query += " UNIQUE";
-				else
-					createUniqueIndex.push_back(col.name());
-			}
+			if ((col.constraints() & QSL::primarykey) == QSL::primarykey)
+				query += " UNIQUE";
+			else
+				createUniqueIndex.push_back(col.name());
 		}
-		if (!tbl.primaryKey().isEmpty())
-			query += ",PRIMARY KEY(\"" + tbl.primaryKey() + "\")";
-		query += ")";
-		if (!tbl.primaryKey().isEmpty())
-			query += " WITHOUT ROWID";
-		query += ";";
-		if (!createq.exec(query))
+	}
+	if (!tbl.primaryKey().isEmpty())
+		query += ",PRIMARY KEY(\"" + tbl.primaryKey() + "\")";
+	query += ")";
+	if (!tbl.primaryKey().isEmpty())
+		query += " WITHOUT ROWID";
+	query += ";";
+	if (!createq.exec(query))
+	{
+		DUMP_ERROR(createq);
+		createq.finish();
+		
+		// if we had a backup, lets restore it
+		if (hasBackup)
 		{
-			DUMP_ERROR(createq);
-			createq.finish();
+			QSqlQuery restoreq(db());
+			if (!restoreq.exec("ALTER TABLE \"" + tbl.name() + backupSuffix + "\" RENAME TO \"" + tbl.name() + "\";"))
+				DUMP_ERROR(restoreq);	
+		}
+		
+		return false;
+	}
+	createq.finish();
+	
+	for (auto name : createUniqueIndex)
+	{
+		QSqlQuery ciq(db());
+		if (!ciq.exec("CREATE UNIQUE INDEX \"" + uniqueConstraintName(tbl.name(), name) + "\" ON \"" + tbl.name() + "\"(\"" + name + "\");"))
+		{
+			DUMP_ERROR(ciq);
+			ciq.finish();
 			
 			// if we had a backup, lets restore it
 			if (hasBackup)
@@ -467,81 +487,60 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 			
 			return false;
 		}
-		createq.finish();
-		
-		for (auto name : createUniqueIndex)
-		{
-			QSqlQuery ciq(db());
-			if (!ciq.exec("CREATE UNIQUE INDEX \"" + uniqueConstraintName(tbl.name(), name) + "\" ON \"" + tbl.name() + "\"(\"" + name + "\");"))
-			{
-				DUMP_ERROR(ciq);
-				ciq.finish();
-				
-				// if we had a backup, lets restore it
-				if (hasBackup)
-				{
-					QSqlQuery restoreq(db());
-					if (!restoreq.exec("ALTER TABLE \"" + tbl.name() + backupSuffix + "\" RENAME TO \"" + tbl.name() + "\";"))
-						DUMP_ERROR(restoreq);	
-				}
-				
-				return false;
-			}
-		}
-		
-		if (hasBackup)
-		{
+	}
+	
+	if (hasBackup)
+	{
 #ifdef CMAKE_DEBUG
-			qDebug() << "QSL[SQLite]: Trying to apply backup of table" << tbl.name();
+		qDebug() << "QSL[SQLite]: Trying to apply backup of table" << tbl.name();
 #endif
-			QSqlQuery restoreq(db());
-			QString cols;
-			QSet<QByteArray> commmonCols;
-			for (auto col : tbl.columns())
-				commmonCols.insert(col.name());
-			for (auto col : addedCols)
-				commmonCols.remove(col.name());
-			for (auto name : commmonCols)
-				cols += name + ",";
-			if (commmonCols.size() > 0)
-				cols = cols.mid(0, cols.size()-1);
-			if (!restoreq.exec("INSERT INTO \"" + tbl.name() + "\" (" + cols + ") SELECT " + cols + " FROM \"" + tbl.name() + backupSuffix + "\";"))
-			{
-				DUMP_ERROR(restoreq);
-				restoreq.finish();
-				
-				// to avoid data loss, lets restore the old table if possible
-				QSqlQuery dropq(db());
-				if (dropq.exec("DROP TABLE \"" + tbl.name() + "\";"))
-				{
-					dropq.finish();
-					QSqlQuery renameq(db());
-					if (renameq.exec("ALTER TABLE \"" + tbl.name() + backupSuffix + "\" RENAME TO \"" + tbl.name() + "\";"))
-					{
-#ifdef CMAKE_DEBUG
-						qDebug() << "QSL[SQLite]: Restored table" << tbl.name() << "after failure applying backup";
-#endif
-						return false;
-					}
-					else
-						DUMP_ERROR(renameq);
-				}
-				else
-					DUMP_ERROR(dropq);
-				qWarning() << "QSL[SQLite]: Unable to restore backup of table" << tbl.name() << "but the data is still available in a table called" << tbl.name() + backupSuffix;
-				// return true because I were able to ensure the table (with data loss)
-				return true;
-			}
+		QSqlQuery restoreq(db());
+		QString cols;
+		QSet<QByteArray> commmonCols;
+		for (auto col : tbl.columns())
+			commmonCols.insert(col.name());
+		for (auto col : addedCols)
+			commmonCols.remove(col.name());
+		for (auto name : commmonCols)
+			cols += name + ",";
+		if (commmonCols.size() > 0)
+			cols = cols.mid(0, cols.size()-1);
+		if (!restoreq.exec("INSERT INTO \"" + tbl.name() + "\" (" + cols + ") SELECT " + cols + " FROM \"" + tbl.name() + backupSuffix + "\";"))
+		{
+			DUMP_ERROR(restoreq);
 			restoreq.finish();
 			
-			// we no longer need the backup table
+			// to avoid data loss, lets restore the old table if possible
 			QSqlQuery dropq(db());
-			if (!dropq.exec("DROP TABLE \"" + tbl.name() + backupSuffix + "\";"))
+			if (dropq.exec("DROP TABLE \"" + tbl.name() + "\";"))
+			{
+				dropq.finish();
+				QSqlQuery renameq(db());
+				if (renameq.exec("ALTER TABLE \"" + tbl.name() + backupSuffix + "\" RENAME TO \"" + tbl.name() + "\";"))
+				{
+#ifdef CMAKE_DEBUG
+					qDebug() << "QSL[SQLite]: Restored table" << tbl.name() << "after failure applying backup";
+#endif
+					return false;
+				}
+				else
+					DUMP_ERROR(renameq);
+			}
+			else
 				DUMP_ERROR(dropq);
+			qWarning() << "QSL[SQLite]: Unable to restore backup of table" << tbl.name() << "but the data is still available in a table called" << tbl.name() + backupSuffix;
+			// return true because I were able to ensure the table (with data loss)
+			return true;
 		}
+		restoreq.finish();
 		
-		return true;
+		// we no longer need the backup table
+		QSqlQuery dropq(db());
+		if (!dropq.exec("DROP TABLE \"" + tbl.name() + backupSuffix + "\";"))
+			DUMP_ERROR(dropq);
 	}
+	
+	return true;
 }
 
 bool SQLiteDatabase::needsEnquote(const QByteArray &type)
