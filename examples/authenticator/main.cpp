@@ -2,7 +2,6 @@
 #include "../exampleglobal.h"
 
 using namespace qsl;
-using namespace qsl::filters;
 
 #include <iostream>
 #include <string>
@@ -43,7 +42,7 @@ int main(int argc, char **argv)
 	{
 	    string user, password;
 	    cin >> user >> password;
-	    auto r = a->users().filter(eq("name", user)).query();
+	    auto r = a->users().filter("name" EQ user).query();
 	    printf("Found %d users with name %s\n", r.size(), user.data());
 	    if (r.size() != 1)
 		continue;
