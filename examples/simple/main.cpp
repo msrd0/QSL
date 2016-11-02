@@ -1,7 +1,6 @@
 #include "db_qsl_example.h"
 
 using namespace qsl;
-using namespace qsl::filters;
 
 #include "../exampleglobal.h"
 
@@ -30,7 +29,7 @@ int main(int argc, char **argv)
 	r = e->foo().query();
 	printf("result size: %d\n", r.size());
 	
-	r = e->foo().filter(a(sw("bar", "example run at"), co("bar", (qlonglong)t))).query();
+	r = e->foo().filter("bar" LIKE "example run at%" AND "bar" LIKE "%" + QString::number(t) + "%").query();
 	printf("result size for insert: %d\n", r.size());
 	
 	if (r.size() != 1)
