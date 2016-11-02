@@ -18,8 +18,8 @@ find_package(Qt5 5.5.0 REQUIRED COMPONENTS Core Sql)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -Werror=format")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=format")
+set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -Werror=format -Werror=return-type")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=format -Werror=return-type")
 
 if(CMAKE_BUILD_TYPE MATCHES Debug)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -fsanitize=undefined")
