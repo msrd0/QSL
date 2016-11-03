@@ -21,7 +21,7 @@ namespace driver {
  * to retrieve the column information from the existing database, create the columns, and later
  * match the constraints to the columns.
  */
-class QSL_PRIVATE MutableColumn : public QSLColumn
+class QSL_PUBLIC MutableColumn : public QSLColumn
 {
 public:
 	/// Creates a new column with the given name, type, type's minsize and, if given, constraints
