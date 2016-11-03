@@ -5,8 +5,7 @@
 namespace qsl {
 namespace driver {
 
-
-class SQLiteDriver : public Driver
+class QSL_PRIVATE SQLiteDriver : public Driver
 {
 public:
 	// just to simplify coding

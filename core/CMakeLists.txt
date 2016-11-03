@@ -3,6 +3,7 @@ set(QSLCORE_HEADERS
 	qslcolumn.h
 	qsldb.h
 	qslfilter.h
+	qslfilter_p.h
 	qslnamespace.h
 	qslquery.h
 	qsltable.h)

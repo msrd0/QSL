@@ -1,4 +1,5 @@
 #include "qslfilter.h"
+#include "qslfilter_p.h"
 
 #include <unistd.h>
 
@@ -168,4 +169,32 @@ QSLFilter qsl::qsl_filter(const QList<QSLFilterExprType> &args)
 	}
 	
 	return f;
+}
+
+
+
+
+QSLFilter::QSLFilter(const QSLFilter &other)
+	: QObject()
+	, d(other.d)
+{
+}
+QSLFilter::QSLFilter(QSLFilter &&other)
+	: QObject()
+	, d(other.d)
+{
+}
+QSLFilter::~QSLFilter()
+{
+}
+
+QSLFilter& QSLFilter::operator= (const QSLFilter &other)
+{
+	d = other.d;
+	return *this;
+}
+QSLFilter& QSLFilter::operator= (QSLFilter &&other)
+{
+	d = other.d;
+	return *this;
 }

@@ -14,7 +14,7 @@ namespace qsl {
 /**
  * This struct stores default values for password hashing.
  */
-struct PasswordDefaults
+struct QSL_PUBLIC PasswordDefaults
 {
 	/// The number of hash operations that should be performed.
 	uint16_t repeats = 1000;
@@ -27,13 +27,13 @@ struct PasswordDefaults
 /**
  * This struct is used to de-ambiguos the constructor.
  */
-struct PasswordEntry { /** The entry. */ QByteArray entry; };
+struct QSL_PUBLIC PasswordEntry { /** The entry. */ QByteArray entry; };
 
 /**
  * This class is used to store a password. It can hash a given password or
  * read one from the database and check it against a given plain password.
  */
-class Password
+class QSL_PUBLIC Password
 {
 public:
 	/// Generates a salt from /dev/(u)random of the given length.

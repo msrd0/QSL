@@ -15,7 +15,7 @@ class QSLDB;
  * This class is used by generated database classes to represent the tables in the database.
  * After the table is completely constructed it needs to be registered via `QSLDB::registerTable()`.
  */
-class QSLTable
+class QSL_PUBLIC QSLTable
 {
 public:
 	/// Creates a new table with the given name for the given database. Please note that the

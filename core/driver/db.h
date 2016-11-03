@@ -21,7 +21,7 @@ namespace driver {
  * to retrieve the column information from the existing database, create the columns, and later
  * match the constraints to the columns.
  */
-class MutableColumn : public QSLColumn
+class QSL_PRIVATE MutableColumn : public QSLColumn
 {
 public:
 	/// Creates a new column with the given name, type, type's minsize and, if given, constraints
@@ -54,7 +54,7 @@ public:
  * This class is the result of an SQL `SELECT` query. It is used to get all records
  * of a select query.
  */
-class SelectResult
+class QSL_PUBLIC SelectResult
 {
 public:
 	/** Retrieves the first record in the select result. */
@@ -80,7 +80,7 @@ public:
  * not use this class if your driver gives you a result similar to `SelectResult`
  * to prevent unneccessary copies.
  */
-class CopySelectResult : public SelectResult
+class QSL_PUBLIC CopySelectResult : public SelectResult
 {
 public:
 	/** Creates a new empty `SelectResult` with the give selected column names. */
@@ -116,7 +116,7 @@ private:
  * the `qsl::driver::QtDatabase` class that uses a `QSqlDatabase` behind
  * the scenes to provide a database connection.
  */
-class Database
+class QSL_PUBLIC Database
 {
 	
 public:
@@ -231,7 +231,7 @@ public:
 /**
  * A `SelectResult` implementation that mirrors the result of a `QSqlQuery`.
  */
-class QtSelectResult : public SelectResult
+class QSL_PUBLIC QtSelectResult : public SelectResult
 {
 public:
 	/** Constructs a new `QtSelectResult` that mirrors `query`. */
@@ -255,7 +255,7 @@ protected:
  * A database implementation that can be used by every driver with
  * a corresponding QtSql driver.
  */
-class QtDatabase : public Database
+class QSL_PUBLIC QtDatabase : public Database
 {
 	
 protected:

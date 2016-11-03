@@ -1,5 +1,7 @@
 #pragma once
 
+#include "qsl_global.h"
+
 #include <utility>
 
 #include <QByteArray>
@@ -7,7 +9,7 @@
 namespace qsl {
 namespace driver {
 
-class SQLiteTypes
+class QSL_PRIVATE SQLiteTypes
 {
 public:
 	static std::pair<QByteArray, int> fromSQL(const QByteArray &type);

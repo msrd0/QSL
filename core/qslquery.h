@@ -21,7 +21,7 @@ namespace driver { class Driver; }
  * 
  * You probably don't need to use this class directly. Have a look at `QSLTableQuery`.
  */
-class QSLQuery
+class QSL_PUBLIC QSLQuery
 {
 public:
 	/// Creates a new `QSLQuery` for the given `QSLTable` with the given type.
@@ -118,7 +118,7 @@ protected:
  * ```
  */
 template<typename T, typename container = std::vector<T>>
-class QSLTableQuery : public QSLQuery
+class QSL_PUBLIC QSLTableQuery : public QSLQuery
 {
 protected:
 	/// Creates a new `QSLTableQuery` for the given `QSLTable`.

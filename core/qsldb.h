@@ -32,7 +32,7 @@ class Driver;
  *     // successfully connected
  * ```
  */
-class QSLDB
+class QSL_PUBLIC QSLDB
 {
 	Q_DISABLE_COPY(QSLDB)
 	

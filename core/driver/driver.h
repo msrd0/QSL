@@ -36,7 +36,7 @@ namespace driver {
  * ```
  * Then, package everything into a library called `libqsldYourDriverName.so`.
  */
-class Driver
+class QSL_PUBLIC Driver
 {
 public:
 	/**

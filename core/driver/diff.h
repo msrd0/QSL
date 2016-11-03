@@ -5,7 +5,7 @@
 namespace qsl {
 namespace driver {
 
-class ConstraintDifference
+class QSL_PUBLIC ConstraintDifference
 {
 public:
 	ConstraintDifference(const QSLColumn &a, const QSLColumn &b);
@@ -24,7 +24,7 @@ private:
  * update existing tables in a database in the `Database::ensureTable` method. For
  * more information, see `TableDiff::TableDiff`.
  */
-class TableDiff
+class QSL_PUBLIC TableDiff
 {
 public:
 	/**

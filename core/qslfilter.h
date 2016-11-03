@@ -14,7 +14,7 @@ namespace qsl {
 class QSLFilterData;
 class QSLFilterExprType;
 
-class QSLFilter : public QObject
+class QSL_PUBLIC QSLFilter : public QObject
 {
 	Q_OBJECT
 	
@@ -133,54 +133,13 @@ private:
 	
 	// all those methods that were deleted by QObject
 public:
-	QSLFilter(const QSLFilter &other)
-		: QObject()
-		, d(other.d)
-	{
-	}
-	QSLFilter(QSLFilter &&other)
-		: QObject()
-		, d(other.d)
-	{
-	}
+	QSLFilter(const QSLFilter &other);
+	QSLFilter(QSLFilter &&other);
+	~QSLFilter();
 	
-	QSLFilter& operator= (const QSLFilter &other)
-	{
-		d = other.d;
-		return *this;
-	}
-	QSLFilter& operator= (QSLFilter &&other)
-	{
-		d = other.d;
-		return *this;
-	}
+	QSLFilter& operator= (const QSLFilter &other);
+	QSLFilter& operator= (QSLFilter &&other);
 	
-};
-
-/**
- * THIS CLASS IS NOT PART OF THE API AND MIGHT CHANGE AT ANY TIME!!!
- * 
- * This class holds all data that a `QSLFilter` stores.
- */
-class QSLFilterData : public QSharedData
-{
-public:
-	QSLFilterData(QSLFilter::Operator oper)
-		: op(oper)
-	{
-	}
-	
-	QSLFilterData(const QSLFilterData &other)
-		: QSharedData(other)
-		, op(other.op)
-		, filters(other.filters)
-		, args(other.args)
-	{
-	}
-	
-	QSLFilter::Operator op;
-	QVector<QSLFilter> filters;
-	QVector<QString> args;
 };
 
 /**
@@ -188,7 +147,7 @@ public:
  * double or `QSLFilter::Operator`. Note that integer and double types are
  * converted to strings but prefixed with either `int:` or `double:`.
  */
-class QSLFilterExprType
+class QSL_PUBLIC QSLFilterExprType
 {
 public:
 	QSLFilterExprType(const QString &str)

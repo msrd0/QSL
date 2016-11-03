@@ -11,7 +11,7 @@
  * This class simply contains a lot of enums. The reason for this being a class
  * and not a namespace is that all enums are registered via [moc](http://doc.qt.io/qt-5/moc.html).
  */
-class QSL : public QObject
+class QSL_PUBLIC QSL : public QObject
 {
 	Q_OBJECT
 	

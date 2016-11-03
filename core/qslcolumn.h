@@ -10,7 +10,7 @@ namespace qsl {
 /**
  * This class is used to represent a column of a `QSLTable`.
  */
-class QSLColumn
+class QSL_PUBLIC QSLColumn
 {
 public:
 	/// Creates a new column with the given name, type, type's minsize and constraints

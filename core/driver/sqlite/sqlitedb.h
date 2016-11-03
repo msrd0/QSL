@@ -7,7 +7,7 @@
 namespace qsl {
 namespace driver {
 
-class SQLiteDatabase : public QtDatabase
+class QSL_PRIVATE SQLiteDatabase : public QtDatabase
 {
 public:
 	SQLiteDatabase(const char *charset, bool usevar);
