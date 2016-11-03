@@ -13,6 +13,7 @@ class QSL_PUBLIC PrimaryKeyHandler
 public:
 	/** Constructs a new primary key handler with a default start value. */
 	PrimaryKeyHandler()
+		: _pk(0)
 	{
 	}
 	
