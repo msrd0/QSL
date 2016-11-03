@@ -10,8 +10,7 @@ set(QSLCORE_HEADERS
 	qsltable.h)
 set(QSLCORE_SOURCES
 	qsldb.cpp
-	qslfilter.cpp
-	qslquery.cpp)
+	qslfilter.cpp)
 set(QSLVARIANT_HEADERS
 	qslpassword.h
 	qslvariant.h)

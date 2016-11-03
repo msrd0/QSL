@@ -6,9 +6,6 @@
 #include "qslfilter.h"
 #include "qslnamespace.h"
 
-#include <QSqlDatabase>
-#include <QVector>
-
 namespace qsl {
 class QSLTable;
 
@@ -25,7 +22,11 @@ class QSL_PUBLIC QSLQuery
 {
 public:
 	/// Creates a new `QSLQuery` for the given `QSLTable` with the given type.
-	QSLQuery(QSLTable *tbl);
+	QSLQuery(QSLTable *tbl)
+		: _tbl(tbl)
+	{
+		Q_ASSERT(tbl);
+	}
 	
 	/// Overwrite the filter used by `SELECT` queries.
 	template<typename F>
