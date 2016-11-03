@@ -26,4 +26,5 @@ Table* Database::table(const QByteArray &name)
 void Database::addTable(Table *table)
 {
 	_tables.insert(table->name(), table);
+	_orderedTables.push_back(table);
 }
