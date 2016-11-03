@@ -26,17 +26,6 @@ public:
 		notnull    = 0x4
 	};
 	Q_ENUM(ColumnConstraint)
-	
-	/// The different types of queries that can be created.
-	enum QueryType
-	{
-		UnknownQueryType = 0,
-		CreateTableQuery,
-		SelectQuery,
-		InsertQuery,
-		UpdateQuery
-	};
-	Q_ENUM(QueryType)
 };
 
 // just for doxygen

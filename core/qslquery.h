@@ -25,7 +25,7 @@ class QSL_PUBLIC QSLQuery
 {
 public:
 	/// Creates a new `QSLQuery` for the given `QSLTable` with the given type.
-	QSLQuery(QSLTable *tbl, QSL::QueryType type);
+	QSLQuery(QSLTable *tbl);
 	
 	/// Overwrite the filter used by `SELECT` queries.
 	template<typename F>
@@ -36,27 +36,11 @@ public:
 	void asc() { _asc = true; }
 	/// Return result of `SELECT` queries in descending order.
 	void desc() { _asc = false; }
-	/// Set the corresponding values for an `UPDATE` query.
-	void updateq(const QString &col, const QVariant &val, const QVariant &pk);
 	
 protected:
-	/// Creates a new `QSLQuery` for the given `QSLTable`. Note that the type will be set
-	/// to `QSL::UnknownQueryType`, this has to be overwritten by the subclass before the
-	/// `sql()` method can be invoked.
-	QSLQuery(QSLTable *tbl);
 	
 	/// The table that this query should create for.
 	QSLTable *_tbl;
-	/// The type of the query.
-	QSL::QueryType _type;
-	/// The value of the rows to be inserted if `_type` is `QSL::InsertQuery`.
-	QList<QVector<QVariant>> _rows;
-	/// The name of the column that should be updated if `_type` is `QSL::UpdateQuery`.
-	QString _ucol;
-	/// The value of the column that should be updated if `_type` is `QSL::UpdateQuery`.
-	QVariant _uval;
-	/// The primary key of the row that should be updated if `_type` is `QSL::UpdateQuery`.
-	QVariant _upk;
 	/// The filter to be used in a SELECT query.
 	QSLFilter _filter;
 	/// The maximum rows to be fetched in a SELECT query.
