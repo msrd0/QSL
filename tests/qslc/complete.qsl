@@ -38,8 +38,8 @@ table datatypes
 - time     d_time
 - datetime d_datetime
 
-# this table tests foreign keys
-table fk
+# this table tests foreign keys.
+table a_fk
 - uint(64) f_pk !primarykey
 - text name
 - &datatypes.d_pk datatype
