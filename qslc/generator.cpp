@@ -360,7 +360,7 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 		
 		// query
 		out.write("  public:\n");
-		out.write("    virtual " + list_t + "<" + t->name() + "_t> query()\n");
+		out.write("    virtual " + list_t + "<" + t->name() + "_t> query() override\n");
 		out.write("    {\n");
 		QList<Column> join;
 		for (Column &f : t->fields())
@@ -395,7 +395,7 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 		out.write("    }\n\n");
 		
 		// insert
-		out.write("    virtual bool insert(const QVector<QVariant> &row)\n");
+		out.write("    virtual bool insert(const QVector<QVariant> &row) override\n");
 		out.write("    {\n");
 		out.write("      static const QList<QSLColumn> cols({\n");
 		for (int i = 0; i < t->fields().size(); i++)
@@ -421,7 +421,7 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 			out.write("      return _tbl->db()->db()->insertIntoTable(*_tbl, cols, insertRow);\n");
 		}
 		out.write("    }\n");
-		out.write("    virtual bool insert(const " + t->name() + "_t &row)\n");
+		out.write("    virtual bool insert(const " + t->name() + "_t &row) override\n");
 		out.write("    {\n");
 		out.write("      if (row._parent)\n");
 		out.write("        return insert(row.toVector());\n");
@@ -447,7 +447,30 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 		out.write("    bool insert(const Container &container)\n");
 		out.write("    {\n");
 		out.write("      return insert(container.begin(), container.end());\n");
+		out.write("    }\n\n");
+		
+		// remove
+		out.write("    bool remove(const " + list_t + "<" + t->name() + "_t> &rows) override\n");
+		out.write("    {\n");
+		if (t->primaryKey().isEmpty())
+		{
+			out.write("      fprintf(stderr, \"QSL[Generated]: Sorry, but the table '" + t->name() + "' does not contain a primary key. You\\n\"\n");
+			out.write("                      \"                cannot remove rows from a table without a primary key.\\n\");\n");
+			out.write("      return false;\n");
+		}
+		else
+		{
+			out.write("      QVector<QVariant> pks(rows.size());\n");
+			out.write("      for (int i = 0; i < rows.size(); i++)\n");
+			out.write("        pks[i] = qslvariant(rows[i]." + t->primaryKey() + "());\n");
+			out.write("      return _tbl->db()->db()->deleteFromTable(*_tbl, pks);\n");
+		}
 		out.write("    }\n");
+		out.write("    bool remove() override\n");
+		out.write("    {\n");
+		out.write("      return _tbl->db()->db()->deleteFromTable(*_tbl, _filter);\n");
+		out.write("    }\n");
+		
 		out.write("  };\n\n");
 		
 		// setup table

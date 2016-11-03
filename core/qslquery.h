@@ -117,7 +117,16 @@ public:
 	virtual container query() = 0;
 	
 	/// Insert one element into the table.
+	virtual bool insert(const QVector<QVariant> &row) = 0;
+	/// Insert one element into the table.
 	virtual bool insert(const T &row) = 0;
+	
+	/// Delete the rows from the table that match the previously applied filter.
+	virtual bool remove() = 0;
+	/// Delete the given row from the table.
+	virtual bool remove(const T &row) { return remove(container({ row })); }
+	/// Delete the given rows from the table.
+	virtual bool remove(const container &rows) = 0;
 };
 
 }

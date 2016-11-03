@@ -105,6 +105,11 @@ bool Database::updateTable(const QSLTable &tbl, const QSLColumn &col, const QVar
 	return updateTable(tbl, QMap<QSLColumn, QVariant>({{col,value}}), QVector<QVariant>() << pk);
 }
 
+bool Database::deleteFromTable(const QSLTable &tbl, const QVariant &pk)
+{
+	return deleteFromTable(tbl, QVector<QVariant>({pk}));
+}
+
 // ##################################################
 
 QtSelectResult::QtSelectResult(const QSqlQuery &query)

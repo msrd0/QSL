@@ -744,3 +744,42 @@ bool SQLiteDatabase::updateTable(const QSLTable &tbl, const QMap<QSLColumn, QVar
 	}
 	return true;
 }
+
+bool SQLiteDatabase::deleteFromTable(const QSLTable &tbl, const QSLFilter &filter)
+{
+	QSqlQuery q(db());
+	QString qq = "DELETE FROM \"" + tbl.name() + "\"";
+	QString fsql = filterSQL(filter);
+	if (!fsql.isEmpty())
+		qq += " WHERE " + fsql;
+	qq += ";";
+	if (!q.exec(qq))
+	{
+		DUMP_ERROR(q);
+		return false;
+	}
+	return true;
+}
+
+bool SQLiteDatabase::deleteFromTable(const QSLTable &tbl, const QVector<QVariant> &pks)
+{
+	Q_ASSERT(!tbl.primaryKey().isEmpty());
+	if (pks.empty())
+		return true;
+	
+	QSqlQuery q(db());
+	QString qq = "DELETE FROM \"" + tbl.name() + "\" WHERE ";
+	for (int i = 0; i < pks.size(); i++)
+	{
+		if (i != 0)
+			qq += " OR ";
+		qq += "(\"" + tbl.primaryKey() + "\"==" + QByteArray::number(pks[i].toInt()) + ")"; // note that currently only int and uint as pks are allowed
+	}
+	qq += ";";
+	if (!q.exec(qq))
+	{
+		DUMP_ERROR(q);
+		return false;
+	}
+	return true;
+}

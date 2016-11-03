@@ -22,6 +22,9 @@ public:
 	
 	virtual bool updateTable(const QSLTable &tbl, const QMap<QSLColumn, QVariant> &values, const QVector<QVariant> &pks) override;
 	
+	virtual bool deleteFromTable(const QSLTable &tbl, const QSLFilter &filter) override;
+	virtual bool deleteFromTable(const QSLTable &tbl, const QVector<QVariant> &pks) override;
+	
 protected:
 	virtual void loadTableInfo() override;
 	

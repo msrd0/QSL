@@ -249,6 +249,13 @@ public:
 	/** Updates the values of the given table at the given index to the new value. */
 	virtual bool updateTable(const QSLTable &tbl, const QSLColumn &col, const QVariant &value,
 							 const QVariant &pk);
+	
+	/** Deletes the given rows from the database that match the given filter. */
+	virtual bool deleteFromTable(const QSLTable &tbl, const QSLFilter &filter) = 0;
+	/** Deletes the given rows identified by their primary key from the database. */
+	virtual bool deleteFromTable(const QSLTable &tbl, const QVector<QVariant> &pks) = 0;
+	/** Deletes the given row identified by the primary key from the database. */
+	virtual bool deleteFromTable(const QSLTable &tbl, const QVariant &pk);
 };
 
 /**
