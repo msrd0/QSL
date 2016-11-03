@@ -1,5 +1,9 @@
 #pragma once
 
+/// @file qslvariant.h This file contains a lot of methods called `qslvariant` to convert
+/// every supported type into a `QVariant` even if there is no way provided by Qt to store
+/// that type.
+
 #include "qsl_global.h"
 #include "qslpassword.h"
 

@@ -1,5 +1,8 @@
 #pragma once
 
+/// @file qslnamespace.h This file contains a class called `QSL` that holds some usefull
+/// enums and the documentation of the namespaces of the core library.
+
 #include "qsl_global.h"
 
 #include <QObject>

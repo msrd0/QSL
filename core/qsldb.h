@@ -1,9 +1,11 @@
 #pragma once
 
-#include "qsl_global.h"
+/// @file qsldb.h This file contains the `qsl::QSLDB` class to store meta-data about
+/// a database and to connect to a database. This class is the class every generated
+/// database class extends.
+
 #include "qslnamespace.h"
 
-#include <QObject>
 #include <QSqlDatabase>
 
 namespace qsl {

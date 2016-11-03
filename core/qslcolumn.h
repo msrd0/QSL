@@ -1,8 +1,9 @@
 #pragma once
 
-#include "qsl_global.h"
+/// @file qslcolumn.h This file contains the `qsl::QSLColumn` class to store meta-data
+/// about a column at runtime.
 
-#include <QByteArray>
+#include "qslnamespace.h"
 
 namespace qsl {
 

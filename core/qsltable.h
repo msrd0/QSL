@@ -1,5 +1,8 @@
 #pragma once
 
+/// @file qsltable.h This file contains the `qsl::QSLTable` class to store meta-data about
+/// a table at runtime.
+
 #include "qsl_global.h"
 #include "qslcolumn.h"
 

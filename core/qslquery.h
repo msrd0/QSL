@@ -1,6 +1,8 @@
 #pragma once
 
-#include "qsl_global.h"
+/// @file qslquery.h This file contains the `qsl::QSLQuery` class that is internally used
+/// by the generated code to describe queries.
+
 #include "qslfilter.h"
 #include "qslnamespace.h"
 

@@ -1,6 +1,11 @@
 #pragma once
 
-#include "qsl_global.h"
+/// @file qslpassword.h This file contains the `qsl::Password` class that is used
+/// to serialize, deserialize, hash and compare passwords. These passwords can be
+/// stored in a table as a string and later be compared or updated. It is not
+/// possible to restore the password and this is intentional.
+
+#include "qslnamespace.h"
 
 #include <QCryptographicHash>
 
