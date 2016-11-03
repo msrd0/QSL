@@ -27,6 +27,7 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 	add_definitions("-DQT_SHAREDPOINTER_TRACK_POINTERS")
 	add_definitions("-DCMAKE_DEBUG")
 endif()
+add_definitions("-DCMAKE_QSL_SO")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/core)
