@@ -2,6 +2,7 @@
 
 #include "qslcolumn.h"
 #include "qslnamespace.h"
+#include "qsltable.h"
 #include "qslvariant.h"
 
 #include <QByteArray>
@@ -12,7 +13,6 @@
 
 namespace qsl {
 class QSLFilter;
-class QSLTable;
 
 namespace driver {
 
@@ -172,20 +172,43 @@ public:
 	 */
 	virtual bool ensureTable(const QSLTable &tbl) = 0;
 	
+	
 	/**
-	 * Selects the given columns from the table that apply to the given filter. If
-	 * `limit` is greater than 0, a maximum of `limit` rows are retrieved.
+	 * A convenient type that is used to provide join table info to the
+	 * `selectTable` methods.
+	 */
+	struct QSLJoinTable
+	{
+		/** The table to join. */
+		QSLTable tbl;
+		/** The columns to join. */
+		QList<QSLColumn> cols;
+		/** The column of the selected table to join on. */
+		QSLColumn on;
+		/** The column of the join table to join on. */
+		QSLColumn onTbl;
+		/** The prefix of the foreign column names in the select result. */
+		QString prefix;
+	};
+	
+	/**
+	 * Selects the given columns from the table joining the given tables that
+	 * apply to the given filter. If `limit` is greater than 0, a maximum of
+	 * `limit` rows are retrieved.
 	 */
 	virtual SelectResult* selectTable(const QSLTable &tbl,
 									  const QList<QSLColumn> &cols,
 									  const QSLFilter &filter,
+									  const QList<QSLJoinTable> &join = QList<QSLJoinTable>(),
 									  int limit = -1, bool asc = true) = 0;
 	/**
-	 * Selects all columns from the table that apply to the given filter. If
-	 * `limit` is greater than 0, a maximum of `limit` rows are retrieved.
+	 * Selects all columns from the table joining the given tables that apply to
+	 * the given filter. If `limit` is greater than 0, a maximum of `limit` rows
+	 * are retrieved.
 	 */
 	virtual SelectResult* selectTable(const QSLTable &tbl,
 									  const QSLFilter &filter,
+									  const QList<QSLJoinTable> &join = QList<QSLJoinTable>(),
 									  int limit = -1, bool asc = true);
 	
 	/**

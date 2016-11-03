@@ -16,7 +16,7 @@ public:
 	
 	virtual bool ensureTable(const QSLTable &tbl) override;
 	
-	virtual SelectResult* selectTable(const QSLTable &tbl, const QList<QSLColumn> &cols, const QSLFilter &filter, int limit, bool asc) override;
+	virtual SelectResult* selectTable(const QSLTable &tbl, const QList<QSLColumn> &cols, const QSLFilter &filter, const QList<QSLJoinTable> &join, int limit, bool asc) override;
 	
 	virtual bool insertIntoTable(const QSLTable &tbl, const QList<QSLColumn> &cols, const QVector<QVector<QVariant>> &rows) override;
 	

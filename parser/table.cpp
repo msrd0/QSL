@@ -61,6 +61,8 @@ static std::pair<QByteArray, bool> toCppType(const QByteArray &t, uint32_t minsi
 		return {"QDateTime", true};
 	else if (t == "variant")
 		return {"QVariant", true};
+	else if (t.startsWith('&'))
+		return {t.mid(1, t.indexOf('.')-1) + "_t", true};
 	else
 	{
 		qCritical() << "QSL[Parser]: Unknown type" << t << "(in " __FILE__ " line" << __LINE__ << ")";

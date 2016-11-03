@@ -18,7 +18,7 @@ public:
 	
 	QByteArray name() const { return _name; }
 	QByteArray type() const { return _type; }
-	uint32_t minsize() const { return _minsize; }
+	int minsize() const { return _minsize; }
 	QByteArray cppType() const { return _ctype; }
 	bool cppReference() const { return _cref; }
 	QByteArray cppArgType() const { return (_cref ? "const " + cppType() + "&" : cppType()); }
@@ -33,7 +33,7 @@ private:
 	/// The type of the field.
 	QByteArray _type;
 	/// The minimum required size of the type, or the maximum value if not specified.
-	uint32_t _minsize = std::numeric_limits<uint32_t>::max();
+	int _minsize = -1;
 	/// The type of the field as a C++ typename.
 	QByteArray _ctype;
 	/// Whether the type should be passed via const reference.

@@ -18,6 +18,11 @@ bool Database::containsTable(const QByteArray &name)
 	return _tables.contains(name);
 }
 
+Table* Database::table(const QByteArray &name)
+{
+	return _tables.value(name);
+}
+
 void Database::addTable(Table *table)
 {
 	_tables.insert(table->name(), table);

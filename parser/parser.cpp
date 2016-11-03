@@ -158,6 +158,14 @@ static const QSet<QByteArray> legalTypes = {
 
 static bool checkType(const QByteArray &type)
 {
+	if (type.startsWith('&'))
+	{
+		int in = type.indexOf('.');
+		if (in == -1)
+			return false;
+		return checkName(type.mid(1, in - 1)) && checkName(type.mid(in + 1));
+	}
+	
 	static const QRegularExpression typeRegex("(?P<type>[a-z]+)(?:\\([0-9]+\\))?");
 	QRegularExpressionMatch match = typeRegex.match(type);
 	if (!match.hasMatch())

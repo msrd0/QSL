@@ -71,9 +71,10 @@ QVariant CopySelectResult::value(const QString &col) const
 
 SelectResult* Database::selectTable(const QSLTable &tbl,
 									const QSLFilter &filter,
+									const QList<QSLJoinTable> &join,
 									int limit, bool asc)
 {
-	return selectTable(tbl, tbl.columns(), filter, limit, asc);
+	return selectTable(tbl, tbl.columns(), filter, join, limit, asc);
 }
 
 bool Database::insertIntoTable(const QSLTable &tbl, const QList<QSLColumn> &cols, const QVector<QVariant> &values)

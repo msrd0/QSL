@@ -626,7 +626,8 @@ QString SQLiteDatabase::filterSQL(const QSLFilter &filter)
 }
 
 SelectResult* SQLiteDatabase::selectTable(const QSLTable &tbl, const QList<QSLColumn> &cols,
-										  const QSLFilter &filter, int limit, bool asc)
+										  const QSLFilter &filter, const QList<QSLJoinTable> &join,
+										  int limit, bool asc)
 {
 	QSqlQuery q(db());
 	QString qq = "SELECT ";
@@ -636,7 +637,24 @@ SelectResult* SQLiteDatabase::selectTable(const QSLTable &tbl, const QList<QSLCo
 			qq += ", ";
 		qq += "\"" + cols[i].name() + "\"";
 	}
+	for (auto j : join)
+		for (auto col : j.cols)
+			qq += ", \"" + j.prefix + col.name() + "\"";
 	qq += " FROM \"" + tbl.name() + "\"";
+	
+	for (auto j : join)
+	{
+		qq += " INNER JOIN (SELECT ";
+		for (int i = 0; i < j.cols.size(); i++)
+		{
+			if (i != 0)
+				qq += ", ";
+			qq += "\"" + j.cols[i].name() + "\" AS \"" + j.prefix + j.cols[i].name() + "\"";
+		}
+		qq += " FROM \"" + j.tbl.name() + "\")"
+			  " ON \"" + tbl.name() + "\".\"" + j.on.name() + "\"=\"" + j.prefix + j.onTbl.name() + "\"";
+	}
+	
 	QString fsql = filterSQL(filter);
 	if (!fsql.isEmpty())
 		qq += " WHERE " + fsql;

@@ -23,6 +23,7 @@ public:
 	void setUsevar(bool usevar) { _usevar = usevar; }
 	
 	bool containsTable(const QByteArray &name);
+	Table* table(const QByteArray &name);
 	void addTable(Table *table);
 	QList<Table*> tables() { return _tables.values(); }
 	

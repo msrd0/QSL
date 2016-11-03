@@ -4,6 +4,7 @@
 #include "parser/table.h"
 
 #include <QFile>
+#include <QSet>
 
 bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir, bool qtype)
 {
@@ -69,6 +70,8 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 	
 	out.write("class " + db->name() + " : public QSLDB\n");
 	out.write("{\n");
+	for (Table *t : db->tables())
+		out.write("  friend class " + t->name() + "_q;\n");
 	out.write("private:\n");
 	out.write("  static constexpr const char* _charset = \"" + db->charset() + "\";\n");
 	out.write("  static constexpr const bool _usevar = " + QByteArray(db->usevar() ? "true" : "false") + ";\n");
@@ -103,9 +106,9 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 		out.write("    friend class " + t->name() + "_q;\n");
 		out.write("  private:\n");
 		out.write("    QSLTable *_parent;\n");
-		out.write("  public:\n");
 		
 		// ctor for select
+		out.write("  public:\n");
 		out.write("    " + t->name() + "_t(QSLTable *parent");
 		for (Column &f : t->fields())
 		{
@@ -135,7 +138,88 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 		out.write("      Q_ASSERT(parent);\n");
 		out.write("    }\n");
 		
+		// ctor for select from selectresult (for the _q type)
+		out.write("  private:\n");
+		out.write("    " + t->name() + "_t(" + db->name() + " *db, QSLTable *parent, driver::SelectResult *result, const QString &prefix = QString())\n");
+		out.write("      : _parent(parent)\n");
+		for (Column &f : t->fields())
+		{
+			if (f.type() == "password")
+			{
+				out.write("      , _" + f.name() + "(PasswordEntry{result->value(prefix + \"" + f.name() + "\").toByteArray()})\n");
+				continue;
+			}
+			
+			if (f.type() == "date" || f.type() == "time" || f.type() == "datetime")
+			{
+				out.write("      , _" + f.name() + "(parent->db()->driver()->to" + (qtype ? "Q" : "Chrono") +
+						  (f.type() == "date" ? "Date" : (f.type() == "time" ? "Time" : "DateTime")) +
+						  "(result->value(prefix + \"" + f.name() + "\")))\n");
+				continue;
+			}
+			
+			if (f.type().startsWith('&'))
+			{
+				const QByteArray table = f.type().mid(1, f.type().indexOf('.') - 1);
+				out.write("      , _" + f.name() + "(db, &db->_tbl_" + table + ", result, prefix + \"qsl_fkey_" + f.name() + "_\")\n");
+				continue;
+			}
+			
+			
+			out.write("      , _" + f.name() + "(result->value(prefix + \"" + f.name() + "\")\n");
+			if (f.type() == "int")
+			{
+				if (f.minsize() >= 0 && f.minsize() < 64)
+				{
+					out.write("#if INT_MAX >= " + QByteArray::number((((qulonglong)1) << (f.minsize() - 1)) - 1) + "\n");
+					out.write("          .toInt()\n");
+					out.write("#else\n");
+				}
+				out.write("          .toLongLong()\n");
+				if (f.minsize() >= 0 && f.minsize() < 64)
+					out.write("#endif\n");
+			}
+			else if (f.type() == "uint")
+			{
+				if (f.minsize() >= 0 && f.minsize() < 64)
+				{
+					out.write("#if UINT_MAX >= " + QByteArray::number((((qulonglong)1) << f.minsize()) - 1) + "\n");
+					out.write("          .toUInt()\n");
+					out.write("#else\n");
+				}
+				out.write("          .toULongLong()\n");
+				if (f.minsize() >= 0 && f.minsize() < 64)
+					out.write("#endif\n");
+			}
+			else if (f.type() == "double")
+			{
+				if (f.minsize() >= 0 && f.minsize() <= 4)
+					out.write("          .toFloat()\n");
+				else
+					out.write("          .toDouble()\n");
+			}
+			else if (f.type() == "bool")
+				out.write("          .toBool()\n");
+			else if (f.type() == "char" || f.type() == "text" || f.type() == "byte" || f.type() == "blob" || f.type() == "password")
+			{
+				if (qtype)
+				{
+					if (f.type() == "char" || f.type() == "text")
+						out.write("          .toString()\n");
+					else
+						out.write("          .toByteArray()\n");
+				}
+				else
+					out.write("          .toByteArray().data()\n");
+			}
+			out.write("        )\n");
+		}
+		out.write("    {\n");
+		out.write("      Q_ASSERT(parent);\n");
+		out.write("    }\n");
+		
 		// ctor for insert
+		out.write("  public:\n");
 		out.write("    " + t->name() + "_t(");
 		int i = 0;
 		for (Column &f : t->fields())
@@ -186,6 +270,8 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 					out.write("_parent->db()->driver()->from" + QByteArray(qtype ? "Q" : "Chrono") + "Time(" + f.name() + ")");
 				else if (f.type() == "datetime")
 					out.write("_parent->db()->driver()->from" + QByteArray(qtype ? "Q" : "Chrono") + "DateTime(" + f.name() + ")");
+				else if (f.type().startsWith("&"))
+					out.write("qslvariant(" + f.name() + "." + f.type().mid(f.type().indexOf('.')+1) + "())");
 				else
 					out.write("qslvariant(" + f.name() + ")");
 				out.write(", qslvariant(_" + t->primaryKey() + "));\n");
@@ -202,6 +288,8 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 		out.write("  public:\n");
 		out.write("    QVector<QVariant> toVector() const\n");
 		out.write("    {\n");
+		out.write("      Q_ASSERT(_parent);\n");
+		out.write("      Q_ASSERT(_parent->db());\n");
 		out.write("      QVector<QVariant> v(" + QByteArray::number(t->fields().size() - (t->primaryKey().isEmpty() ? 0 : 1)) + ");\n");
 		i = 0;
 		for (Column &f : t->fields())
@@ -215,6 +303,8 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 				out.write("_parent->db()->driver()->from" + QByteArray(qtype ? "Q" : "Chrono") + "Time(_" + f.name() + ");\n");
 			else if (f.type() == "datetime")
 				out.write("_parent->db()->driver()->from" + QByteArray(qtype ? "Q" : "Chrono") + "DateTime(_" + f.name() + ");\n");
+			else if (f.type().startsWith('&'))
+				out.write("qslvariant(_" + f.name() + "." + f.type().mid(f.type().indexOf('.') + 1) + "());\n");
 			else
 				out.write("qslvariant(_" + f.name() + ");\n");
 			i++;
@@ -227,21 +317,24 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 		// class to create the query
 		out.write("  class " + t->name() + "_q : public QSLTableQuery<" + t->name() + "_t, " + list_t + "<" + t->name() + "_t>>\n");
 		out.write("  {\n");
-		if (!t->primaryKey().isEmpty())
-		{
-			out.write("  private:\n");
-			out.write("    PrimaryKey<" + pkCppTypes[t] + "> *_pk;\n");
-		}
 		out.write("  public:\n");
-		if (t->primaryKey().isEmpty())
-			out.write("    " + t->name() + "_q(QSLTable *tbl)\n");
-		else
-			out.write("    " + t->name() + "_q(QSLTable *tbl, PrimaryKey<" + pkCppTypes[t] + "> *pk)\n");
+		out.write("    " + t->name() + "_q(" + db->name() + " *db, QSLTable *tbl");
+		if (!t->primaryKey().isEmpty())
+			out.write(", PrimaryKey<" + pkCppTypes[t] + "> *pk");
+		out.write(")\n");
 		out.write("      : QSLTableQuery(tbl)\n");
+		out.write("      , _db(db)\n");
 		if (!t->primaryKey().isEmpty())
 			out.write("      , _pk(pk)\n");
 		out.write("    {\n");
+		out.write("      Q_ASSERT(db);\n");
 		out.write("    }\n\n");
+		out.write("  private:\n");
+		out.write("    " + db->name() + " *_db;\n");
+		if (!t->primaryKey().isEmpty())
+		{
+			out.write("    PrimaryKey<" + pkCppTypes[t] + "> *_pk;\n");
+		}
 		
 		// filters
 		out.write("  public:\n");
@@ -269,7 +362,24 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 		out.write("  public:\n");
 		out.write("    virtual " + list_t + "<" + t->name() + "_t> query()\n");
 		out.write("    {\n");
-		out.write("      driver::SelectResult *result = _tbl->db()->db()->selectTable(*_tbl, _filter, _limit);\n");
+		QList<Column> join;
+		for (Column &f : t->fields())
+			if (f.type().startsWith('&'))
+				join.push_back(f);
+		out.write("      static const QList<driver::Database::QSLJoinTable> join = {\n");
+		for (int i = 0; i < join.size(); i++)
+		{
+			QByteArray table = join[i].type().mid(1, join[i].type().indexOf('.') - 1);
+			QByteArray field = join[i].type().mid(join[i].type().indexOf('.') + 1);
+			out.write("        { _db->_tbl_" + table + ", _db->_tbl_" + table + ".columns(), " +
+					  t->name() + "_t::col_" + join[i].name() + "(), " + table + "_t::col_" + field + "(), "
+					  "QStringLiteral(\"qsl_fkey_" + join[i].name() + "_\") }");
+			if (i != join.size() - 1)
+				out.write(",");
+			out.write("\n");
+		}
+		out.write("      };\n");
+		out.write("      driver::SelectResult *result = _tbl->db()->db()->selectTable(*_tbl, _filter, join, _limit, _asc);\n");
 		out.write("      if (!result)\n");
 		out.write("      {\n");
 		out.write("        fprintf(stderr, \"QSLQuery: Failed to query " + db->name() + "." + t->name() + "\\n\");\n");
@@ -278,57 +388,7 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 		out.write("      " + list_t + "<" + t->name() + "_t> entries;\n");
 		out.write("      while (result->next())\n");
 		out.write("      {\n");
-		out.write("        " + t->name() + "_t entry(_tbl\n");
-		for (Column &f : t->fields())
-		{
-			out.write("          , result->value(\"" + f.name() + "\")\n");
-			if (f.type() == "int")
-			{
-				if (f.minsize() < 64)
-				{
-					out.write("#if INT_MAX >= " + QByteArray::number((((qulonglong)1) << (f.minsize() - 1)) - 1) + "\n");
-					out.write("             .toInt()\n");
-					out.write("#else\n");
-				}
-				out.write("             .toLongLong()\n");
-				if (f.minsize() < 64)
-					out.write("#endif\n");
-			}
-			else if (f.type() == "uint")
-			{
-				if (f.minsize() < 64)
-				{
-					out.write("#if UINT_MAX >= " + QByteArray::number((((qulonglong)1) << f.minsize()) - 1) + "\n");
-					out.write("             .toUInt()\n");
-					out.write("#else\n");
-				}
-				out.write("             .toULongLong()\n");
-				if (f.minsize() < 64)
-					out.write("#endif\n");
-			}
-			else if (f.type() == "double")
-			{
-				if (f.minsize() <= 4)
-					out.write("             .toFloat()\n");
-				else
-					out.write("             .toDouble()\n");
-			}
-			else if (f.type() == "bool")
-				out.write("             .toBool()\n");
-			else if (f.type() == "char" || f.type() == "text" || f.type() == "byte" || f.type() == "blob" || f.type() == "password")
-			{
-				if (qtype)
-				{
-					if (f.type() == "char" || f.type() == "text")
-						out.write("             .toString()\n");
-					else
-						out.write("             .toByteArray()\n");
-				}
-				else
-					out.write("             .toByteArray().data()\n");
-			}
-		}
-		out.write("        );\n");
+		out.write("        " + t->name() + "_t entry(_db, _tbl, result);\n");
 		out.write("        entries.push_back(entry);\n");
 		out.write("      }\n");
 		out.write("      return entries;\n");
@@ -363,7 +423,11 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 		out.write("    }\n");
 		out.write("    virtual bool insert(const " + t->name() + "_t &row)\n");
 		out.write("    {\n");
-		out.write("      return insert(row.toVector());\n");
+		out.write("      if (row._parent)\n");
+		out.write("        return insert(row.toVector());\n");
+		out.write("      " + t->name() + "_t r = row;\n");
+		out.write("      r._parent = _tbl;\n");
+		out.write("      return insert(r.toVector());\n");
 		out.write("    }\n");
 		out.write("    template<typename ForwardIterator>\n");
 		out.write("    bool insert(const ForwardIterator &begin, const ForwardIterator &end)\n");
@@ -397,7 +461,7 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 		out.write("public:\n");
 		out.write("  " + t->name() + "_q " + t->name() + "()\n");
 		out.write("  {\n");
-		out.write("    return " + t->name() + "_q(&_tbl_" + t->name());
+		out.write("    return " + t->name() + "_q(this, &_tbl_" + t->name());
 		if (!t->primaryKey().isEmpty())
 			out.write(", &_tbl_" + t->name() + "_pk");
 		out.write(");\n");
@@ -439,7 +503,7 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 		if (t->primaryKey().isEmpty())
 			continue;
 		out.write("    result = db()->selectTable(_tbl_" + t->name() + ", QList<QSLColumn>({" + t->name() + "_t::col_" + t->primaryKey() + "()}), "
-				  "QSLFilter(), 1, false);\n");
+				  "QSLFilter(), QList<driver::Database::QSLJoinTable>(), 1, false);\n");
 		out.write("    if (result && result->first())\n");
 		out.write("      _tbl_" + t->name() + "_pk.used(result->value(\"" + t->primaryKey() + "\")");
 		if (pkTypes[t] == "int")
