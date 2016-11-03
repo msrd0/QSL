@@ -11,7 +11,7 @@
 #define QSL_MAJOR @QSL_MAJOR@
 #define QSL_MINOR @QSL_MINOR@
 #define QSL_PATCH @QSL_PATCH@
-#define QSL_VERSION ((@QSL_MAJOR@ << 4) | (@QSL_MINOR@ << 2) | @QSL_PATCH@)
+#define QSL_VERSION ((@QSL_MAJOR@ << 16) | (@QSL_MINOR@ << 8) | @QSL_PATCH@)
 #define QSL_VERSION_STR "@QSL_MAJOR@.@QSL_MINOR@.@QSL_PATCH@"
 
 #if __STDC_VERSION__ >= 201500L
