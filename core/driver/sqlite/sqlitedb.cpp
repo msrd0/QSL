@@ -703,6 +703,26 @@ bool SQLiteDatabase::insertIntoTable(const QSLTable &tbl, const QList<QSLColumn>
 bool SQLiteDatabase::updateTable(const QSLTable &tbl, const QMap<QSLColumn, QVariant> &values,
 								 const QVector<QVariant> &pks)
 {
-	// TODO
-	return 0;
+	if (pks.empty() || values.empty())
+		return true;
+	
+	QSqlQuery q(db());
+	
+	QString qq = "UPDATE \"" + tbl.name() + "\" SET ";
+	for (auto key : values.keys())
+		qq += "\"" + key.name() + "\"=" + (needsEnquote(key.type()) ? "\"" + values[key].toString() + "\"" : values[key].toString()) + ",";
+	qq = qq.mid(0, qq.size()-1);
+	
+	qq += " WHERE ";
+	for (auto pk : pks)
+		qq += "(\"" + tbl.primaryKey() + "\"==" + QByteArray::number(pk.toInt()) + ") OR "; // note that currently only int and uint as pks are allowed
+	qq = qq.mid(0, qq.size()-4);
+	
+	qq += ";";
+	if (!q.exec(qq))
+	{
+		DUMP_ERROR(q);
+		return false;
+	}
+	return true;
 }
