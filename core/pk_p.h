@@ -8,7 +8,7 @@ namespace qsl {
  * own `PrimaryKeyHandlerImpl<YourType>` instead.
  */
 template<typename T>
-class QSL_PRIVATE PrimaryKeyHandler
+class QSL_PUBLIC PrimaryKeyHandler
 {
 public:
 	/** Constructs a new primary key handler with a default start value. */
@@ -66,7 +66,7 @@ protected:
  * your own `PrimaryKeyHandlerImpl<YourType>`.
  */
 template<typename T>
-class QSL_PRIVATE PrimaryKeyHandlerImpl : public PrimaryKeyHandler<T>
+class QSL_PUBLIC PrimaryKeyHandlerImpl : public PrimaryKeyHandler<T>
 {
 public:
 	/** Constructs a new primary key handler with a default start value. */
