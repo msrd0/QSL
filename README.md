@@ -56,6 +56,23 @@ the number. Note that there is no guarantee that the minimum size is provided by
 `password` is a special type that automatically hashes and salts the given text and can later
 be used to compare passwords. Note that it is not possible to get the value of the password.
 
+Adding to these default types, you can also refer to other table. This is accomplished by
+foreign keys. The syntax to create a foreign reference to another table of the same database
+is as follows:
+
+```
+# this is the table being referenced
+table a
+- uint id !primarykey
+- ...
+
+# this is the table with the reference
+table b
+- uint id !primarykey
+# the reference - a foreign key called ref references a.id
+- &a.id ref
+```
+
 The type is followed by the name of the column and finally a list of constraints prefixed with
 a `!`. A column definition could look like this:
 
