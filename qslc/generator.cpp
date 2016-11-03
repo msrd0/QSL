@@ -72,6 +72,12 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 	out.write("{\n");
 	for (Table *t : db->tables())
 		out.write("  friend class " + t->name() + "_q;\n");
+	out.write("public:\n");
+	for (Table *t : db->tables())
+	{
+		out.write("  class " + t->name() + "_t;\n");
+		out.write("  class " + t->name() + "_q;\n");
+	}
 	out.write("private:\n");
 	out.write("  static constexpr const char* _charset = \"" + db->charset() + "\";\n");
 	out.write("  static constexpr const bool _usevar = " + QByteArray(db->usevar() ? "true" : "false") + ";\n");

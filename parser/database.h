@@ -25,7 +25,7 @@ public:
 	bool containsTable(const QByteArray &name);
 	Table* table(const QByteArray &name);
 	void addTable(Table *table);
-	QList<Table*> tables() { return _tables.values(); }
+	QList<Table*> tables() { return _orderedTables; }
 	
 private:
 	/// The name of the database.
@@ -37,6 +37,8 @@ private:
 	
 	/// All tables in this database, sorted by their name.
 	QMap<QByteArray, Table*> _tables;
+	/// All tables in this database, sorted as they appeared in the qsl file.
+	QList<Table*> _orderedTables;
 };
 
 }

@@ -250,6 +250,13 @@ Database* qsl::qslc::parse(QIODevice *in, const QString &filename, bool qtype)
 			QByteArray type = line.mid(0, line.indexOf(' '));
 			if (!checkType(type))
 				error("Illegal type `%s'", type.data())
+			if (type.startsWith('&'))
+			{
+				QByteArray table = type.mid(1, type.indexOf('.') - 1);
+				if (!db->containsTable(table))
+					error("Reference to unknown table `%s'", table.data());
+				// TODO check that the table has the references column
+			}
 			line = line.mid(type.length()).trimmed();
 			QByteArray name;
 			if (line.startsWith('"'))
