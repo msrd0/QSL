@@ -38,6 +38,20 @@ int main(int argc, char **argv)
 		return 1;
 	printf("updated text\n");
 	
+	text = "this should be deleted asap";
+	if (!e->foo().insert({text}))
+	{
+		printf("Unable to insert into table #2\n");
+		return 1;
+	}
+	printf("insert again successfull\n");
+	if (!e->foo().filter("bar" LIKE "%delete%").remove())
+	{
+		printf("Unable to delete from table\n");
+		return 1;
+	}
+	printf("delete successfull\n");
+	
 	printf(" --- DONE\n");
 	return 0;
 }
