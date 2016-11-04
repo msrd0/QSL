@@ -155,6 +155,11 @@ public:
 		, _val(str)
 	{
 	}
+	QSLFilterExprType(const QByteArray &str)
+		: _isOperator(false)
+		, _val(str)
+	{
+	}
 	QSLFilterExprType(const char *str)
 		: _isOperator(false)
 		, _val(str)
