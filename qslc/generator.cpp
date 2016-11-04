@@ -92,7 +92,7 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 	for (Table *t : db->tables())
 	{
 		if (t->primaryKey().isEmpty())
-			fprintf(stderr, "WARNING: No primary key found in table %s, some features may not be available\n", t->name().data());
+			fprintf(stderr, "%s: WARNING: No primary key found in table %s, some features may not be available\n", qPrintable(filename), t->name().data());
 		else
 		{
 			out.write("private:\n");
