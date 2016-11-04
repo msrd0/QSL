@@ -122,9 +122,7 @@ public:
 	/// Delete the rows from the table that match the previously applied filter.
 	virtual bool remove() = 0;
 	/// Delete the given row from the table.
-	virtual bool remove(const T &row) { return remove(container({ row })); }
-	/// Delete the given rows from the table.
-	virtual bool remove(const container &rows) = 0;
+	virtual bool remove(const T &row) = 0;
 };
 
 }

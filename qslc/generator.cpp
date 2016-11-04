@@ -461,7 +461,7 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 		out.write("    }\n\n");
 		
 		// remove
-		out.write("    bool remove(const " + list_t + "<" + t->name() + "_t> &rows) override\n");
+		out.write("    bool remove(const " + t->name() + "_t &row) override\n");
 		out.write("    {\n");
 		if (t->primaryKey().isEmpty())
 		{
@@ -471,11 +471,36 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 		}
 		else
 		{
-			out.write("      QVector<QVariant> pks(rows.size());\n");
-			out.write("      for (int i = 0; i < rows.size(); i++)\n");
-			out.write("        pks[i] = qslvariant(rows[i]." + t->primaryKey() + "());\n");
+			out.write("      return _tbl->db()->db()->deleteFromTable(*_tbl, qslvariant(row." + t->primaryKey() + "()));\n");
+		}
+		out.write("    }\n");
+		out.write("    template<typename ForwardIterator>\n");
+		out.write("    bool remove(const ForwardIterator &begin, const ForwardIterator &end)\n");
+		out.write("    {\n");
+		if (t->primaryKey().isEmpty())
+		{
+			out.write("      fprintf(stderr, \"QSL[Generated]: Sorry, but the table '" + t->name() + "' does not contain a primary key. You\\n\"\n");
+			out.write("                      \"                cannot remove rows from a table without a primary key.\\n\");\n");
+			out.write("      return false;\n");
+		}
+		else
+		{
+			out.write("      int size = std::distance(begin, end);\n");
+			out.write("      QVector<QVariant> pks(size);\n");
+			out.write("      int i = 0;\n");
+			out.write("      for (auto it = begin; it != end; it++)\n");
+			out.write("      {\n");
+			out.write("        " + t->name() + "_t row = *it;\n");
+			out.write("        pks[i] = row." + t->primaryKey() + "();\n");
+			out.write("        i++;\n");
+			out.write("      }\n");
 			out.write("      return _tbl->db()->db()->deleteFromTable(*_tbl, pks);\n");
 		}
+		out.write("    }\n");
+		out.write("    template<typename Container>\n");
+		out.write("    bool remove(const Container &rows)\n");
+		out.write("    {\n");
+		out.write("      return remove(rows.begin(), rows.end());\n");
 		out.write("    }\n");
 		out.write("    bool remove() override\n");
 		out.write("    {\n");
