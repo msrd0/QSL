@@ -32,11 +32,11 @@ public:
 	template<typename F>
 	void applyFilter(const F &filter) { _filter = filter; }
 	/// Overwrite the limit of resulting columns.
-	void limit(int l) { _limit = l; }
+	void applyLimit(int l) { _limit = l; }
 	/// Return result of `SELECT` queries in ascending order.
-	void asc() { _asc = true; }
+	void applyAsc() { _asc = true; }
 	/// Return result of `SELECT` queries in descending order.
-	void desc() { _asc = false; }
+	void applyDesc() { _asc = false; }
 	
 protected:
 	

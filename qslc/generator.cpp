@@ -364,6 +364,24 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 		out.write("      applyFilter(f);\n");
 		out.write("    }\n\n");
 		
+		// limit, asc, desc
+		out.write("  public:\n");
+		out.write("    " + t->name() + "_q& limit(int l)\n");
+		out.write("    {\n");
+		out.write("      applyLimit(l);\n");
+		out.write("      return *this;\n");
+		out.write("    }\n");
+		out.write("    " + t->name() + "_q& asc()\n");
+		out.write("    {\n");
+		out.write("      applyAsc();\n");
+		out.write("      return *this;\n");
+		out.write("    }\n");
+		out.write("    " + t->name() + "_q& desc()\n");
+		out.write("    {\n");
+		out.write("      applyDesc();\n");
+		out.write("      return *this;\n");
+		out.write("    }\n\n");
+		
 		// query
 		out.write("  public:\n");
 		out.write("    virtual " + list_t + "<" + t->name() + "_t> query() override\n");
