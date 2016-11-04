@@ -401,9 +401,10 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 		out.write("    }\n\n");
 		
 		// insert
-		out.write("    virtual bool insert(const QVector<QVariant> &row) override\n");
+		out.write("  private:\n");
+		out.write("    virtual bool insert0(const QVector<QVector<QVariant>> &rows)\n");
 		out.write("    {\n");
-		out.write("      static const QList<QSLColumn> cols({\n");
+		out.write("      static const QList<QSLColumn> cols = {\n");
 		for (int i = 0; i < t->fields().size(); i++)
 		{
 			auto col = t->fields()[i];
@@ -417,42 +418,46 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 		}
 		if (!t->primaryKey().isEmpty())
 			out.write("        " + t->name() + "_t::col_" + t->primaryKey() + "()\n");
-		out.write("      });\n");
+		out.write("      };\n");
 		if (t->primaryKey().isEmpty())
-			out.write("      return _tbl->db()->db()->insertIntoTable(*_tbl, cols, row);\n");
+			out.write("      return _tbl->db()->db()->insertIntoTable(*_tbl, cols, rows);\n");
 		else
 		{
-			out.write("      QVector<QVariant> insertRow = row;\n");
-			out.write("      insertRow.push_back(qslvariant(_pk->next()));\n");
-			out.write("      return _tbl->db()->db()->insertIntoTable(*_tbl, cols, insertRow);\n");
+			out.write("      QVector<QVector<QVariant>> insertRows = rows;\n");
+			out.write("      for (QVector<QVariant> &insertRow : insertRows)\n");
+			out.write("        insertRow.push_back(qslvariant(_pk->next()));\n");
+			out.write("      return _tbl->db()->db()->insertIntoTable(*_tbl, cols, insertRows);\n");
 		}
 		out.write("    }\n");
+		out.write("  public:\n");
 		out.write("    virtual bool insert(const " + t->name() + "_t &row) override\n");
 		out.write("    {\n");
 		out.write("      if (row._parent)\n");
-		out.write("        return insert(row.toVector());\n");
+		out.write("        return insert0(QVector<QVector<QVariant>>({row.toVector()}));\n");
 		out.write("      " + t->name() + "_t r = row;\n");
 		out.write("      r._parent = _tbl;\n");
-		out.write("      return insert(r.toVector());\n");
+		out.write("      return insert0(QVector<QVector<QVariant>>({r.toVector()}));\n");
 		out.write("    }\n");
 		out.write("    template<typename ForwardIterator>\n");
 		out.write("    bool insert(const ForwardIterator &begin, const ForwardIterator &end)\n");
 		out.write("    {\n");
 		out.write("      int size = std::distance(begin, end);\n");
-		out.write("      QVector<QVariant> vector(size);\n");
-		out.write("      ForwardIterator it = begin;\n");
-		out.write("      for (int i = 0; i < size; i++)\n");
+		out.write("      QVector<QVector<QVariant>> data(size);\n");
+		out.write("      int i = 0;\n");
+		out.write("      for (auto it = begin; it != end; it++)\n");
 		out.write("      {\n");
-		out.write("        vector[i] = *it;\n");
-		out.write("        it++;\n");
+		out.write("        " + t->name() + "_t row = *it;\n");
+		out.write("        if (!row._parent)\n");
+		out.write("          row._parent = _tbl;\n");
+		out.write("        data[i] = row.toVector();\n");
+		out.write("        i++;\n");
 		out.write("      }\n");
-		out.write("      Q_ASSERT(it == end);\n");
-		out.write("      return insert(vector);\n");
+		out.write("      return insert0(data);\n");
 		out.write("    }\n");
 		out.write("    template<typename Container>\n");
-		out.write("    bool insert(const Container &container)\n");
+		out.write("    bool insert(const Container &rows)\n");
 		out.write("    {\n");
-		out.write("      return insert(container.begin(), container.end());\n");
+		out.write("      return insert(rows.begin(), rows.end());\n");
 		out.write("    }\n\n");
 		
 		// remove
