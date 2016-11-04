@@ -101,6 +101,9 @@ void SQLiteDatabase::loadTableInfo()
 	do
 	{ 
 		QByteArray tblName = tables.value("name").toByteArray();
+		if (tblName.contains("___qslbackup_"))
+			continue;
+		
 		QByteArray pk;
 #ifdef CMAKE_DEBUG
 		qDebug() << "QSL[SQLite]: Detecting table" << tblName;
