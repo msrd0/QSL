@@ -200,7 +200,7 @@ static QByteArray backupSuffixName(const QByteArray &name)
 
 static QByteArray uniqueConstraintName(const QByteArray &tbl, const QByteArray &name)
 {
-	return "qsl_sqlite_driver_constraint_unique_" + name + "_" + QCryptographicHash::hash(tbl + "." + name + " !unique", QCryptographicHash::Md5).toHex();
+	return "qsl_sqlite_driver_constraint_unique_" + name + "_" + QCryptographicHash::hash(tbl + "." + name + " !unique"  + " @ " + QDateTime::currentDateTime().toString().toUtf8(), QCryptographicHash::Md5).toHex();
 }
 
 bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
