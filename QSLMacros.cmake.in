@@ -30,6 +30,6 @@ function(QSL_COMPILE)
 	add_custom_target("${_QSLC_TARGET}_qslc" DEPENDS "${_QSLC_TIMESTAMP}")
 	add_dependencies("${_QSLC_TARGET}" "${_QSLC_TARGET}_qslc")
 	target_include_directories("${_QSLC_TARGET}" PRIVATE "${CMAKE_CURRENT_BINARY_DIR}" "${QSL_INCLUDE_DIRS}")
-	target_link_libraries("${_QSLC_TARGET}" Qt5::Core Qt5::Sql qslcore qslvariant) 
+	target_link_libraries("${_QSLC_TARGET}" Qt5::Core Qt5::Sql QSLCore_qslcore QSLCore_qslvariant) 
 	
 endfunction()
