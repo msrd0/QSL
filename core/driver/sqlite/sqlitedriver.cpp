@@ -22,7 +22,7 @@ QTime SQLiteDriver::toQTime(const QVariant &time)
 }
 QDateTime SQLiteDriver::toQDateTime(const QVariant &datetime)
 {
-	return QDateTime::fromTime_t(datetime.toUInt());
+	return QDateTime::fromMSecsSinceEpoch(datetime.toULongLong() * 1000L);
 }
 
 time_point SQLiteDriver::toChronoDate(const QVariant &date)
@@ -35,7 +35,7 @@ time_point SQLiteDriver::toChronoTime(const QVariant &time)
 }
 time_point SQLiteDriver::toChronoDateTime(const QVariant &datetime)
 {
-	return system_clock::from_time_t(datetime.toUInt());
+	return system_clock::from_time_t(datetime.toLongLong());
 }
 
 QVariant SQLiteDriver::fromQDate(const QDate &date)
@@ -48,7 +48,7 @@ QVariant SQLiteDriver::fromQTime(const QTime &time)
 }
 QVariant SQLiteDriver::fromQDateTime(const QDateTime &datetime)
 {
-	return qslvariant(datetime.toTime_t());
+	return qslvariant((qulonglong)(datetime.toMSecsSinceEpoch() / 1000L));
 }
 
 QVariant SQLiteDriver::fromChronoDate(const time_point &date)
