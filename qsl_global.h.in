@@ -28,7 +28,7 @@
 #    ifdef __GNUC__
 #      define QSL_PUBLIC __attribute__((dllimport))
 #    else // __GNUC__
-#      define QSL_PUBLIC __declspac(dllimport)
+#      define QSL_PUBLIC __declspec(dllimport)
 #    endif // __GNUC__
 #  endif
 #  define QSL_PRIVATE
