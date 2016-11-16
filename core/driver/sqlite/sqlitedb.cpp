@@ -57,13 +57,14 @@ bool SQLiteDatabase::connect()
 	
 	// handle the charset
 	QByteArray enc = charset();
-	if (enc == "utf8")
+	enc = enc.toLower();
+	if (enc == "utf-8")
 		enc = "UTF-8";
-	else if (enc == "utf16")
+	else if (enc == "utf-16")
 		enc = "UTF-16";
-	else if (enc == "utf16le")
+	else if (enc == "utf-16le")
 		enc = "UTF-16le";
-	else if (enc == "utf16be")
+	else if (enc == "utf-16be")
 		enc = "UTF-16be";
 	else
 	{
