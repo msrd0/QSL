@@ -64,6 +64,12 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 	out.write("#include <QSqlError>\n");
 	out.write("#include <QSqlQuery>\n\n");
 	
+	// qtype macros
+	if (qtype)
+		out.write("#define DB_" + db->name().toUpper() + "_QTYPE\n\n");
+	else
+		out.write("#define DB_" + db->name().toUpper() + "_NO_QTYPE\n\n");
+	
 	out.write("namespace qsl {\n");
 	out.write("namespace db {\n\n");
 	
