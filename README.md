@@ -113,7 +113,8 @@ Arguments:
 QSL will generate a file called `db_<db-name>.h` for every database. To use it, you first have
 to connect to a database. See QSLDB for an example how to do so.
 
-Currently, only CMake as the build system is supported. Support for qmake may follow.
+Currently, CMake and qmake as the build systems are supported. If you are not using one of them,
+you have to invoke `qslc` manually.
 
 ## CMake
 
@@ -132,6 +133,15 @@ qsl_compile(TARGET foo FILES foo.qsl)
 The `qsl_compile` function will add a target called `foo_qslc` that builds the qsl
 files and then adds it as a dependency to the original target.
 
+## qmake
+
+To use QSL with qmake, add the following to your `.pro` file:
+
+```qmake
+QT += QSL
+DATABASES = foo.qsl
+```
+
 ## `qslc`
 
 If you don't like to use CMake for your build, you can invoke `qslc` yourself.
@@ -145,6 +155,7 @@ Options:
   -v, --version    Displays version information.
   -d, --dir <dir>  The target directory to put the generated files
   -q, --qtype      Use Qt types instead of std:: types
+  --name           Print out the header names and exit
 
 Arguments:
   file             The input file(s) to compile

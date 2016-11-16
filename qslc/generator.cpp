@@ -146,7 +146,7 @@ bool qsl::qslc::generate(Database *db, const QString &filename, const QDir &dir,
 		
 		// ctor for select from selectresult (for the _q type)
 		out.write("  private:\n");
-		out.write("    " + t->name() + "_t(" + db->name() + " *db, QSLTable *parent, driver::SelectResult *result, const QString &prefix = QString())\n");
+		out.write("    " + t->name() + "_t(QSL_MAYBE_UNUSED " + db->name() + " *db, QSLTable *parent, driver::SelectResult *result, const QString &prefix = QString())\n");
 		out.write("      : _parent(parent)\n");
 		for (Column &f : t->fields())
 		{

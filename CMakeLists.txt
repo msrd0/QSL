@@ -45,6 +45,9 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/QSLVersion.cmake
 	          ${CMAKE_CURRENT_BINARY_DIR}/QSLConfig.cmake
 			  ${CMAKE_CURRENT_BINARY_DIR}/QSLMacros.cmake
 	    DESTINATION lib/cmake/QSL)
+configure_file(qt_QSL.pri.in qt_QSL.pri @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/qt_QSL.pri
+	    DESTINATION /usr/lib/qt/mkspecs/modules)
 
 if (NOT NO_TESTS)
 	enable_testing()
