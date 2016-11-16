@@ -11,7 +11,7 @@ All code is indented by a tab. Each tab is 4 spaces wide. Each opening brace
 (`{`) is put on a new line. Use the initializer of the constructor instead of
 assining a value later in the constructor whenever possible
 (`public clazz(int i) : _i(i)`). All private fields of a class start with an
-underscore (`_`). Don't write get before getters.
+underscore (`_`). Don't write `get` before getters.
 
 ### Generated code style
 
@@ -20,8 +20,11 @@ fact that code is indented by 2 spaces and no tabs.
 
 ## Testing
 
-Currently, there are no tests defined in CMake, so running `make test` has
-no value. But please make sure that the examples compile and run on an
+CMake enables the generation of tests by default but you need to manually
+run them using `make test`. If test fail you can get more output using
+`ctest --verbose`. Also please make sure that the examples compile and run on an
 empty and on an already existing database (please don't commit your username
-or password of your test database). Feel free to add tests (see the 
-[todo list](./TODO.md)).
+or password of your test database). Keep in mind that this doesn't cover
+all things you can possibly mess up - so try to use your changes to see
+if you run into strange behaviour.
+
