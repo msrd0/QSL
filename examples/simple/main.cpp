@@ -1,8 +1,17 @@
 #include "db_qsl_example.h"
 
 using namespace qsl;
+using namespace std;
 
 #include "../exampleglobal.h"
+
+#ifdef DB_QSL_EXAMPLE_QTYPE
+#  define string QString
+#  define to_string(x) QString::number(x)
+#  define data(x) qPrintable(x)
+#else
+#  define data(x) x.data()
+#endif
 
 int main(int argc, char **argv)
 {
@@ -18,13 +27,13 @@ int main(int argc, char **argv)
 	printf("result size: %d\n", r.size());
 	
 	int64_t t = time(NULL);
-	std::string text = "example run at " + std::to_string(t);
+	string text = "example run at " + to_string(t);
 	if (!e->foo().insert({text}))
 	{
 		printf("Unable to insert into table\n");
 		return 1;
 	}
-	printf("inserted: %s\n", text.data());
+	printf("inserted: %s\n", data(text));
 	
 	r = e->foo().query();
 	printf("result size: %d\n", r.size());
