@@ -37,7 +37,7 @@ class QSL_PUBLIC QSLDB
 	Q_DISABLE_COPY(QSLDB)
 	
 public:
-	~QSLDB();
+	virtual ~QSLDB();
 	
 	/// Returns the name of the database.
 	const char* name() const { return _name; }
