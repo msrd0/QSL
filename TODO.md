@@ -6,6 +6,7 @@ Before contributing please read the [contribution guidelines](./Contribution.md)
 
 - in SQLite: `QSqlQuery::value: unknown field name 'origin'`
 - in SQLite: Database with foreign keys gets updated because "type changed"
+- qmake: if database name is changed we need to manually re-run qmake (cmake uses a static timestamp file)
 
 ## Features:
 
@@ -14,3 +15,5 @@ Before contributing please read the [contribution guidelines](./Contribution.md)
 - implement order by columns other than the primary key
 - add filters that are usefull but don't exist in SQL like contains or startsWith
 - pass errors to the application instead of just printing them to the command line
+- use qts plugin system instead of linux dynamic linker
+- qmake: dont force the user to use the qtype option
