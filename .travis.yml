@@ -21,6 +21,7 @@ addons:
          - g++-5
          - gcc-5
          - graphviz
+         - libqt5sql5-sqlite
          - pkg-config
          - qtchooser
          - qt5-default
