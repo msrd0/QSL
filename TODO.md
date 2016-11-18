@@ -10,10 +10,36 @@ Before contributing please read the [contribution guidelines](./Contribution.md)
 
 ## Features:
 
-- add support for PostgreSQL, MySQL and maybe other database servers
-- recursive forein key support (a foreign ref to a table containing another foreign ref)
-- implement order by columns other than the primary key
-- add filters that are usefull but don't exist in SQL like contains or startsWith
-- pass errors to the application instead of just printing them to the command line
-- use qts plugin system instead of linux dynamic linker
+### QSL 0.1.1
+
 - qmake: dont force the user to use the qtype option
+- support comments at the end of the line
+
+### QSL 0.2.0
+
+QSL language:
+
+- support default values for columns (especially those with notnull constraint)
+- add an option to use another name in qsl than in the db itself (makes renaming easier,
+  currently the old name will be droppend and the new name created)
+
+Core/Driver library:
+
+- implement order by columns other than the primary key
+- pass errors to the application instead of just printing them to the command line
+- add filters that are usefull but don't exist in SQL like contains or startsWith
+- use qts plugin system instead of linux dynamic linker
+
+Drivers:
+
+- recursive forein key support (a foreign ref to a table containing another foreign ref)
+
+
+### future
+
+- add support for PostgreSQL, MySQL and maybe other database servers
+
+
+## Long-Term:
+
+- add support for other languages like Java
