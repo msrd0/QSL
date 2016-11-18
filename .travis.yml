@@ -7,7 +7,7 @@ addons:
     apt:
         sources:
          - sourceline: 'ppa:george-edison55/precise-backports'
-         - sourceline: 'ppa:immerrr-k/qt5-backports'
+         - sourceline: 'ppa:immerrr-k/qt5-backport'
          - sourceline: 'ppa:ubuntu-toolchain-r/test'
          - sourceline: 'deb [arch=amd64] https://msrd0.duckdns.org/debian/ precise main'
            key_url: 'https://msrd0.duckdns.org/debian/key.asc'
