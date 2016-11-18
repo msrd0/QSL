@@ -10,7 +10,7 @@ Before contributing please read the [contribution guidelines](./Contribution.md)
 
 ## Features:
 
-### QSL 0.1.1
+### QSL 0.1.2
 
 - qmake: dont force the user to use the qtype option
 - support comments at the end of the line
