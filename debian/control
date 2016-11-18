@@ -1,0 +1,48 @@
+Source: qsl
+Priority: optional
+Maintainer: Dominic Meiser <meiserdo@web.de>
+Build-Depends: debhelper (>= 9), qtbase5-dev (>= 5.5), cmake (>= 3.1),
+ pkg-config, doxygen, graphviz
+Standards-Version: 3.9.8
+Section: libs
+Homepage: https://msrd0.duckdns.org/git/msrd0/QSL
+Vcs-Git: https://msrd0.duckdns.org/git/msrd0/qsl.git
+Vcs-Browser: https://msrd0.duckdns.org/git/msrd0/QSL
+
+Package: libqsl
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Recommends: qsl-drivers
+Description: QSL is a SQL library for C++
+ QSL is a SQL library for C++
+
+Package: libqslparser
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libqsl (= ${binary:Version})
+Description: QSL is a SQL library for C++
+ QSL is a SQL library for C++
+
+Package: qsl-drivers
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libqsl (= ${binary:Version})
+Description: QSL is a SQL library for C++
+ QSL is a SQL library for C++
+
+Package: libqsl-dev
+Architecture: all
+Depends: libqsl (= ${binary:Version}), libqslparser (= ${binary:Version}), qsl (= ${binary:Version}),
+ qtbase5-dev (>= 5.5), cmake (>= 3.1)
+Suggests: qsl-doc
+Description: QSL is a SQL library for C++
+ QSL is a SQL library for C++
+
+Package: qsl
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libqsl-dev (= ${binary:Version})
+Description: QSL is a SQL library for C++
+ QSL is a SQL library for C++
+
+Package: qsl-doc
+Architecture: all
+Description: QSL is a SQL library for C++
+ QSL is a SQL library for C++

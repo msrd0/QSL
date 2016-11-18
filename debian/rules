@@ -1,0 +1,14 @@
+#!/usr/bin/make -f
+
+DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+
+%:
+	dpkg --compare-versions `$(CC) -dumpversion` '>=' 4.7
+	dh $@ --buildsystem=cmake
+
+override_dh_auto_configure:
+	dh_auto_configure -- \
+		 -DCMAKE_INSTALL_PREFIX=/usr \
+		 -DLIBDIR=lib/$(DEB_HOST_MULTIARCH) \
+		 -DCMAKEDIR=lib/$(DEB_HOST_MULTIARCH)/cmake \
+		 -DQMAKEDIR=lib/$(DEB_HOST_MULTIARCH)/qt5/mkspecs

@@ -1,0 +1,11 @@
+.travis-keys.tar.xz
+build*/
+obj-*/
+*.kdev4
+*.user
+
+debian/files
+debian/*.debhelper
+debian/*.log
+debian/*.substvars
+debian/*/

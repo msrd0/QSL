@@ -1,0 +1,3 @@
+usr/lib/*/libqslcore.so*
+usr/lib/*/libqsld.so*
+usr/lib/*/libqslvariant.so*
