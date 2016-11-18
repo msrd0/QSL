@@ -5,5 +5,5 @@ add_executable(qsldump ${QSLDUMP_HEADERS} ${QSLDUMP_SOURCES})
 target_link_libraries(qsldump qslcore qsld Qt5::Core)
 
 install(TARGETS qsldump
-	    RUNTIME DESTINATION bin
-		LIBRARY DESTINATION lib)
+	    RUNTIME DESTINATION ${BINDIR}
+		LIBRARY DESTINATION ${LIBDIR})

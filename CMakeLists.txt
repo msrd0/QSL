@@ -8,6 +8,11 @@ else()
 	set(QSL_LIB_TYPE STATIC)
 endif()
 
+set(LIBDIR "lib/" CACHE STRING "Installation path of the libraries")
+set(BINDIR "bin/" CACHE STRING "Installation path of the binaries")
+set(CMAKEDIR "lib/cmake" CACHE STRING "Installation path of the cmake config")
+set(QMAKEDIR "/usr/lib/qt/mkspecs" CACHE STRING "Installation path of the qmake mkspecs")
+
 set(QSL_MAJOR 0)
 set(QSL_MINOR 1)
 set(QSL_PATCH 0)
@@ -55,10 +60,10 @@ configure_file(QSLVersion.cmake.in QSLVersion.cmake @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/QSLVersion.cmake
 	          ${CMAKE_CURRENT_BINARY_DIR}/QSLConfig.cmake
 			  ${CMAKE_CURRENT_BINARY_DIR}/QSLMacros.cmake
-	    DESTINATION lib/cmake/QSL)
+	    DESTINATION ${CMAKEDIR}/QSL)
 configure_file(qt_QSL.pri.in qt_QSL.pri @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/qt_QSL.pri
-	    DESTINATION /usr/lib/qt/mkspecs/modules)
+	    DESTINATION ${QMAKEDIR}/modules)
 
 if (NOT NO_TESTS)
 	enable_testing()

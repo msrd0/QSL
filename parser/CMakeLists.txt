@@ -12,13 +12,13 @@ set_target_properties(qslparser PROPERTIES VERSION ${QSL_VERSION} SOVERSION ${QS
 
 install(TARGETS qslparser
 		EXPORT QSLParserConfig
-		RUNTIME DESTINATION bin
-		LIBRARY DESTINATION lib
-		ARCHIVE DESTINATION lib)
+		RUNTIME DESTINATION ${BINDIR}
+		LIBRARY DESTINATION ${LIBDIR}
+		ARCHIVE DESTINATION ${LIBDIR})
 install(FILES ${QSLPARSER_HEADERS}
 		DESTINATION include/qsl/parser)
 install(EXPORT QSLParserConfig
-		DESTINATION lib/cmake/QSLParser)
+		DESTINATION ${CMAKEDIR}/QSLParser)
 configure_file(../QSLVersion.cmake.in QSLParserConfigVersion.cmake @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/QSLParserConfigVersion.cmake
-		DESTINATION lib/cmake/QSLParser)
+		DESTINATION ${CMAKEDIR}/QSLParser)

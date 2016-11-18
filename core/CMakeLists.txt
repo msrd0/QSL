@@ -35,14 +35,14 @@ set_target_properties(qslcore PROPERTIES VERSION ${QSL_VERSION} SOVERSION ${QSL_
 
 install(TARGETS qslcore qslvariant
 	    EXPORT QSLCoreConfig
-	    RUNTIME DESTINATION bin
-		LIBRARY DESTINATION lib
-		ARCHIVE DESTINATION lib)
+	    RUNTIME DESTINATION ${BINDIR}
+		LIBRARY DESTINATION ${LIBDIR}
+		ARCHIVE DESTINATION ${LIBDIR})
 install(FILES ${QSLCORE_HEADERS} ${QSLVARIANT_HEADERS}
 	    DESTINATION include/qsl)
 install(EXPORT QSLCoreConfig
 	    NAMESPACE QSLCore_
-		DESTINATION lib/cmake/QSLCore)
+		DESTINATION ${CMAKEDIR}/QSLCore)
 configure_file(../QSLVersion.cmake.in QSLCoreConfigVersion.cmake @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/QSLCoreConfigVersion.cmake
-	    DESTINATION lib/cmake/QSLCore)
+	    DESTINATION ${CMAKEDIR}/QSLCore)

@@ -12,5 +12,5 @@ target_link_libraries(qsldsqlite qsld qslvariant)
 set_target_properties(qsldsqlite PROPERTIES VERSION ${QSL_VERSION} SOVERSION ${QSL_MAJOR})
 
 install(TARGETS qsldsqlite
-	    RUNTIME DESTINATION bin
-		LIBRARY DESTINATION lib)
+	    RUNTIME DESTINATION ${BINDIR}
+		LIBRARY DESTINATION ${LIBDIR})

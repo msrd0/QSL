@@ -12,15 +12,15 @@ set_target_properties(qsld PROPERTIES VERSION ${QSL_VERSION} SOVERSION ${QSL_MAJ
 
 install(TARGETS qsld
 	    EXPORT QSLDriverConfig
-		RUNTIME DESTINATION bin
-		LIBRARY DESTINATION lib
-		ARCHIVE DESTINATION lib)
+		RUNTIME DESTINATION ${BINDIR}
+		LIBRARY DESTINATION ${LIBDIR}
+		ARCHIVE DESTINATION ${LIBDIR})
 install(FILES ${QSLD_HEADERS}
 	    DESTINATION include/qsl/driver)
 install(EXPORT QSLDriverConfig
-	    DESTINATION lib/cmake/QSLDriver)
+	    DESTINATION ${CMAKEDIR}/QSLDriver)
 configure_file(../../QSLVersion.cmake.in QSLDriverConfigVersion.cmake @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/QSLDriverConfigVersion.cmake
-	    DESTINATION lib/cmake/QSLDriver)
+	    DESTINATION ${CMAKEDIR}/QSLDriver)
 
 add_subdirectory(sqlite)

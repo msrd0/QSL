@@ -8,12 +8,12 @@ target_link_libraries(qslc qslparser Qt5::Core)
 
 install(TARGETS qslc
 	    EXPORT QSLCConfig
-	    RUNTIME DESTINATION bin
-		LIBRARY DESTINATION lib
-		ARCHIVE DESTINATION lib)
+	    RUNTIME DESTINATION ${BINDIR}
+		LIBRARY DESTINATION ${LIBDIR}
+		ARCHIVE DESTINATION ${LIBDIR})
 install(EXPORT QSLCConfig
 	    NAMESPACE QSLC_
-	    DESTINATION lib/cmake/QSLC)
+	    DESTINATION ${CMAKEDIR}/QSLC)
 configure_file(../QSLVersion.cmake.in QSLCConfigVersion.cmake @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/QSLCConfigVersion.cmake
-	    DESTINATION lib/cmake/QSLC)
+	    DESTINATION ${CMAKEDIR}/QSLC)
