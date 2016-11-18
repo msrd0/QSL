@@ -14,3 +14,8 @@ Makefile
 # other stuff
 *~
 \#*#
+
+# stuff from the debian branch
+.travis-keys*
+debian/
+obj-*/
