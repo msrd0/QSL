@@ -6,14 +6,15 @@ set(QSLPARSER_SOURCES
 	database.cpp
 	parser.cpp
 	table.cpp)
-add_library(qslparser SHARED ${QSLPARSER_HEADERS} ${QSLPARSER_SOURCES})
+add_library(qslparser ${QSL_LIB_TYPE} ${QSLPARSER_HEADERS} ${QSLPARSER_SOURCES})
 target_link_libraries(qslparser Qt5::Core Qt5::Sql qslcore)
 set_target_properties(qslparser PROPERTIES VERSION ${QSL_VERSION} SOVERSION ${QSL_MAJOR})
 
 install(TARGETS qslparser
 		EXPORT QSLParserConfig
 		RUNTIME DESTINATION bin
-		LIBRARY DESTINATION lib)
+		LIBRARY DESTINATION lib
+		ARCHIVE DESTINATION lib)
 install(FILES ${QSLPARSER_HEADERS}
 		DESTINATION include/qsl/parser)
 install(EXPORT QSLParserConfig

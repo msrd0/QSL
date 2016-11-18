@@ -15,7 +15,7 @@ set(TEST_CFLAGS
 set(TEST_LDFLAGS
 	-L${CMAKE_CURRENT_BINARY_DIR}/../core/
     -L${CMAKE_CURRENT_BINARY_DIR}/../core/driver/
-    -lqsld -lqslcore
+    -lqslcore -lqsld -ldl
 	${QT_LDFLAGS})
 
 add_subdirectory(qslc)

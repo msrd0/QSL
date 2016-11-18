@@ -20,13 +20,13 @@ set(QSLVARIANT_SOURCES
 
 add_subdirectory(driver)
 
-add_library(qslvariant SHARED
+add_library(qslvariant ${QSL_LIB_TYPE}
 		${QSLVARIANT_HEADERS}
 		${QSLVARIANT_SOURCES}
 	)
 target_link_libraries(qslvariant Qt5::Core)
 set_target_properties(qslvariant PROPERTIES VERSION ${QSL_VERSION} SOVERSION ${QSL_MAJOR})
-add_library(qslcore SHARED
+add_library(qslcore ${QSL_LIB_TYPE}
         ${QSLCORE_HEADERS}
 		${QSLCORE_SOURCES}
     )
@@ -36,7 +36,8 @@ set_target_properties(qslcore PROPERTIES VERSION ${QSL_VERSION} SOVERSION ${QSL_
 install(TARGETS qslcore qslvariant
 	    EXPORT QSLCoreConfig
 	    RUNTIME DESTINATION bin
-		LIBRARY DESTINATION lib)
+		LIBRARY DESTINATION lib
+		ARCHIVE DESTINATION lib)
 install(FILES ${QSLCORE_HEADERS} ${QSLVARIANT_HEADERS}
 	    DESTINATION include/qsl)
 install(EXPORT QSLCoreConfig
