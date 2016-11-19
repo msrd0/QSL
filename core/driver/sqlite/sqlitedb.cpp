@@ -166,7 +166,7 @@ void SQLiteDatabase::loadTableInfo()
 					if (!q.first())
 						continue;
 					
-					if (q.value("origin").toByteArray() == "c") // I only care about CREATE INDEX indexes
+					if (indexList.value("origin").toByteArray() == "c") // I only care about CREATE INDEX indexes
 						uniqueIndexNames.insert(tblName + "." + q.value("name").toByteArray(), indexList.value("name").toByteArray());
 					
 					auto it = columns.find(q.value("name").toByteArray());
