@@ -125,10 +125,6 @@ static const QSet<QByteArray> forbidden = {
 
 static bool checkName(const QByteArray &name)
 {
-	// names may not contain spaces
-	for (char c : name)
-		if (isspace(c))
-			return false;
 	// everything with a double underscore or starting with an underscore followed
 	// by an uppercase letter is reserved
 	if (name.contains("__") || (name.startsWith("_") && (name.size()<2 || isupper(name[1]))))
@@ -141,7 +137,8 @@ static bool checkName(const QByteArray &name)
 		return false;
 	// of course normal rules apply: start with an underscore or a letter and only
 	// consists of only digits, underscores and letters
-	static const QRegularExpression identifierRegex("[a-zA-Z_][a-zA-Z_0-9]?");
+	static const QRegularExpression identifierRegex("^[a-zA-Z_][a-zA-Z_0-9]*$");
+	printf("checking '%s'\n", name.data());
 	return identifierRegex.match(name).hasMatch();
 }
 
