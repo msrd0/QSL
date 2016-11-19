@@ -138,7 +138,6 @@ static bool checkName(const QByteArray &name)
 	// of course normal rules apply: start with an underscore or a letter and only
 	// consists of only digits, underscores and letters
 	static const QRegularExpression identifierRegex("^[a-zA-Z_][a-zA-Z_0-9]*$");
-	printf("checking '%s'\n", name.data());
 	return identifierRegex.match(name).hasMatch();
 }
 
