@@ -125,6 +125,10 @@ static const QSet<QByteArray> forbidden = {
 
 static bool checkName(const QByteArray &name)
 {
+	// names may not contain spaces
+	for (char c : name)
+		if (isspace(c))
+			return false;
 	// everything with a double underscore or starting with an underscore followed
 	// by an uppercase letter is reserved
 	if (name.contains("__") || (name.startsWith("_") && (name.size()<2 || isupper(name[1]))))
