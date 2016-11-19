@@ -4,7 +4,6 @@ Before contributing please read the [contribution guidelines](./Contribution.md)
 
 ## Bugs:
 
-- in SQLite: `QSqlQuery::value: unknown field name 'origin'`
 - in SQLite: Database with foreign keys gets updated because "type changed"
 - qmake: if database name is changed we need to manually re-run qmake (cmake uses a static timestamp file)
 
