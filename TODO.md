@@ -42,3 +42,5 @@ Drivers:
 ## Long-Term:
 
 - add support for other languages like Java
+- jit-compiler for qsl files
+- cling-like interpreter to inspect the qsl database

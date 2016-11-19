@@ -1,7 +1,7 @@
 # this file is a qsl file intended to contain every syntax element that might occur in
 # a qsl file to make sure qsl can parse it and the final result is able to compile
 
-database "test"
+database "test" # this is a comment at the end of the line
 charset "utf-8"
 usevar
 
