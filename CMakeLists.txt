@@ -15,7 +15,7 @@ set(QMAKEDIR "/usr/lib/qt/mkspecs" CACHE STRING "Installation path of the qmake 
 
 set(SPIS_MAJOR 0)
 set(SPIS_MINOR 1)
-set(SPIS_PATCH 1)
+set(SPIS_PATCH 2)
 set(SPIS_VERSION ${SPIS_MAJOR}.${SPIS_MINOR}.${SPIS_PATCH})
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
