@@ -9,7 +9,7 @@ Before contributing please read the [contribution guidelines](./Contribution.md)
 
 ## Features:
 
-### SPIS 0.1.2
+### SPIS 0.1.3
 
 - qmake: dont force the user to use the qtype option
 - support comments at the end of the line
