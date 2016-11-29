@@ -198,6 +198,17 @@ Database* spis::spisc::parse(QIODevice *in, const QString &filename, bool qtype)
 		if (line.isEmpty() || line.startsWith('#'))
 			continue;
 		
+		int i = 0; // i can start at 0 because the first char won't be a #
+		while ((i = line.indexOf('#', i+1)) >= 0)
+		{
+			// lets check we are not enquoted
+			if (line.mid(0,i).count('"') % 2 == 0)
+			{
+				line = line.mid(0, i-1);
+				break;
+			}
+		}
+		
 		if (line.startsWith("database"))
 		{
 			if (db)

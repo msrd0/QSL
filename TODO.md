@@ -12,7 +12,6 @@ Before contributing please read the [contribution guidelines](./Contribution.md)
 ### SPIS 0.1.3
 
 - qmake: dont force the user to use the qtype option
-- support comments at the end of the line
 
 ### SPIS 0.2.0
 
