@@ -5,13 +5,8 @@ Before contributing please read the [contribution guidelines](./Contribution.md)
 ## Bugs:
 
 - in SQLite: Database with foreign keys gets updated because "type changed"
-- qmake: if database name is changed we need to manually re-run qmake (cmake uses a static timestamp file)
 
 ## Features:
-
-### SPIS 0.1.3
-
-- qmake: dont force the user to use the qtype option
 
 ### SPIS 0.2.0
 
@@ -37,6 +32,10 @@ Drivers:
 
 - add support for PostgreSQL, MySQL and maybe other database servers
 
+qmake problems:
+
+- qmake: dont force the user to use the qtype option
+- qmake: if database name is changed we need to manually re-run qmake (cmake uses a static timestamp file)
 
 ## Long-Term:
 
