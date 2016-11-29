@@ -1,3 +1,11 @@
+spis (0.1.2-1) precise; urgency=low
+
+  * Version 0.1.2
+  * fix a problem with the regex for allowed names
+  * rename qsl to spis
+
+ -- Dominic Meiser <meiserdo@web.de>  Tue, 29 Nov 2016 18:19:00 +0100
+
 spis (0.1.1-1) precise; urgency=low
 
   * Version 0.1.1
