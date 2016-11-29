@@ -1,48 +1,48 @@
-set(QSLCORE_HEADERS
+set(SPISCORE_HEADERS
 	pk.h
 	pk_p.h
-	qslcolumn.h
-	qsldb.h
-	qslfilter.h
-	qslfilter_p.h
-	qslnamespace.h
-	qslquery.h
-	qsltable.h)
-set(QSLCORE_SOURCES
-	qsldb.cpp
-	qslfilter.cpp)
-set(QSLVARIANT_HEADERS
-	qslpassword.h
-	qslvariant.h)
-set(QSLVARIANT_SOURCES
-	qslpassword.cpp
-	qslvariant.cpp)
+	spiscolumn.h
+	spisdb.h
+	spisfilter.h
+	spisfilter_p.h
+	spisnamespace.h
+	spisquery.h
+	spistable.h)
+set(SPISCORE_SOURCES
+	spisdb.cpp
+	spisfilter.cpp)
+set(SPISVARIANT_HEADERS
+	spispassword.h
+	spisvariant.h)
+set(SPISVARIANT_SOURCES
+	spispassword.cpp
+	spisvariant.cpp)
 
 add_subdirectory(driver)
 
-add_library(qslvariant ${QSL_LIB_TYPE}
-		${QSLVARIANT_HEADERS}
-		${QSLVARIANT_SOURCES}
+add_library(spisvariant ${SPIS_LIB_TYPE}
+		${SPISVARIANT_HEADERS}
+		${SPISVARIANT_SOURCES}
 	)
-target_link_libraries(qslvariant Qt5::Core)
-set_target_properties(qslvariant PROPERTIES VERSION ${QSL_VERSION} SOVERSION ${QSL_MAJOR})
-add_library(qslcore ${QSL_LIB_TYPE}
-        ${QSLCORE_HEADERS}
-		${QSLCORE_SOURCES}
+target_link_libraries(spisvariant Qt5::Core)
+set_target_properties(spisvariant PROPERTIES VERSION ${SPIS_VERSION} SOVERSION ${SPIS_MAJOR})
+add_library(spiscore ${SPIS_LIB_TYPE}
+        ${SPISCORE_HEADERS}
+		${SPISCORE_SOURCES}
     )
-target_link_libraries(qslcore Qt5::Core Qt5::Sql qsld qslvariant)
-set_target_properties(qslcore PROPERTIES VERSION ${QSL_VERSION} SOVERSION ${QSL_MAJOR})
+target_link_libraries(spiscore Qt5::Core Qt5::Sql spisd spisvariant)
+set_target_properties(spiscore PROPERTIES VERSION ${SPIS_VERSION} SOVERSION ${SPIS_MAJOR})
 
-install(TARGETS qslcore qslvariant
-	    EXPORT QSLCoreConfig
+install(TARGETS spiscore spisvariant
+	    EXPORT SPISCoreConfig
 	    RUNTIME DESTINATION ${BINDIR}
 		LIBRARY DESTINATION ${LIBDIR}
 		ARCHIVE DESTINATION ${LIBDIR})
-install(FILES ${QSLCORE_HEADERS} ${QSLVARIANT_HEADERS}
-	    DESTINATION include/qsl)
-install(EXPORT QSLCoreConfig
-	    NAMESPACE QSLCore_
-		DESTINATION ${CMAKEDIR}/QSLCore)
-configure_file(../QSLVersion.cmake.in QSLCoreConfigVersion.cmake @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/QSLCoreConfigVersion.cmake
-	    DESTINATION ${CMAKEDIR}/QSLCore)
+install(FILES ${SPISCORE_HEADERS} ${SPISVARIANT_HEADERS}
+	    DESTINATION include/spis)
+install(EXPORT SPISCoreConfig
+	    NAMESPACE SPISCore_
+		DESTINATION ${CMAKEDIR}/SPISCore)
+configure_file(../cmake/SPISVersion.cmake.in SPISCoreConfigVersion.cmake @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/SPISCoreConfigVersion.cmake
+	    DESTINATION ${CMAKEDIR}/SPISCore)

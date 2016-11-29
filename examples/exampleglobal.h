@@ -10,7 +10,7 @@ db_t* connect (int argc, char **argv)
 	if (strcmp(driver, "sqlite") == 0)
 	{
 		db = new db_t(driver);
-		db->setName("/tmp/qslexample.db");
+		db->setName("/tmp/spisexample.db");
 	}
 	else
 	{

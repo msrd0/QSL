@@ -1,12 +1,12 @@
 #pragma once
 
-#include "qsl_global.h"
+#include "spis_global.h"
 
 #include <QMap>
 #include <QString>
 
-namespace qsl {
-namespace qslc {
+namespace spis {
+namespace spisc {
 class Table;
 
 class Database
@@ -37,7 +37,7 @@ private:
 	
 	/// All tables in this database, sorted by their name.
 	QMap<QByteArray, Table*> _tables;
-	/// All tables in this database, sorted as they appeared in the qsl file.
+	/// All tables in this database, sorted as they appeared in the spis file.
 	QList<Table*> _orderedTables;
 };
 

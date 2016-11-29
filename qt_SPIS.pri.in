@@ -1,0 +1,54 @@
+QT.SPIS.VERSION = @SPIS_VERSION@
+QT.SPIS.MAJOR_VERSION = @SPIS_MAJOR@
+QT.SPIS.MINOR_VERSION = @SPIS_MINOR@
+QT.SPIS.PATCH_VERSION = @SPIS_PATCH@
+QT.SPIS.name = spiscore
+QT.SPIS.defines =
+QT.SPIS.includes = @CMAKE_INSTALL_PREFIX@/include/spis/
+QT.SPIS.private_includes =
+QT.SPIS.libs = @CMAKE_INSTALL_PREFIX@/lib
+QT.SPIS.depends = sql SPISVariant
+
+QT.SPISVariant.VERSION = @SPIS_VERSION@
+QT.SPISVariant.MAJOR_VERSION = @SPIS_MAJOR@
+QT.SPISVariant.MINOR_VERSION = @SPIS_MINOR@
+QT.SPISVariant.PATCH_VERSION = @SPIS_PATCH@
+QT.SPISVariant.name = spisvariant
+QT.SPISVariant.defines =
+QT.SPISVariant.includes = @CMAKE_INSTALL_PREFIX@/include/spis/
+QT.SPISVariant.private_includes =
+QT.SPISVariant.libs = @CMAKE_INSTALL_PREFIX@/lib
+QT.SPISVariant.depends = core
+
+QT.SPISDriver.VERSION = @SPIS_VERSION@
+QT.SPISDriver.MAJOR_VERSION = @SPIS_MAJOR@
+QT.SPISDriver.MINOR_VERSION = @SPIS_MINOR@
+QT.SPISDriver.PATCH_VERSION = @SPIS_PATCH@
+QT.SPISDriver.name = spisd
+QT.SPISDriver.defines =
+QT.SPISDriver.includes = @CMAKE_INSTALL_PREFIX@/include/spis/
+QT.SPISDriver.private_includes =
+QT.SPISDriver.libs = @CMAKE_INSTALL_PREFIX@/lib
+QT.SPISDriver.depends = sql
+
+isEmpty(SPISC_DIR):SPISC_DIR = .
+isEmpty(SPISC_EXE):SPISC_EXE = @CMAKE_INSTALL_PREFIX@/bin/spisc
+
+defineReplace(spisc_output_files) {
+	output = $$system(cd $$OUT_PWD && $$SPISC_EXE --name $$1 || echo spiscReturnedAnErrorCode)
+	return($$output)
+}
+
+spisc.name = SPIS Compiler ${QMAKE_FILE_IN}
+spisc.input = DATABASES
+spisc.output_function = spisc_output_files
+spisc.commands = $$SPISC_EXE -d $$SPISC_DIR -q ${QMAKE_FILE_IN}
+spisc.variable_out = HEADERS
+spisc.CONFIG += target_predeps add_input_as_makefile_deps
+
+silent:spisc.commands = @echo spisc ${QMAKE_FILE_IN} && $$spisc.commands
+QMAKE_EXTRA_COMPILERS += spisc
+
+!isEmpty(DATABASES) {
+	INCLUDEPATH += $$absolute_path($$SPISC_DIR, $$OUT_PWD)
+}

@@ -9,17 +9,17 @@ Before contributing please read the [contribution guidelines](./Contribution.md)
 
 ## Features:
 
-### QSL 0.1.2
+### SPIS 0.1.2
 
 - qmake: dont force the user to use the qtype option
 - support comments at the end of the line
 
-### QSL 0.2.0
+### SPIS 0.2.0
 
-QSL language:
+SPIS language:
 
 - support default values for columns (especially those with notnull constraint)
-- add an option to use another name in qsl than in the db itself (makes renaming easier,
+- add an option to use another name in spis than in the db itself (makes renaming easier,
   currently the old name will be droppend and the new name created)
 
 Core/Driver library:
@@ -42,5 +42,5 @@ Drivers:
 ## Long-Term:
 
 - add support for other languages like Java
-- jit-compiler for qsl files
-- cling-like interpreter to inspect the qsl database
+- jit-compiler for spis files
+- cling-like interpreter to inspect the spis database

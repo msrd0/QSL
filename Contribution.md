@@ -1,6 +1,6 @@
 # Contribution
 
-To contribute to QSL, fork the repository, make changes, and create a pull
+To contribute to SPIS, fork the repository, make changes, and create a pull
 request. Please make sure that you use an meaningfull name for your commits
 (don't call them something like _stuff_ if they change more than a forgotten `&`).
 Also, please respect the following topics:

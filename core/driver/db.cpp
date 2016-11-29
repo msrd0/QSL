@@ -1,13 +1,13 @@
 #include "db.h"
 
-#include "qsltable.h"
+#include "spistable.h"
 
 #ifdef CMAKE_DEBUG
 #  include <QDebug>
 #endif
 
-using namespace qsl;
-using namespace qsl::driver;
+using namespace spis;
+using namespace spis::driver;
 
 CopySelectResult::CopySelectResult(const QVector<QString> &cols)
 {
@@ -69,43 +69,43 @@ QVariant CopySelectResult::value(const QString &col) const
 
 // ##################################################
 
-SelectResult* Database::selectTable(const QSLTable &tbl,
-									const QSLFilter &filter,
-									const QList<QSLJoinTable> &join,
+SelectResult* Database::selectTable(const SPISTable &tbl,
+									const SPISFilter &filter,
+									const QList<SPISJoinTable> &join,
 									int limit, bool asc)
 {
 	return selectTable(tbl, tbl.columns(), filter, join, limit, asc);
 }
 
-bool Database::insertIntoTable(const QSLTable &tbl, const QList<QSLColumn> &cols, const QVector<QVariant> &values)
+bool Database::insertIntoTable(const SPISTable &tbl, const QList<SPISColumn> &cols, const QVector<QVariant> &values)
 {
 	return insertIntoTable(tbl, cols, QVector<QVector<QVariant>>({values}));
 }
 
-bool Database::insertIntoTable(const QSLTable &tbl, const QMap<QSLColumn, QVariant> &values)
+bool Database::insertIntoTable(const SPISTable &tbl, const QMap<SPISColumn, QVariant> &values)
 {
 	return insertIntoTable(tbl, values.keys(), values.values().toVector());
 }
 
-bool Database::updateTable(const QSLTable &tbl, const QMap<QSLColumn, QVariant> &values,
+bool Database::updateTable(const SPISTable &tbl, const QMap<SPISColumn, QVariant> &values,
 						   const QVariant &pk)
 {
 	return updateTable(tbl, values, QVector<QVariant>() << pk);
 }
 
-bool Database::updateTable(const QSLTable &tbl, const QSLColumn &col, const QVariant &value,
+bool Database::updateTable(const SPISTable &tbl, const SPISColumn &col, const QVariant &value,
 						   const QVector<QVariant> &pks)
 {
-	return updateTable(tbl, QMap<QSLColumn, QVariant>({{col,value}}), pks);
+	return updateTable(tbl, QMap<SPISColumn, QVariant>({{col,value}}), pks);
 }
 
-bool Database::updateTable(const QSLTable &tbl, const QSLColumn &col, const QVariant &value,
+bool Database::updateTable(const SPISTable &tbl, const SPISColumn &col, const QVariant &value,
 						   const QVariant &pk)
 {
-	return updateTable(tbl, QMap<QSLColumn, QVariant>({{col,value}}), QVector<QVariant>() << pk);
+	return updateTable(tbl, QMap<SPISColumn, QVariant>({{col,value}}), QVector<QVariant>() << pk);
 }
 
-bool Database::deleteFromTable(const QSLTable &tbl, const QVariant &pk)
+bool Database::deleteFromTable(const SPISTable &tbl, const QVariant &pk)
 {
 	return deleteFromTable(tbl, QVector<QVariant>({pk}));
 }
@@ -197,7 +197,7 @@ bool QtDatabase::connect()
 		return false;
 	loadTableInfo();
 #ifdef CMAKE_DEBUG
-	qDebug() << "QSL[QtDatabase]: Loaded" << _tables.size() << "tables";
+	qDebug() << "SPIS[QtDatabase]: Loaded" << _tables.size() << "tables";
 #endif
 	return true;
 }
@@ -211,7 +211,7 @@ bool QtDatabase::isConnected() const
 	return db().isOpen();
 }
 
-QList<QSLTable> QtDatabase::tables() const
+QList<SPISTable> QtDatabase::tables() const
 {
 	return _tables.values();
 }
@@ -219,14 +219,14 @@ bool QtDatabase::containsTable(const QByteArray &name) const
 {
 	return _tables.contains(name);
 }
-QSLTable QtDatabase::table(const QByteArray &name) const
+SPISTable QtDatabase::table(const QByteArray &name) const
 {
-	return _tables.value(name, QSLTable{"invalid", "invalid", 0});
+	return _tables.value(name, SPISTable{"invalid", "invalid", 0});
 }
-void QtDatabase::addTable(const QSLTable &tbl)
+void QtDatabase::addTable(const SPISTable &tbl)
 {
 #ifdef CMAKE_DEBUG
-	qDebug() << "QSL[QtDatabase]: Going to add Table" << tbl.name();
+	qDebug() << "SPIS[QtDatabase]: Going to add Table" << tbl.name();
 #endif
 	_tables.insert(tbl.name(), tbl);
 }

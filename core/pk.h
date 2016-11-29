@@ -1,19 +1,19 @@
 #pragma once
 
-/// @file pk.h This file contains the `qsl::PrimaryKey` class and the required
+/// @file pk.h This file contains the `spis::PrimaryKey` class and the required
 /// templated handler to increment and compare primary keys.
 
-#include "qslnamespace.h"
+#include "spisnamespace.h"
 #include "pk_p.h"
 
-namespace qsl {
+namespace spis {
 
 /**
  * This class is used to store the last-used primary key of a table and to determine
  * the next primary key that should be used.
  */
 template<typename T, typename H = PrimaryKeyHandlerImpl<T>>
-class QSL_PUBLIC PrimaryKey
+class SPIS_PUBLIC PrimaryKey
 {
 public:
 	/** Constructs a new primary key with the handler-default start value. */

@@ -1,14 +1,14 @@
 #pragma once
 
-#include "qsl_global.h"
+#include "spis_global.h"
 #include "database.h"
-#include <qslcolumn.h>
-#include <qslnamespace.h>
+#include <spiscolumn.h>
+#include <spisnamespace.h>
 
 #include <QString>
 
-namespace qsl {
-namespace qslc {
+namespace spis {
+namespace spisc {
 class Database;
 
 class Column
@@ -24,7 +24,7 @@ public:
 	QByteArray cppArgType() const { return (_cref ? "const " + cppType() + "&" : cppType()); }
 	uint8_t constraints() const { return _constraints; }
 	
-	void setConstraint(QSL::ColumnConstraint constraint) { _constraints |= constraint; }
+	void setConstraint(SPIS::ColumnConstraint constraint) { _constraints |= constraint; }
 	int setConstraint(const QByteArray &constraint);
 	
 private:
@@ -39,7 +39,7 @@ private:
 	/// Whether the type should be passed via const reference.
 	bool _cref;
 	/// The constraints for the field.
-	uint8_t _constraints = QSL::none;
+	uint8_t _constraints = SPIS::none;
 };
 
 class Table

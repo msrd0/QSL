@@ -6,8 +6,8 @@
 #  include <QDebug>
 #endif
 
-using namespace qsl;
-using namespace qsl::driver;
+using namespace spis;
+using namespace spis::driver;
 
 QHash<QString, Driver*> Driver::exportedDrivers;
 
@@ -24,23 +24,23 @@ Driver* Driver::driver(const QString &name)
 	if (exportedDrivers.contains(name))
 		return exportedDrivers[name];
 	
-	QString libname = "libqsld" + name + ".so";
+	QString libname = "libspisd" + name + ".so";
 #ifdef CMAKE_DEBUG
-	qDebug() << "QSL: Trying to load driver for" << name << "from" << libname;
+	qDebug() << "SPIS: Trying to load driver for" << name << "from" << libname;
 #endif
 	void *handle = dlopen(qPrintable(libname), RTLD_NOW);
 	if (!handle)
 	{
-		fprintf(stderr, "QSL: Failed to load driver \"%s\": %s\n", qPrintable(name), dlerror());
+		fprintf(stderr, "SPIS: Failed to load driver \"%s\": %s\n", qPrintable(name), dlerror());
 		return 0;
 	}
 	
 	void (*init)();
-	*(void **) (&init) = dlsym(handle, "init_qsl_driver");
+	*(void **) (&init) = dlsym(handle, "init_spis_driver");
 	init();
 	
 	if (exportedDrivers.contains(name))
 		return exportedDrivers[name];
-	fprintf(stderr, "QSL: Loaded %s but still unable to find driver \"%s\"\n", qPrintable(libname), qPrintable(name));
+	fprintf(stderr, "SPIS: Loaded %s but still unable to find driver \"%s\"\n", qPrintable(libname), qPrintable(name));
 	return 0;
 }

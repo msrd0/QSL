@@ -3,7 +3,7 @@
 #include <QDebug>
 #include <QMetaEnum>
 
-using namespace qsl::qslc;
+using namespace spis::spisc;
 
 static std::pair<QByteArray, bool> toCppType(const QByteArray &t, uint32_t minsize, bool qtype)
 {
@@ -50,7 +50,7 @@ static std::pair<QByteArray, bool> toCppType(const QByteArray &t, uint32_t minsi
 		return {"std::string", true};
 	}
 	else if (t == "password")
-		return {"qsl::Password", true};
+		return {"spis::Password", true};
 	else if (!qtype && (t == "date" || t == "time" || t == "datetime"))
 		return {"std::chrono::system_clock::time_point", true};
 	else if (t == "date")
@@ -65,7 +65,7 @@ static std::pair<QByteArray, bool> toCppType(const QByteArray &t, uint32_t minsi
 		return {t.mid(1, t.indexOf('.')-1) + "_t", true};
 	else
 	{
-		qCritical() << "QSL[Parser]: Unknown type" << t << "(in " __FILE__ " line" << __LINE__ << ")";
+		qCritical() << "SPIS[Parser]: Unknown type" << t << "(in " __FILE__ " line" << __LINE__ << ")";
 		return {"void*", false};
 	}
 }
@@ -97,7 +97,7 @@ Column::Column(const QByteArray &name, const QByteArray &type, bool qtype)
 
 int Column::setConstraint(const QByteArray &constraint)
 {
-	static QMetaEnum e = QSL::staticMetaObject.enumerator(QSL::staticMetaObject.indexOfEnumerator("ColumnConstraint"));
+	static QMetaEnum e = SPIS::staticMetaObject.enumerator(SPIS::staticMetaObject.indexOfEnumerator("ColumnConstraint"));
 	int val = e.keyToValue(constraint);
 	_constraints |= val;
 	return val;

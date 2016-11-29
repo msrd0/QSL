@@ -38,7 +38,7 @@ PROJECT_NAME           = "@CMAKE_PROJECT_NAME@"
 # could be handy for archiving the generated documentation or if some version
 # control system is used.
 
-PROJECT_NUMBER         = @QSL_VERSION@
+PROJECT_NUMBER         = @SPIS_VERSION@
 
 # Using the PROJECT_BRIEF tag one can provide an optional one line description
 # for a project that appears at the top of each page and should give viewer a
@@ -773,7 +773,7 @@ WARN_LOGFILE           =
 
 INPUT                  = @CMAKE_CURRENT_SOURCE_DIR@/../core
 INPUT                 += @CMAKE_CURRENT_SOURCE_DIR@/../parser
-INPUT                 += @CMAKE_CURRENT_BINARY_DIR@/../qsl_global.h
+INPUT                 += @CMAKE_CURRENT_BINARY_DIR@/../spis_global.h
 INPUT                 += @CMAKE_CURRENT_SOURCE_DIR@/../README.md
 
 # This tag can be used to specify the character encoding of the source files

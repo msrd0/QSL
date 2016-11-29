@@ -1,7 +1,7 @@
 #include "db_auth.h"
 #include "../exampleglobal.h"
 
-using namespace qsl;
+using namespace spis;
 
 #include <iostream>
 #include <string>

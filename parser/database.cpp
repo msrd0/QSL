@@ -1,7 +1,7 @@
 #include "database.h"
 #include "table.h"
 
-using namespace qsl::qslc;
+using namespace spis::spisc;
 
 Database::Database(const QByteArray &name)
 	: _name(name)

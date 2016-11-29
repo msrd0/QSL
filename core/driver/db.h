@@ -1,9 +1,9 @@
 #pragma once
 
-#include "qslcolumn.h"
-#include "qslnamespace.h"
-#include "qsltable.h"
-#include "qslvariant.h"
+#include "spiscolumn.h"
+#include "spisnamespace.h"
+#include "spistable.h"
+#include "spisvariant.h"
 
 #include <QByteArray>
 #include <QMap>
@@ -11,30 +11,30 @@
 #include <QSqlQuery>
 #include <QVector>
 
-namespace qsl {
-class QSLFilter;
+namespace spis {
+class SPISFilter;
 
 namespace driver {
 
 /**
- * This is a simple subclass of `QSLColumn` that provides mutable constraints. This can be usefull
+ * This is a simple subclass of `SPISColumn` that provides mutable constraints. This can be usefull
  * to retrieve the column information from the existing database, create the columns, and later
  * match the constraints to the columns.
  */
-class QSL_PUBLIC MutableColumn : public QSLColumn
+class SPIS_PUBLIC MutableColumn : public SPISColumn
 {
 public:
 	/// Creates a new column with the given name, type, type's minsize and, if given, constraints
-	/// (see `QSL::ColumnConstraint`).
+	/// (see `SPIS::ColumnConstraint`).
 	constexpr MutableColumn(const char* name, const char* type, uint32_t minsize, uint8_t constraints = 0)
-		: QSLColumn(name, type, minsize, constraints)
+		: SPISColumn(name, type, minsize, constraints)
 	{
 	}
 	
 	/// Creates a new column with the given name, type, type's minsize and, if given, constraints
-	/// (see `QSL::ColumnConstraint`).
+	/// (see `SPIS::ColumnConstraint`).
 	MutableColumn(const QByteArray &name, const QByteArray &type, uint32_t minsize, uint8_t constraints = 0)
-		: QSLColumn(name, type, minsize, constraints)
+		: SPISColumn(name, type, minsize, constraints)
 	{
 	}
 	
@@ -44,7 +44,7 @@ public:
 		_constraints |= constraint;
 	}
 	/** Adds the given constraint to the constraints. This method has no effect if the constraint is already present. */
-	void addConstraint(QSL::ColumnConstraint constraint)
+	void addConstraint(SPIS::ColumnConstraint constraint)
 	{
 		addConstraint((uint8_t)constraint);
 	}
@@ -54,7 +54,7 @@ public:
  * This class is the result of an SQL `SELECT` query. It is used to get all records
  * of a select query.
  */
-class QSL_PUBLIC SelectResult
+class SPIS_PUBLIC SelectResult
 {
 public:
 	/** Retrieves the first record in the select result. */
@@ -80,7 +80,7 @@ public:
  * not use this class if your driver gives you a result similar to `SelectResult`
  * to prevent unneccessary copies.
  */
-class QSL_PUBLIC CopySelectResult : public SelectResult
+class SPIS_PUBLIC CopySelectResult : public SelectResult
 {
 public:
 	/** Creates a new empty `SelectResult` with the give selected column names. */
@@ -113,10 +113,10 @@ private:
 
 /**
  * This class needs to be overridden by every driver. Take a look at
- * the `qsl::driver::QtDatabase` class that uses a `QSqlDatabase` behind
+ * the `spis::driver::QtDatabase` class that uses a `QSqlDatabase` behind
  * the scenes to provide a database connection.
  */
-class QSL_PUBLIC Database
+class SPIS_PUBLIC Database
 {
 	
 public:
@@ -155,7 +155,7 @@ public:
 	virtual bool isConnected() const = 0;
 	
 	/** Returns all tables of the database including their schema. */
-	virtual QList<QSLTable> tables() const = 0;
+	virtual QList<SPISTable> tables() const = 0;
 	/**
 	 * Ensures that the given table exists in the database with at least
 	 * the columns given. If the database is type-safe (not like SQLite)
@@ -170,23 +170,23 @@ public:
 	 * delete existing rows in the table, while this method may delete
 	 * columns that were existing before but are not mentioned in `tbl`.
 	 */
-	virtual bool ensureTable(const QSLTable &tbl) = 0;
+	virtual bool ensureTable(const SPISTable &tbl) = 0;
 	
 	
 	/**
 	 * A convenient type that is used to provide join table info to the
 	 * `selectTable` methods.
 	 */
-	struct QSLJoinTable
+	struct SPISJoinTable
 	{
 		/** The table to join. */
-		QSLTable tbl;
+		SPISTable tbl;
 		/** The columns to join. */
-		QList<QSLColumn> cols;
+		QList<SPISColumn> cols;
 		/** The column of the selected table to join on. */
-		QSLColumn on;
+		SPISColumn on;
 		/** The column of the join table to join on. */
-		QSLColumn onTbl;
+		SPISColumn onTbl;
 		/** The prefix of the foreign column names in the select result. */
 		QString prefix;
 	};
@@ -196,19 +196,19 @@ public:
 	 * apply to the given filter. If `limit` is greater than 0, a maximum of
 	 * `limit` rows are retrieved.
 	 */
-	virtual SelectResult* selectTable(const QSLTable &tbl,
-									  const QList<QSLColumn> &cols,
-									  const QSLFilter &filter,
-									  const QList<QSLJoinTable> &join = QList<QSLJoinTable>(),
+	virtual SelectResult* selectTable(const SPISTable &tbl,
+									  const QList<SPISColumn> &cols,
+									  const SPISFilter &filter,
+									  const QList<SPISJoinTable> &join = QList<SPISJoinTable>(),
 									  int limit = -1, bool asc = true) = 0;
 	/**
 	 * Selects all columns from the table joining the given tables that apply to
 	 * the given filter. If `limit` is greater than 0, a maximum of `limit` rows
 	 * are retrieved.
 	 */
-	virtual SelectResult* selectTable(const QSLTable &tbl,
-									  const QSLFilter &filter,
-									  const QList<QSLJoinTable> &join = QList<QSLJoinTable>(),
+	virtual SelectResult* selectTable(const SPISTable &tbl,
+									  const SPISFilter &filter,
+									  const QList<SPISJoinTable> &join = QList<SPISJoinTable>(),
 									  int limit = -1, bool asc = true);
 	
 	/**
@@ -218,7 +218,7 @@ public:
 	 * checked if asserts are turned on, depending on the driver. Also, the columns
 	 * must be present in the table, otherwise there might be an error message.
 	 */
-	virtual bool insertIntoTable(const QSLTable &tbl, const QList<QSLColumn> &cols,
+	virtual bool insertIntoTable(const SPISTable &tbl, const QList<SPISColumn> &cols,
 								 const QVector<QVector<QVariant>> &rows) = 0;
 	/**
 	 * Inserts one row into the given table, for each given column the given value.
@@ -227,7 +227,7 @@ public:
 	 * Also, the columns must be present in the table, otherwise there might be an
 	 * error message.
 	 */
-	virtual bool insertIntoTable(const QSLTable &tbl, const QList<QSLColumn> &cols,
+	virtual bool insertIntoTable(const SPISTable &tbl, const QList<SPISColumn> &cols,
 								 const QVector<QVariant> &values);
 	/**
 	 * Inserts one row into the given table, for each given column the given value.
@@ -235,33 +235,33 @@ public:
 	 * be an error message. This method is the slowest but failsafest of the insert
 	 * methods.
 	 */
-	virtual bool insertIntoTable(const QSLTable &tbl, const QMap<QSLColumn, QVariant> &values);
+	virtual bool insertIntoTable(const SPISTable &tbl, const QMap<SPISColumn, QVariant> &values);
 	
 	/** Updates the values of the given table at the given indexes to the new values. */
-	virtual bool updateTable(const QSLTable &tbl, const QMap<QSLColumn, QVariant> &values,
+	virtual bool updateTable(const SPISTable &tbl, const QMap<SPISColumn, QVariant> &values,
 							 const QVector<QVariant> &pks) = 0;
 	/** Updates the values of the given table at the given index to the new values. */
-	virtual bool updateTable(const QSLTable &tbl, const QMap<QSLColumn, QVariant> &values,
+	virtual bool updateTable(const SPISTable &tbl, const QMap<SPISColumn, QVariant> &values,
 							 const QVariant &pk);
 	/** Updates the values of the given table at the given indexes to the new value. */
-	virtual bool updateTable(const QSLTable &tbl, const QSLColumn &col, const QVariant &value,
+	virtual bool updateTable(const SPISTable &tbl, const SPISColumn &col, const QVariant &value,
 							 const QVector<QVariant> &pks);
 	/** Updates the values of the given table at the given index to the new value. */
-	virtual bool updateTable(const QSLTable &tbl, const QSLColumn &col, const QVariant &value,
+	virtual bool updateTable(const SPISTable &tbl, const SPISColumn &col, const QVariant &value,
 							 const QVariant &pk);
 	
 	/** Deletes the given rows from the database that match the given filter. */
-	virtual bool deleteFromTable(const QSLTable &tbl, const QSLFilter &filter) = 0;
+	virtual bool deleteFromTable(const SPISTable &tbl, const SPISFilter &filter) = 0;
 	/** Deletes the given rows identified by their primary key from the database. */
-	virtual bool deleteFromTable(const QSLTable &tbl, const QVector<QVariant> &pks) = 0;
+	virtual bool deleteFromTable(const SPISTable &tbl, const QVector<QVariant> &pks) = 0;
 	/** Deletes the given row identified by the primary key from the database. */
-	virtual bool deleteFromTable(const QSLTable &tbl, const QVariant &pk);
+	virtual bool deleteFromTable(const SPISTable &tbl, const QVariant &pk);
 };
 
 /**
  * A `SelectResult` implementation that mirrors the result of a `QSqlQuery`.
  */
-class QSL_PUBLIC QtSelectResult : public SelectResult
+class SPIS_PUBLIC QtSelectResult : public SelectResult
 {
 public:
 	/** Constructs a new `QtSelectResult` that mirrors `query`. */
@@ -285,7 +285,7 @@ protected:
  * A database implementation that can be used by every driver with
  * a corresponding QtSql driver.
  */
-class QSL_PUBLIC QtDatabase : public Database
+class SPIS_PUBLIC QtDatabase : public Database
 {
 	
 protected:
@@ -306,18 +306,18 @@ public:
 	virtual bool disconnect() override;
 	virtual bool isConnected() const override;
 	
-	QList<QSLTable> tables() const override;
+	QList<SPISTable> tables() const override;
 	/** Checks whether this database contains the given table. */
 	bool containsTable(const QByteArray &name) const;
 	/** Returns the table with the given name. Undefined behaviour if the table doesn't exist. */
-	QSLTable table(const QByteArray &name) const;
+	SPISTable table(const QByteArray &name) const;
 	
 protected:
 	/** Loads all tables in the database. This method is called after the connection to the database was
 	 * established. It is only called once in the livecycle of the database. */
 	virtual void loadTableInfo() = 0;
 	/** Adds a table to the database. Should only be called from `loadTableInfo()`. */
-	virtual void addTable(const QSLTable &tbl);
+	virtual void addTable(const SPISTable &tbl);
 	
 	/** Returns the underlying `QSqlDatabase`. */
 	QSqlDatabase& db() { return _db; }
@@ -329,7 +329,7 @@ private:
 	
 	QSqlDatabase _db;
 	
-	QMap<QByteArray, QSLTable> _tables;
+	QMap<QByteArray, SPISTable> _tables;
 	
 };
 

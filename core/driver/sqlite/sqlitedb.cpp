@@ -1,4 +1,4 @@
-#include "qslfilter.h"
+#include "spisfilter.h"
 #include "sqlitedb.h"
 #include "sqlitetypes.h"
 #include "driver/diff.h"
@@ -12,20 +12,20 @@
 #include <QSqlError>
 
 
-using namespace qsl;
-using namespace qsl::driver;
+using namespace spis;
+using namespace spis::driver;
 
 static void dumpError(const QSqlQuery &q, const char* file, int line)
 {
 	if (isatty(STDERR_FILENO))
 	{
-		fprintf(stderr, "\033[1mQSL[SQLite]: \033[31mError\033[0m in \033[32m%s:%d\033[0m:\n", file, line);
+		fprintf(stderr, "\033[1mSPIS[SQLite]: \033[31mError\033[0m in \033[32m%s:%d\033[0m:\n", file, line);
 		fprintf(stderr, "    \033[1;31mQuery:\033[0m %s\n", qPrintable(q.lastQuery()));
 		fprintf(stderr, "    \033[1;31mError:\033[0m %s\n", qPrintable(q.lastError().text()));
 	}
 	else
 	{
-		fprintf(stderr, "QSL[SQLite]: Error in %s:%d:\n", file, line);
+		fprintf(stderr, "SPIS[SQLite]: Error in %s:%d:\n", file, line);
 		fprintf(stderr, "    Query: %s\n", qPrintable(q.lastQuery()));
 		fprintf(stderr, "    Error: %s\n", qPrintable(q.lastError().text()));
 	}
@@ -43,7 +43,7 @@ bool SQLiteDatabase::connect()
 	if (!QtDatabase::connect())
 		return false;
 #ifdef CMAKE_DEBUG
-	qDebug() << "QSL[SQLite]: Conncted to" << db().databaseName();
+	qDebug() << "SPIS[SQLite]: Conncted to" << db().databaseName();
 #endif
 	
 	// enable fkeys
@@ -68,7 +68,7 @@ bool SQLiteDatabase::connect()
 		enc = "UTF-16be";
 	else
 	{
-		qWarning() << "QSL[SQLite]: Encoding" << enc << "is currently not supported. Please only report if";
+		qWarning() << "SPIS[SQLite]: Encoding" << enc << "is currently not supported. Please only report if";
 		qWarning() << "             the encoding is listet at http://www.sqlite.org/pragma.html#pragma_encoding";
 		enc = "";
 	}
@@ -78,7 +78,7 @@ bool SQLiteDatabase::connect()
 		if (!qenc.exec("PRAGMA encoding = \"" + enc + "\";"))
 		{
 			DUMP_ERROR(qenc);
-			qWarning() << "QSL[SQLite]: Failed to set encoding. Will use the default provided by SQLite.";
+			qWarning() << "SPIS[SQLite]: Failed to set encoding. Will use the default provided by SQLite.";
 		}
 	}
 	
@@ -88,7 +88,7 @@ bool SQLiteDatabase::connect()
 void SQLiteDatabase::loadTableInfo()
 {
 #ifdef CMAKE_DEBUG
-	qDebug() << "QSL[SQLite]: Starting loadTableInfo()";
+	qDebug() << "SPIS[SQLite]: Starting loadTableInfo()";
 #endif
 	QSqlQuery tables(db());
 	if (!tables.exec("SELECT name FROM sqlite_master WHERE type='table';"))
@@ -102,12 +102,12 @@ void SQLiteDatabase::loadTableInfo()
 	do
 	{ 
 		QByteArray tblName = tables.value("name").toByteArray();
-		if (tblName.contains("___qslbackup_"))
+		if (tblName.contains("___spisbackup_"))
 			continue;
 		
 		QByteArray pk;
 #ifdef CMAKE_DEBUG
-		qDebug() << "QSL[SQLite]: Detecting table" << tblName;
+		qDebug() << "SPIS[SQLite]: Detecting table" << tblName;
 #endif
 		// query the table info
 		QSqlQuery tblInfo(db());
@@ -133,13 +133,13 @@ void SQLiteDatabase::loadTableInfo()
 			auto type = SQLiteTypes::fromSQL(tblInfo.value("type").toByteArray());
 			MutableColumn col(tblInfo.value("name").toByteArray(), type.first, type.second);
 #ifdef CMAKE_DEBUG
-			qDebug() << "QSL[SQLite]: Adding column" << col.name();
+			qDebug() << "SPIS[SQLite]: Adding column" << col.name();
 #endif
 			if (tblInfo.value("notnull") == "1")
-				col.addConstraint(QSL::notnull);
+				col.addConstraint(SPIS::notnull);
 			if (tblInfo.value("pk") == "1")
 			{
-				col.addConstraint(QSL::primarykey);
+				col.addConstraint(SPIS::primarykey);
 				pk = col.name();
 			}
 			columns.insert(col.name(), col);
@@ -152,7 +152,7 @@ void SQLiteDatabase::loadTableInfo()
 			do
 			{
 #ifdef CMAKE_DEBUG
-				qDebug() << "QSL[SQLite]: Looking at index" << indexList.value("name").toString();
+				qDebug() << "SPIS[SQLite]: Looking at index" << indexList.value("name").toString();
 #endif
 				if (indexList.value("unique") == "1")
 				{
@@ -171,14 +171,14 @@ void SQLiteDatabase::loadTableInfo()
 					
 					auto it = columns.find(q.value("name").toByteArray());
 					if (it != columns.end())
-						it->addConstraint(QSL::unique);
+						it->addConstraint(SPIS::unique);
 				}
 			}
 			while (indexList.next());
 		}
 		
 		// create and add the table
-		QSLTable tbl(tblName.data(), pk, 0);
+		SPISTable tbl(tblName.data(), pk, 0);
 		for (auto col : columns.values())
 			tbl.addColumn(col);
 		addTable(tbl);
@@ -186,7 +186,7 @@ void SQLiteDatabase::loadTableInfo()
 	while (tables.next());
 }
 
-bool SQLiteDatabase::ensureTable(const QSLTable &tbl)
+bool SQLiteDatabase::ensureTable(const SPISTable &tbl)
 {
 	bool success = ensureTableImpl(tbl);
 	if (success)
@@ -196,20 +196,20 @@ bool SQLiteDatabase::ensureTable(const QSLTable &tbl)
 
 static QByteArray backupSuffixName(const QByteArray &name)
 {
-	return "___qslbackup_" + QCryptographicHash::hash(name + " @ " + QDateTime::currentDateTime().toString().toUtf8(), QCryptographicHash::Md5).toHex();
+	return "___spisbackup_" + QCryptographicHash::hash(name + " @ " + QDateTime::currentDateTime().toString().toUtf8(), QCryptographicHash::Md5).toHex();
 }
 
 static QByteArray uniqueConstraintName(const QByteArray &tbl, const QByteArray &name)
 {
-	return "qsl_sqlite_driver_constraint_unique_" + name + "_" + QCryptographicHash::hash(tbl + "." + name + " !unique"  + " @ " + QDateTime::currentDateTime().toString().toUtf8(), QCryptographicHash::Md5).toHex();
+	return "spis_sqlite_driver_constraint_unique_" + name + "_" + QCryptographicHash::hash(tbl + "." + name + " !unique"  + " @ " + QDateTime::currentDateTime().toString().toUtf8(), QCryptographicHash::Md5).toHex();
 }
 
-bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
+bool SQLiteDatabase::ensureTableImpl(const SPISTable &tbl)
 {
 	bool needsNewTable = !containsTable(tbl.name());
 	const QByteArray backupSuffix = backupSuffixName(tbl.name());
 	bool hasBackup = false;
-	QList<QSLColumn> addedCols;
+	QList<SPISColumn> addedCols;
 	
 	if (!needsNewTable)
 	{
@@ -221,7 +221,7 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 			{
 				emptyq.finish(); // otherwise table is locked
 #ifdef CMAKE_DEBUG
-				qDebug() << "QSL[SQLite]: Dropping empty table" << tbl.name();
+				qDebug() << "SPIS[SQLite]: Dropping empty table" << tbl.name();
 #endif
 				QSqlQuery dropq(db());
 				if (dropq.exec("DROP TABLE \"" + tbl.name() + "\";"))
@@ -240,7 +240,7 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 		
 		/*
 		 NOTE: Currently, SQLite only supports to add columns to a table when altering it. A
-		 new unique constraint can be added with the create index query. QSL doesn't enforce
+		 new unique constraint can be added with the create index query. SPIS doesn't enforce
 		 to remove removed columns from the database, so this will be fine as long as the
 		 column is nullable.
 		 => We need to create a new table if and only if:
@@ -256,12 +256,12 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 		
 		// check A.
 		//  (note that table is not empty if reaching this code)
-		//  (note that currently default values are not supported by QSL)
+		//  (note that currently default values are not supported by SPIS)
 		for (auto col : diff.addedCols())
 		{
-			if ((col.constraints() & QSL::notnull) == QSL::notnull)
+			if ((col.constraints() & SPIS::notnull) == SPIS::notnull)
 			{
-				qCritical() << "QSL[SQLite]: In Table" << tbl.name() << ": ERROR: Column" << col.name() << "was added with !notnull but without a default value";
+				qCritical() << "SPIS[SQLite]: In Table" << tbl.name() << ": ERROR: Column" << col.name() << "was added with !notnull but without a default value";
 				return false;
 			}
 		}
@@ -271,7 +271,7 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 		{
 			needsNewTable = true;
 #ifdef CMAKE_DEBUG
-			qDebug() << "QSL[SQLite]: The types of the following columns changed, need to re-create table" << tbl.name();
+			qDebug() << "SPIS[SQLite]: The types of the following columns changed, need to re-create table" << tbl.name();
 			for (auto col : diff.typeChanged())
 				qDebug() << "             -" << col.name();
 #endif
@@ -282,12 +282,12 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 		{
 			for (auto constraintDiff : diff.constraintsChanged())
 			{
-				if (constraintDiff.constraintsAdded() != QSL::none && constraintDiff.constraintsAdded() != QSL::unique)
+				if (constraintDiff.constraintsAdded() != SPIS::none && constraintDiff.constraintsAdded() != SPIS::unique)
 				{
 					needsNewTable = true;
 					break;
 				}
-				if (constraintDiff.constraintsRemoved() != QSL::none && constraintDiff.constraintsRemoved() != QSL::unique)
+				if (constraintDiff.constraintsRemoved() != SPIS::none && constraintDiff.constraintsRemoved() != SPIS::unique)
 				{
 					needsNewTable = true;
 					break;
@@ -296,7 +296,7 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 			
 #ifdef CMAKE_DEBUG
 			if (needsNewTable)
-				qDebug() << "QSL[SQLite]: At least one constraint other than unique was added or removed, need to re-create table" << tbl.name();
+				qDebug() << "SPIS[SQLite]: At least one constraint other than unique was added or removed, need to re-create table" << tbl.name();
 #endif
 		}
 		
@@ -304,10 +304,10 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 		if (!needsNewTable) // otherwise we can skip
 		{
 			for (auto col : diff.removedCols())
-				if ((col.constraints() & QSL::notnull) == QSL::notnull)
+				if ((col.constraints() & SPIS::notnull) == SPIS::notnull)
 				{
 #ifdef CMAKE_DEBUG
-					qDebug() << "QSL[SQLite]: At least one column with a notnull-constraint was removed, need to re-create table" << tbl.name();
+					qDebug() << "SPIS[SQLite]: At least one column with a notnull-constraint was removed, need to re-create table" << tbl.name();
 #endif
 					needsNewTable = true;
 					break;
@@ -318,10 +318,10 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 		if (!needsNewTable) // otherwise we can skip
 		{
 			for (auto col : diff.addedCols())
-				if ((col.constraints() & QSL::primarykey) == QSL::primarykey)
+				if ((col.constraints() & SPIS::primarykey) == SPIS::primarykey)
 				{
 #ifdef CMAKE_DEBUG
-					qDebug() << "QSL[SQLite]: The primary key changed, need to re-create table" << tbl.name();
+					qDebug() << "SPIS[SQLite]: The primary key changed, need to re-create table" << tbl.name();
 #endif
 					needsNewTable = true;
 					break;
@@ -333,12 +333,12 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 		{
 			for (auto constraintDiff : diff.constraintsChanged())
 			{
-				if ((constraintDiff.constraintsRemoved() & QSL::unique) == QSL::unique)
+				if ((constraintDiff.constraintsRemoved() & SPIS::unique) == SPIS::unique)
 				{
 					if (!uniqueIndexNames.contains(tbl.name() + "." + constraintDiff.colName()))
 					{
 #ifdef CMAKE_DEBUG
-						qDebug() << "QSL[SQLite]: A unique-constraint not created by an CREATE INDEX statement was removed, need to re-create table" << tbl.name();
+						qDebug() << "SPIS[SQLite]: A unique-constraint not created by an CREATE INDEX statement was removed, need to re-create table" << tbl.name();
 #endif
 						needsNewTable = true;
 						break;
@@ -351,7 +351,7 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 		if (needsNewTable)
 		{
 #ifdef CMAKE_DEBUG
-			qDebug() << "QSL[SQLite]: Creating backup of table" << tbl.name() << "-" << tbl.name() + backupSuffix;
+			qDebug() << "SPIS[SQLite]: Creating backup of table" << tbl.name() << "-" << tbl.name() + backupSuffix;
 #endif
 			QSqlQuery renameq(db());
 			if (!renameq.exec("ALTER TABLE \"" + tbl.name() + "\" RENAME TO \"" + tbl.name() + backupSuffix + "\";"))
@@ -370,18 +370,18 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 			for (auto col : diff.addedCols())
 			{
 #ifdef CMAKE_DEBUG
-				qDebug() << "QSL[SQLite]: Adding column" << col.name() << "to table" << tbl.name();
+				qDebug() << "SPIS[SQLite]: Adding column" << col.name() << "to table" << tbl.name();
 #endif
 				QSqlQuery alterq(db());
-				if (!alterq.exec("ALTER TABLE \"" + tbl.name() + "\" ADD COLUMN \"" + col.name() + "\" " + SQLiteTypes::fromQSL(col.type(), col.minsize(), usevar()) + ";"))
+				if (!alterq.exec("ALTER TABLE \"" + tbl.name() + "\" ADD COLUMN \"" + col.name() + "\" " + SQLiteTypes::fromSPIS(col.type(), col.minsize(), usevar()) + ";"))
 				{
 					DUMP_ERROR(alterq);
 					return false;
 				}
-				if ((col.constraints() & QSL::unique) == QSL::unique)
+				if ((col.constraints() & SPIS::unique) == SPIS::unique)
 				{
 #ifdef CMAKE_DEBUG
-					qDebug() << "QSL[SQLite]: Adding unique constraint to column" << col.name() << "of table" << tbl.name();
+					qDebug() << "SPIS[SQLite]: Adding unique constraint to column" << col.name() << "of table" << tbl.name();
 #endif
 					QSqlQuery ciq(db());
 					if (!ciq.exec("CREATE UNIQUE INDEX \"" + uniqueConstraintName(tbl.name(), col.name()) + "\" ON \"" + tbl.name() + "\"(\"" + col.name() + "\");"))
@@ -395,7 +395,7 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 			// now, add or remove all unique constraints on existing columns
 			for (auto constraintDiff : diff.constraintsChanged())
 			{
-				if ((constraintDiff.constraintsAdded() & QSL::unique) == QSL::unique)
+				if ((constraintDiff.constraintsAdded() & SPIS::unique) == SPIS::unique)
 				{
 					QSqlQuery ciq(db());
 					if (!ciq.exec("CREATE UNIQUE INDEX \"" + uniqueConstraintName(tbl.name(), constraintDiff.colName()) + "\" ON \"" + tbl.name() + "\"(\"" + constraintDiff.colName() + "\");"))
@@ -405,12 +405,12 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 					}
 				}
 				
-				if ((constraintDiff.constraintsRemoved() & QSL::unique) == QSL::unique)
+				if ((constraintDiff.constraintsRemoved() & SPIS::unique) == SPIS::unique)
 				{
 					QByteArray indexName = uniqueIndexNames.value(tbl.name() + "." + constraintDiff.colName());
 					if (indexName.isEmpty())
 					{
-						qCritical() << "QSL[SQLite]: Attempt to remove unique constraint from" << tbl.name() + "." + constraintDiff.colName() + "but unable to find index name";
+						qCritical() << "SPIS[SQLite]: Attempt to remove unique constraint from" << tbl.name() + "." + constraintDiff.colName() + "but unable to find index name";
 						return false;
 					}
 					QSqlQuery diq(db());
@@ -429,7 +429,7 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 	Q_ASSERT(needsNewTable);
 	
 #ifdef CMAKE_DEBUG
-	qDebug() << "QSL[SQLite]: Creating table" << tbl.name();
+	qDebug() << "SPIS[SQLite]: Creating table" << tbl.name();
 #endif
 	QSqlQuery createq(db());
 	QList<QByteArray> createUniqueIndex;
@@ -438,13 +438,13 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 	{
 		if (i!=0)
 			query += ",";
-		QSLColumn col = tbl.columns()[i];
-		query += "\"" + col.name() + "\" " + SQLiteTypes::fromQSL(col.type(), col.minsize(), usevar());
-		if ((col.constraints() & QSL::notnull) == QSL::notnull)
+		SPISColumn col = tbl.columns()[i];
+		query += "\"" + col.name() + "\" " + SQLiteTypes::fromSPIS(col.type(), col.minsize(), usevar());
+		if ((col.constraints() & SPIS::notnull) == SPIS::notnull)
 			query += " NOT NULL";
-		if ((col.constraints() & QSL::unique) == QSL::unique)
+		if ((col.constraints() & SPIS::unique) == SPIS::unique)
 		{
-			if ((col.constraints() & QSL::primarykey) == QSL::primarykey)
+			if ((col.constraints() & SPIS::primarykey) == SPIS::primarykey)
 				query += " UNIQUE";
 			else
 				createUniqueIndex.push_back(col.name());
@@ -496,7 +496,7 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 	if (hasBackup)
 	{
 #ifdef CMAKE_DEBUG
-		qDebug() << "QSL[SQLite]: Trying to apply backup of table" << tbl.name();
+		qDebug() << "SPIS[SQLite]: Trying to apply backup of table" << tbl.name();
 #endif
 		QSqlQuery restoreq(db());
 		QString cols;
@@ -523,7 +523,7 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 				if (renameq.exec("ALTER TABLE \"" + tbl.name() + backupSuffix + "\" RENAME TO \"" + tbl.name() + "\";"))
 				{
 #ifdef CMAKE_DEBUG
-					qDebug() << "QSL[SQLite]: Restored table" << tbl.name() << "after failure applying backup";
+					qDebug() << "SPIS[SQLite]: Restored table" << tbl.name() << "after failure applying backup";
 #endif
 					return false;
 				}
@@ -532,7 +532,7 @@ bool SQLiteDatabase::ensureTableImpl(const QSLTable &tbl)
 			}
 			else
 				DUMP_ERROR(dropq);
-			qWarning() << "QSL[SQLite]: Unable to restore backup of table" << tbl.name() << "but the data is still available in a table called" << tbl.name() + backupSuffix;
+			qWarning() << "SPIS[SQLite]: Unable to restore backup of table" << tbl.name() << "but the data is still available in a table called" << tbl.name() + backupSuffix;
 			// return true because I were able to ensure the table (with data loss)
 			return true;
 		}
@@ -553,9 +553,9 @@ bool SQLiteDatabase::needsEnquote(const QByteArray &type)
 	return (t=="char" || t=="text" || t=="password" || t=="byte" || t=="blob" || t=="variant");
 }
 
-QString SQLiteDatabase::filterSQL(const QSLFilter &filter)
+QString SQLiteDatabase::filterSQL(const SPISFilter &filter)
 {
-	if (filter.op() == QSLFilter::noop)
+	if (filter.op() == SPISFilter::noop)
 		return QString();
 	QString sql;
 	
@@ -564,15 +564,15 @@ QString SQLiteDatabase::filterSQL(const QSLFilter &filter)
 		sql += "(\"" + filter.arg(0) + "\"";
 		switch (filter.op())
 		{
-		case QSLFilter::eq: sql += " == "; break;
-		case QSLFilter::ne: sql += " <> "; break;
-		case QSLFilter::lt: sql += " <  "; break;
-		case QSLFilter::le: sql += " <= "; break;
-		case QSLFilter::gt: sql += " >  "; break;
-		case QSLFilter::ge: sql += " >= "; break;
-		case QSLFilter::like: sql += " LIKE "; break;
+		case SPISFilter::eq: sql += " == "; break;
+		case SPISFilter::ne: sql += " <> "; break;
+		case SPISFilter::lt: sql += " <  "; break;
+		case SPISFilter::le: sql += " <= "; break;
+		case SPISFilter::gt: sql += " >  "; break;
+		case SPISFilter::ge: sql += " >= "; break;
+		case SPISFilter::like: sql += " LIKE "; break;
 		default:
-			fprintf(stderr, "QSL[SQLite]: Unknown filter operator value 0x%02x\n", filter.op());
+			fprintf(stderr, "SPIS[SQLite]: Unknown filter operator value 0x%02x\n", filter.op());
 			return QString();
 		}
 		
@@ -592,10 +592,10 @@ QString SQLiteDatabase::filterSQL(const QSLFilter &filter)
 		sql += "(\"" + filter.arg(0) + "\"";
 		switch (filter.op())
 		{
-		case QSLFilter::isnull: sql += " ISNULL "; break;
-		case QSLFilter::notnull: sql += " NOT NULL "; break;
+		case SPISFilter::isnull: sql += " ISNULL "; break;
+		case SPISFilter::notnull: sql += " NOT NULL "; break;
 		default:
-			fprintf(stderr, "QSL[SQLite]: Unknown filter operator value 0x%02x\n", filter.op());
+			fprintf(stderr, "SPIS[SQLite]: Unknown filter operator value 0x%02x\n", filter.op());
 			return QString();
 		}
 	}
@@ -605,10 +605,10 @@ QString SQLiteDatabase::filterSQL(const QSLFilter &filter)
 		sql += "(" + filterSQL(filter.filter(0));
 		switch (filter.op())
 		{
-		case QSLFilter::op_and: sql += " AND "; break;
-		case QSLFilter::op_or: sql += " OR "; break;
+		case SPISFilter::op_and: sql += " AND "; break;
+		case SPISFilter::op_or: sql += " OR "; break;
 		default:
-			fprintf(stderr, "QSL[SQLite]: Unknown filter operator value 0x%02x\n", filter.op());
+			fprintf(stderr, "SPIS[SQLite]: Unknown filter operator value 0x%02x\n", filter.op());
 			return QString();
 		}
 		sql += filterSQL(filter.filter(1)) + ")";
@@ -618,9 +618,9 @@ QString SQLiteDatabase::filterSQL(const QSLFilter &filter)
 	{
 		switch (filter.op())
 		{
-		case QSLFilter::op_not: sql += "NOT "; break;
+		case SPISFilter::op_not: sql += "NOT "; break;
 		default:
-			fprintf(stderr, "QSL[SQLite]: Unknown filter operator value 0x%02x\n", filter.op());
+			fprintf(stderr, "SPIS[SQLite]: Unknown filter operator value 0x%02x\n", filter.op());
 			return QString();
 		}
 		sql += filterSQL(filter.filter(0));
@@ -629,8 +629,8 @@ QString SQLiteDatabase::filterSQL(const QSLFilter &filter)
 	return sql;
 }
 
-SelectResult* SQLiteDatabase::selectTable(const QSLTable &tbl, const QList<QSLColumn> &cols,
-										  const QSLFilter &filter, const QList<QSLJoinTable> &join,
+SelectResult* SQLiteDatabase::selectTable(const SPISTable &tbl, const QList<SPISColumn> &cols,
+										  const SPISFilter &filter, const QList<SPISJoinTable> &join,
 										  int limit, bool asc)
 {
 	QSqlQuery q(db());
@@ -681,7 +681,7 @@ SelectResult* SQLiteDatabase::selectTable(const QSLTable &tbl, const QList<QSLCo
 	return new QtSelectResult(q);
 }
 
-bool SQLiteDatabase::insertIntoTable(const QSLTable &tbl, const QList<QSLColumn> &cols,
+bool SQLiteDatabase::insertIntoTable(const SPISTable &tbl, const QList<SPISColumn> &cols,
 									 const QVector<QVector<QVariant>> &rows)
 {
 	Q_ASSERT(!cols.empty());
@@ -722,7 +722,7 @@ bool SQLiteDatabase::insertIntoTable(const QSLTable &tbl, const QList<QSLColumn>
 	return true;
 }
 
-bool SQLiteDatabase::updateTable(const QSLTable &tbl, const QMap<QSLColumn, QVariant> &values,
+bool SQLiteDatabase::updateTable(const SPISTable &tbl, const QMap<SPISColumn, QVariant> &values,
 								 const QVector<QVariant> &pks)
 {
 	if (pks.empty() || values.empty())
@@ -749,7 +749,7 @@ bool SQLiteDatabase::updateTable(const QSLTable &tbl, const QMap<QSLColumn, QVar
 	return true;
 }
 
-bool SQLiteDatabase::deleteFromTable(const QSLTable &tbl, const QSLFilter &filter)
+bool SQLiteDatabase::deleteFromTable(const SPISTable &tbl, const SPISFilter &filter)
 {
 	QSqlQuery q(db());
 	QString qq = "DELETE FROM \"" + tbl.name() + "\"";
@@ -765,7 +765,7 @@ bool SQLiteDatabase::deleteFromTable(const QSLTable &tbl, const QSLFilter &filte
 	return true;
 }
 
-bool SQLiteDatabase::deleteFromTable(const QSLTable &tbl, const QVector<QVariant> &pks)
+bool SQLiteDatabase::deleteFromTable(const SPISTable &tbl, const QVector<QVariant> &pks)
 {
 	Q_ASSERT(!tbl.primaryKey().isEmpty());
 	if (pks.empty())

@@ -5,7 +5,7 @@
 #include <QRegularExpression>
 #include <QSet>
 
-using namespace qsl::qslc;
+using namespace spis::spisc;
 
 #define error(...) \
 	{ \
@@ -173,7 +173,7 @@ static bool checkType(const QByteArray &type)
 	return legalTypes.contains(match.captured("type").toUtf8());
 }
 
-Database* qsl::qslc::parse(const QString &filename, bool qtype)
+Database* spis::spisc::parse(const QString &filename, bool qtype)
 {
 	QFile file(filename);
 	if (!file.open(QIODevice::ReadOnly))
@@ -184,7 +184,7 @@ Database* qsl::qslc::parse(const QString &filename, bool qtype)
 	return parse(&file, filename, qtype);
 }
 
-Database* qsl::qslc::parse(QIODevice *in, const QString &filename, bool qtype)
+Database* spis::spisc::parse(QIODevice *in, const QString &filename, bool qtype)
 {
 	if (!in || !in->isOpen() || !in->isReadable())
 		return 0;
@@ -280,7 +280,7 @@ Database* qsl::qslc::parse(QIODevice *in, const QString &filename, bool qtype)
 					error("Syntax error near %s", line.mid(0,10).data())
 				line = line.mid(1);
 				QByteArray constraint = line.mid(0, line.indexOf(' '));
-				if (f.setConstraint(constraint) == QSL::primarykey)
+				if (f.setConstraint(constraint) == SPIS::primarykey)
 				{
 					if (!tbl->primaryKey().isEmpty())
 						error("A table may only have one primary key, but two columns with primary key found: %s and %s", tbl->primaryKey().data(), f.name().data());
@@ -288,7 +288,7 @@ Database* qsl::qslc::parse(QIODevice *in, const QString &filename, bool qtype)
 						error("Only int and uint are allowed as type of a primary key, but %s was specified", f.type().data());
 					tbl->setPrimaryKey(f.name());
 					// pkey implies unique
-					f.setConstraint(QSL::unique);
+					f.setConstraint(SPIS::unique);
 				}
 				line = line.mid(constraint.length()).trimmed();
 			}

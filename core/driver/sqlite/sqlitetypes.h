@@ -1,19 +1,19 @@
 #pragma once
 
-#include "qsl_global.h"
+#include "spis_global.h"
 
 #include <utility>
 
 #include <QByteArray>
 
-namespace qsl {
+namespace spis {
 namespace driver {
 
-class QSL_PRIVATE SQLiteTypes
+class SPIS_PRIVATE SQLiteTypes
 {
 public:
 	static std::pair<QByteArray, int> fromSQL(const QByteArray &type);
-	static QByteArray fromQSL(const QByteArray &type, int minsize, bool usevar);
+	static QByteArray fromSPIS(const QByteArray &type, int minsize, bool usevar);
 	
 	// no ctors
 private:

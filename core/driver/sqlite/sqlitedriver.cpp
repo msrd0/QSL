@@ -2,8 +2,8 @@
 #include "sqlitedriver.h"
 
 using namespace std::chrono;
-using namespace qsl;
-using namespace qsl::driver;
+using namespace spis;
+using namespace spis::driver;
 
 #define time_point SQLiteDriver::time_point
 
@@ -48,7 +48,7 @@ QVariant SQLiteDriver::fromQTime(const QTime &time)
 }
 QVariant SQLiteDriver::fromQDateTime(const QDateTime &datetime)
 {
-	return qslvariant((qulonglong)(datetime.toMSecsSinceEpoch() / 1000L));
+	return spisvariant((qulonglong)(datetime.toMSecsSinceEpoch() / 1000L));
 }
 
 QVariant SQLiteDriver::fromChronoDate(const time_point &date)
@@ -61,5 +61,5 @@ QVariant SQLiteDriver::fromChronoTime(const time_point &time)
 }
 QVariant SQLiteDriver::fromChronoDateTime(const time_point &datetime)
 {
-	return qslvariant(system_clock::to_time_t(datetime));
+	return spisvariant(system_clock::to_time_t(datetime));
 }

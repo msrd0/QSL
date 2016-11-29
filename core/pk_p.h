@@ -1,6 +1,6 @@
-#include "qslnamespace.h"
+#include "spisnamespace.h"
 
-namespace qsl {
+namespace spis {
 
 /**
  * This class handles the value of a primary key. To implement a primary key
@@ -8,7 +8,7 @@ namespace qsl {
  * own `PrimaryKeyHandlerImpl<YourType>` instead.
  */
 template<typename T>
-class QSL_PUBLIC PrimaryKeyHandler
+class SPIS_PUBLIC PrimaryKeyHandler
 {
 public:
 	/** Constructs a new primary key handler with a default start value. */
@@ -67,7 +67,7 @@ protected:
  * your own `PrimaryKeyHandlerImpl<YourType>`.
  */
 template<typename T>
-class QSL_PUBLIC PrimaryKeyHandlerImpl : public PrimaryKeyHandler<T>
+class SPIS_PUBLIC PrimaryKeyHandlerImpl : public PrimaryKeyHandler<T>
 {
 public:
 	/** Constructs a new primary key handler with a default start value. */

@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.1)
-project(QSL)
+project(SPIS)
 
 option(BUILD_SHARED_LIBS "Build shared libraries rather than static ones" ON)
 if (BUILD_SHARED_LIBS)
-	set(QSL_LIB_TYPE SHARED)
+	set(SPIS_LIB_TYPE SHARED)
 else()
-	set(QSL_LIB_TYPE STATIC)
+	set(SPIS_LIB_TYPE STATIC)
 endif()
 
 set(LIBDIR "lib/" CACHE STRING "Installation path of the libraries")
@@ -13,17 +13,17 @@ set(BINDIR "bin/" CACHE STRING "Installation path of the binaries")
 set(CMAKEDIR "lib/cmake" CACHE STRING "Installation path of the cmake config")
 set(QMAKEDIR "/usr/lib/qt/mkspecs" CACHE STRING "Installation path of the qmake mkspecs")
 
-set(QSL_MAJOR 0)
-set(QSL_MINOR 1)
-set(QSL_PATCH 1)
-set(QSL_VERSION ${QSL_MAJOR}.${QSL_MINOR}.${QSL_PATCH})
+set(SPIS_MAJOR 0)
+set(SPIS_MINOR 1)
+set(SPIS_PATCH 1)
+set(SPIS_VERSION ${SPIS_MAJOR}.${SPIS_MINOR}.${SPIS_PATCH})
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-configure_file(qsl_global.h.in qsl_global.h)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/qsl_global.h
-	    DESTINATION include/qsl)
+configure_file(spis_global.h.in spis_global.h)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/spis_global.h
+	    DESTINATION include/spis)
 
 find_package(Qt5 5.5.0 REQUIRED COMPONENTS Core Sql)
 
@@ -40,9 +40,9 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 	add_definitions("-DCMAKE_DEBUG")
 endif()
 if (BUILD_SHARED_LIBS)
-	add_definitions("-DCMAKE_QSL_SO")
+	add_definitions("-DCMAKE_SPIS_SO")
 else()
-	add_definitions("-DCMAKE_QSL_A")
+	add_definitions("-DCMAKE_SPIS_A")
 endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -51,18 +51,18 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/core)
 add_subdirectory(core)
 add_subdirectory(doc)
 add_subdirectory(parser)
-add_subdirectory(qslc)
-add_subdirectory(qsldump)
+add_subdirectory(spisc)
+add_subdirectory(spisdump)
 
-configure_file(QSLConfig.cmake.in QSLConfig.cmake @ONLY)
-configure_file(QSLMacros.cmake.in QSLMacros.cmake @ONLY)
-configure_file(QSLVersion.cmake.in QSLVersion.cmake @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/QSLVersion.cmake
-	          ${CMAKE_CURRENT_BINARY_DIR}/QSLConfig.cmake
-			  ${CMAKE_CURRENT_BINARY_DIR}/QSLMacros.cmake
-	    DESTINATION ${CMAKEDIR}/QSL)
-configure_file(qt_QSL.pri.in qt_QSL.pri @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/qt_QSL.pri
+configure_file(cmake/SPISConfig.cmake.in SPISConfig.cmake @ONLY)
+configure_file(cmake/SPISMacros.cmake.in SPISMacros.cmake @ONLY)
+configure_file(cmake/SPISVersion.cmake.in SPISVersion.cmake @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/SPISVersion.cmake
+	          ${CMAKE_CURRENT_BINARY_DIR}/SPISConfig.cmake
+			  ${CMAKE_CURRENT_BINARY_DIR}/SPISMacros.cmake
+	    DESTINATION ${CMAKEDIR}/SPIS)
+configure_file(qt_SPIS.pri.in qt_SPIS.pri @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/qt_SPIS.pri
 	    DESTINATION ${QMAKEDIR}/modules)
 
 if (NOT NO_TESTS)

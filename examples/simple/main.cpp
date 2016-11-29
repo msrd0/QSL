@@ -1,11 +1,11 @@
-#include "db_qsl_example.h"
+#include "db_spis_example.h"
 
-using namespace qsl;
+using namespace spis;
 using namespace std;
 
 #include "../exampleglobal.h"
 
-#ifdef DB_QSL_EXAMPLE_QTYPE
+#ifdef DB_SPIS_EXAMPLE_QTYPE
 #  define string QString
 #  define to_string(x) QString::number(x)
 #  define data(x) qPrintable(x)
@@ -15,7 +15,7 @@ using namespace std;
 
 int main(int argc, char **argv)
 {
-	db::qsl_example *e = connect<db::qsl_example>(argc, argv);
+	db::spis_example *e = connect<db::spis_example>(argc, argv);
 	if (!e)
 	{
 		fprintf(stderr, "Failed to connect or database driver unknown\n");

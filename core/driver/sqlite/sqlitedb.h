@@ -4,33 +4,33 @@
 
 #include <QHash>
 
-namespace qsl {
+namespace spis {
 namespace driver {
 
-class QSL_PRIVATE SQLiteDatabase : public QtDatabase
+class SPIS_PRIVATE SQLiteDatabase : public QtDatabase
 {
 public:
 	SQLiteDatabase(const char *charset, bool usevar);
 	
 	virtual bool connect() override;
 	
-	virtual bool ensureTable(const QSLTable &tbl) override;
+	virtual bool ensureTable(const SPISTable &tbl) override;
 	
-	virtual SelectResult* selectTable(const QSLTable &tbl, const QList<QSLColumn> &cols, const QSLFilter &filter, const QList<QSLJoinTable> &join, int limit, bool asc) override;
+	virtual SelectResult* selectTable(const SPISTable &tbl, const QList<SPISColumn> &cols, const SPISFilter &filter, const QList<SPISJoinTable> &join, int limit, bool asc) override;
 	
-	virtual bool insertIntoTable(const QSLTable &tbl, const QList<QSLColumn> &cols, const QVector<QVector<QVariant>> &rows) override;
+	virtual bool insertIntoTable(const SPISTable &tbl, const QList<SPISColumn> &cols, const QVector<QVector<QVariant>> &rows) override;
 	
-	virtual bool updateTable(const QSLTable &tbl, const QMap<QSLColumn, QVariant> &values, const QVector<QVariant> &pks) override;
+	virtual bool updateTable(const SPISTable &tbl, const QMap<SPISColumn, QVariant> &values, const QVector<QVariant> &pks) override;
 	
-	virtual bool deleteFromTable(const QSLTable &tbl, const QSLFilter &filter) override;
-	virtual bool deleteFromTable(const QSLTable &tbl, const QVector<QVariant> &pks) override;
+	virtual bool deleteFromTable(const SPISTable &tbl, const SPISFilter &filter) override;
+	virtual bool deleteFromTable(const SPISTable &tbl, const QVector<QVariant> &pks) override;
 	
 protected:
 	virtual void loadTableInfo() override;
 	
-	virtual bool ensureTableImpl(const QSLTable &tbl);
+	virtual bool ensureTableImpl(const SPISTable &tbl);
 	
-	static QString filterSQL(const QSLFilter &filter);
+	static QString filterSQL(const SPISFilter &filter);
 	
 	// key is <tbl-name>.<col-name>
 	QHash<QByteArray, QByteArray> uniqueIndexNames;

@@ -1,16 +1,16 @@
-set(QSLDSQLITE_HEADERS
+set(SPISDSQLITE_HEADERS
 	sqlitedb.h
 	sqlitedriver.h
 	sqlitetypes.h)
-set(QSLDSQLITE_SOURCES
+set(SPISDSQLITE_SOURCES
 	sqlite.cpp
 	sqlitedb.cpp
 	sqlitedriver.cpp
 	sqlitetypes.cpp)
-add_library(qsldsqlite SHARED ${QSLDSQLITE_HEADERS} ${QSLDSQLITE_SOURCES})
-target_link_libraries(qsldsqlite qsld qslvariant)
-set_target_properties(qsldsqlite PROPERTIES VERSION ${QSL_VERSION} SOVERSION ${QSL_MAJOR})
+add_library(spisdsqlite SHARED ${SPISDSQLITE_HEADERS} ${SPISDSQLITE_SOURCES})
+target_link_libraries(spisdsqlite spisd spisvariant)
+set_target_properties(spisdsqlite PROPERTIES VERSION ${SPIS_VERSION} SOVERSION ${SPIS_MAJOR})
 
-install(TARGETS qsldsqlite
+install(TARGETS spisdsqlite
 	    RUNTIME DESTINATION ${BINDIR}
 		LIBRARY DESTINATION ${LIBDIR})

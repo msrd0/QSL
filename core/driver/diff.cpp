@@ -1,17 +1,17 @@
 #include "diff.h"
-#include "qslnamespace.h"
+#include "spisnamespace.h"
 
 #include <string.h>
 
 #include <QHash>
 
-using namespace qsl;
-using namespace qsl::driver;
+using namespace spis;
+using namespace spis::driver;
 
-#define DUMMY_COLUMN QSLColumn("dummy", "dummy", -1, QSL::none)
+#define DUMMY_COLUMN SPISColumn("dummy", "dummy", -1, SPIS::none)
 
 
-ConstraintDifference::ConstraintDifference(const QSLColumn &a, const QSLColumn &b)
+ConstraintDifference::ConstraintDifference(const SPISColumn &a, const SPISColumn &b)
 	: _colName(a.name())
 {
 	Q_ASSERT(a.name() == b.name());
@@ -22,7 +22,7 @@ ConstraintDifference::ConstraintDifference(const QSLColumn &a, const QSLColumn &
 }
 
 
-TableDiff::TableDiff(const QSLTable &a, const QSLTable &b)
+TableDiff::TableDiff(const SPISTable &a, const SPISTable &b)
 	: _a(a)
 	, _b(b)
 {
@@ -31,7 +31,7 @@ TableDiff::TableDiff(const QSLTable &a, const QSLTable &b)
 
 void TableDiff::computeDiff()
 {
-	QHash<QByteArray, QSLColumn> acols, bcols;
+	QHash<QByteArray, SPISColumn> acols, bcols;
 	for (auto col : a().columns())
 		acols.insert(col.name(), col);
 	for (auto col : b().columns())
@@ -51,8 +51,8 @@ void TableDiff::computeDiff()
 	{
 		if (!bcols.contains(colname))
 			continue;
-		QSLColumn cola = acols.value(colname, DUMMY_COLUMN);
-		QSLColumn colb = bcols.value(colname, DUMMY_COLUMN);
+		SPISColumn cola = acols.value(colname, DUMMY_COLUMN);
+		SPISColumn colb = bcols.value(colname, DUMMY_COLUMN);
 		
 		if ((cola.minsize() != -1 && colb.minsize() != -1 && cola.minsize() != colb.minsize())
 				|| (strcoll(cola.type(), colb.type()) != 0

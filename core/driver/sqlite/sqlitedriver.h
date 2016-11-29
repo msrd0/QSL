@@ -2,10 +2,10 @@
 
 #include "driver/driver.h"
 
-namespace qsl {
+namespace spis {
 namespace driver {
 
-class QSL_PRIVATE SQLiteDriver : public Driver
+class SPIS_PRIVATE SQLiteDriver : public Driver
 {
 public:
 	// just to simplify coding

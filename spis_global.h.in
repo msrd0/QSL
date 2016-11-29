@@ -1,0 +1,49 @@
+#pragma once
+
+/// @file spis_global.h This file should be included by every spis header file. It defines
+/// some basics like the version of spis.
+
+#include <sys/types.h>
+
+#include <QtGlobal>
+
+#if (QT_VERSION < QT_VERSION_CHECK(5,5,0))
+#  error At least Qt 5.5 is required
+#endif
+
+#define SPIS_MAJOR @SPIS_MAJOR@
+#define SPIS_MINOR @SPIS_MINOR@
+#define SPIS_PATCH @SPIS_PATCH@
+#define SPIS_VERSION ((@SPIS_MAJOR@ << 16) | (@SPIS_MINOR@ << 8) | @SPIS_PATCH@)
+#define SPIS_VERSION_STR "@SPIS_MAJOR@.@SPIS_MINOR@.@SPIS_PATCH@"
+
+#if defined _WIN32 || defined __CYGWIN__
+#  ifdef CMAKE_SPIS_SO
+#    ifdef __GNUC__
+#      define SPIS_PUBLIC __attribute__((dllexport))
+#    else // __GNUC__
+#      define SPIS_PUBLIC __declspec(dllexport)
+#    endif // __GNUC__
+#  else // CMAKE_SPIS_SO
+#    ifdef __GNUC__
+#      define SPIS_PUBLIC __attribute__((dllimport))
+#    else // __GNUC__
+#      define SPIS_PUBLIC __declspec(dllimport)
+#    endif // __GNUC__
+#  endif
+#  define SPIS_PRIVATE
+#elif defined __GNUC__ && __GNUC__ >= 4
+#  define SPIS_PUBLIC __attribute__((visibility("default")))
+#  define SPIS_PRIVATE __attribute__((visibility("hidden")))
+#else
+#  define SPIS_PUBLIC
+#  define SPIS_PRIVATE
+#endif
+
+#if __STDC_VERSION__ >= 201500L
+#  define SPIS_MAYBE_UNUSED [[maybe_unused]]
+#elif defined __GNUC__ && !defined __clang__
+#  define SPIS_MAYBE_UNUSED __attribute__((unused))
+#else
+#  define SPIS_MAYBE_UNUSED
+#endif

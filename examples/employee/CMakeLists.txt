@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 2.8.11)
-project(QSL-Example-Employee)
+project(SPIS-Example-Employee)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 
-find_package(QSL REQUIRED)
+find_package(SPIS REQUIRED)
 add_executable(employee main.cpp)
-qsl_compile(TARGET employee FILES employee.qsl)
+spis_compile(TARGET employee FILES employee.spis)

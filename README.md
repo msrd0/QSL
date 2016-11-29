@@ -1,15 +1,15 @@
-# QSL
+# SPIS
 
-QSL is a SQL Database Library for C++, written on top of Qt.
+SPIS is a SQL Database Library for C++, written on top of Qt.
 
-# The QSL language
+# The SPIS language
 
-The QSL language is a simple line-based language that goes from first to last line. Every line
+The SPIS language is a simple line-based language that goes from first to last line. Every line
 starting with a `#` will be treated as a comment. Comments at the end of a line are not supported.
 
 ## Database definition
 
-Each qsl file describes one database. The file starts with a line containing the name of
+Each spis file describes one database. The file starts with a line containing the name of
 the database:
 
 ```
@@ -23,7 +23,7 @@ charset "utf-8"
 #usevar
 ```
 
-If `usevar` is specified then QSL will use `VARCHAR` instead of `CHAR` if available.
+If `usevar` is specified then SPIS will use `VARCHAR` instead of `CHAR` if available.
 
 ## Table definition
 
@@ -84,14 +84,14 @@ a `!`. A column definition could look like this:
 Currently only `int` and `uint` are supported as primary keys. In future versions, more types
 might be supported.
 
-## `qsldump`
+## `spisdump`
 
 If you have an existing database and want to generate it's definition file, you can use the
-`qsldump` tool. It will connect to the database, load all tables and dump their structure.
+`spisdump` tool. It will connect to the database, load all tables and dump their structure.
 
 ```
-Usage: qsldump [options] <db-name>
-Dump QSL for an existing database
+Usage: spisdump [options] <db-name>
+Dump SPIS for an existing database
 
 Options:
   -h, --help             Displays this help.
@@ -102,53 +102,52 @@ Options:
   --password <password>  The password used to connect to the database if
                          required
   --pw                   Ask for a password on the command line
-  -o, --out <file>       The file to write the qsl file (if - write to stdout)
+  -o, --out <file>       The file to write the spis file (if - write to stdout)
 
 Arguments:
   name                   The name (or filename) of the database
 ```
 
-# Using QSL
+# Using SPIS
 
-QSL will generate a file called `db_<db-name>.h` for every database. To use it, you first have
-to connect to a database. See QSLDB for an example how to do so.
+SPIS will generate a file called `db_<db-name>.h` for every database. To use it, you first have
+to connect to a database. See SPISDB for an example how to do so.
 
 Currently, CMake and qmake as the build systems are supported. If you are not using one of them,
-you have to invoke `qslc` manually.
+you have to invoke `spisc` manually.
 
 ## CMake
 
-To use QSL with CMake, just add the following to your `CMakeLists.txt`:
+To use SPIS with CMake, just add the following to your `CMakeLists.txt`:
 
 ```cmake
-find_package(QSL REQUIRED)
-include_directories(${QSL_INCLUDE_DIRS})
+find_package(SPIS REQUIRED)
 
 # add an executable as usual
 add_executable(foo foo.cpp)
-# compile the qsl files for this executable
-qsl_compile(TARGET foo FILES foo.qsl)
+# compile the spis files for this executable
+spis_compile(TARGET foo FILES foo.spis)
 ```
 
-The `qsl_compile` function will add a target called `foo_qslc` that builds the qsl
+The `spis_compile` function will add a target called `foo_spisc` that builds the spis
 files and then adds it as a dependency to the original target.
 
 ## qmake
 
-To use QSL with qmake, add the following to your `.pro` file:
+To use SPIS with qmake, add the following to your `.pro` file:
 
 ```qmake
-QT += QSL
-DATABASES = foo.qsl
+QT += SPIS
+DATABASES = foo.spis
 ```
 
-## `qslc`
+## `spisc`
 
-If you don't like to use CMake for your build, you can invoke `qslc` yourself.
+If you don't like to use CMake for your build, you can invoke `spisc` yourself.
 
 ```
-Usage: qslc [options] <file> [<file> ...]
-QSL Compiler
+Usage: spisc [options] <file> [<file> ...]
+SPIS Compiler
 
 Options:
   -h, --help       Displays this help.

@@ -1,0 +1,35 @@
+include(CMakeParseArguments)
+
+function(SPIS_COMPILE)
+	
+	set(options QTYPE)
+	set(oneValueArgs TARGET)
+	set(multiValueArgs FILES)
+	
+	cmake_parse_arguments(_SPISC "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+	
+	if (_SPISC_QTYPE)
+		set(_SPISC_QTYPE_FLAG "-q")
+	else()
+		set(_SPISC_QTYPE_FLAG "")
+	endif()
+	
+	set(_SPISC_ABSOLUTE_FILES)
+	foreach(FILE ${_SPISC_FILES})
+		get_filename_component(ABSOLUTE_FILE "${FILE}" ABSOLUTE)
+		set(_SPISC_ABSOLUTE_FILES ${_SPISC_ABSOLUTE_FILES} "${ABSOLUTE_FILE}")
+	endforeach()
+	
+	set(_SPISC_TIMESTAMP "${CMAKE_CURRENT_BINARY_DIR}/${_SPISC_TARGET}_spisc.timestamp")
+	add_custom_command(OUTPUT "${_SPISC_TIMESTAMP}"
+	                   COMMENT "Compiling ${_SPISC_FILES}"
+                       COMMAND SPISC_spisc ARGS ${_SPISC_QTYPE_FLAG} -d "${CMAKE_CURRENT_BINARY_DIR}" ${_SPISC_ABSOLUTE_FILES}
+					   COMMAND ${CMAKE_COMMAND} -E touch "${_SPISC_TIMESTAMP}"
+					   DEPENDS ${_SPISC_FILES} SPISC_spisc
+					   VERBATIM)
+	add_custom_target("${_SPISC_TARGET}_spisc" DEPENDS "${_SPISC_TIMESTAMP}")
+	add_dependencies("${_SPISC_TARGET}" "${_SPISC_TARGET}_spisc")
+	target_include_directories("${_SPISC_TARGET}" PRIVATE "${CMAKE_CURRENT_BINARY_DIR}" "${SPIS_INCLUDE_DIRS}")
+	target_link_libraries("${_SPISC_TARGET}" Qt5::Core Qt5::Sql SPISCore_spiscore SPISCore_spisvariant) 
+	
+endfunction()

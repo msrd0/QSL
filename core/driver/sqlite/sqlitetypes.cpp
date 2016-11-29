@@ -3,7 +3,7 @@
 #include <QDebug>
 
 using namespace std;
-using namespace qsl::driver;
+using namespace spis::driver;
 
 // for more information, visit https://www.sqlite.org/datatype3.html
 
@@ -69,11 +69,11 @@ pair<QByteArray, int> SQLiteTypes::fromSQL(const QByteArray &type)
 		return {"variant", -1};
 	
 	// rest
-	qCritical() << "QSL[SQLite]: Critical: Unable to parse SQL type" << type << "(in " __FILE__ " line" << __LINE__ << ")";
+	qCritical() << "SPIS[SQLite]: Critical: Unable to parse SQL type" << type << "(in " __FILE__ " line" << __LINE__ << ")";
 	return {type, -1};
 }
 
-QByteArray SQLiteTypes::fromQSL(const QByteArray &type, int minsize, bool usevar)
+QByteArray SQLiteTypes::fromSPIS(const QByteArray &type, int minsize, bool usevar)
 {
 	QByteArray t = type.trimmed().toLower();
 	QByteArray v = usevar ? "var" : "";
@@ -113,6 +113,6 @@ QByteArray SQLiteTypes::fromQSL(const QByteArray &type, int minsize, bool usevar
 	if (t == "variant")
 		return "";
 	
-	qCritical() << "QSL[SQLite]: Critical: Unable to parse QSL type" << type << "(in " __FILE__ " line" << __LINE__ << ")";
+	qCritical() << "SPIS[SQLite]: Critical: Unable to parse SPIS type" << type << "(in " __FILE__ " line" << __LINE__ << ")";
 	return "";
 }

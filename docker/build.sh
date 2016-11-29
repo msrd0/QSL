@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-cd /qsl
+cd /spis
 test -d build && rm -rf build
 mkdir build
 cd build

@@ -1,24 +1,24 @@
-set(QSLPARSER_HEADERS
+set(SPISPARSER_HEADERS
 	database.h
 	parser.h
 	table.h)
-set(QSLPARSER_SOURCES
+set(SPISPARSER_SOURCES
 	database.cpp
 	parser.cpp
 	table.cpp)
-add_library(qslparser ${QSL_LIB_TYPE} ${QSLPARSER_HEADERS} ${QSLPARSER_SOURCES})
-target_link_libraries(qslparser Qt5::Core Qt5::Sql qslcore)
-set_target_properties(qslparser PROPERTIES VERSION ${QSL_VERSION} SOVERSION ${QSL_MAJOR})
+add_library(spisparser ${SPIS_LIB_TYPE} ${SPISPARSER_HEADERS} ${SPISPARSER_SOURCES})
+target_link_libraries(spisparser Qt5::Core Qt5::Sql spiscore)
+set_target_properties(spisparser PROPERTIES VERSION ${SPIS_VERSION} SOVERSION ${SPIS_MAJOR})
 
-install(TARGETS qslparser
-		EXPORT QSLParserConfig
+install(TARGETS spisparser
+		EXPORT SPISParserConfig
 		RUNTIME DESTINATION ${BINDIR}
 		LIBRARY DESTINATION ${LIBDIR}
 		ARCHIVE DESTINATION ${LIBDIR})
-install(FILES ${QSLPARSER_HEADERS}
-		DESTINATION include/qsl/parser)
-install(EXPORT QSLParserConfig
-		DESTINATION ${CMAKEDIR}/QSLParser)
-configure_file(../QSLVersion.cmake.in QSLParserConfigVersion.cmake @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/QSLParserConfigVersion.cmake
-		DESTINATION ${CMAKEDIR}/QSLParser)
+install(FILES ${SPISPARSER_HEADERS}
+		DESTINATION include/spis/parser)
+install(EXPORT SPISParserConfig
+		DESTINATION ${CMAKEDIR}/SPISParser)
+configure_file(../cmake/SPISVersion.cmake.in SPISParserConfigVersion.cmake @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/SPISParserConfigVersion.cmake
+		DESTINATION ${CMAKEDIR}/SPISParser)

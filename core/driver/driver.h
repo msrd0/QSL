@@ -1,8 +1,8 @@
 #pragma once
 
 #include "db.h"
-#include "qslfilter.h"
-#include "qsltable.h"
+#include "spisfilter.h"
+#include "spistable.h"
 
 #include <chrono>
 
@@ -12,31 +12,31 @@
 #include <QSharedPointer>
 #include <QTime>
 
-namespace qsl {
+namespace spis {
 
 /**
  * This namespace contains driver-related classes. You should not need to use this
  * namespace directly, however if you want to write your own driver take a look at
- * `qsl::driver::Driver`.
+ * `spis::driver::Driver`.
  */
 namespace driver {
 
 /**
  * This is the base class of every driver. It is used to execute commands on the
  * database. To create your own driver, subclass this class and provide a method
- * called init_qsl_driver, like this:
+ * called init_spis_driver, like this:
  * ```
  * extern "C"
- * void init_qsl_driver()
+ * void init_spis_driver()
  * {
  *     bool success = Driver::exportDriver("YourDriverName", new YourDriver);
  *     if (!success)
  *         fprintf(stderr, "Some error occured while exporting driver\n");
  * }
  * ```
- * Then, package everything into a library called `libqsldYourDriverName.so`.
+ * Then, package everything into a library called `libspisdYourDriverName.so`.
  */
-class QSL_PUBLIC Driver
+class SPIS_PUBLIC Driver
 {
 public:
 	/**
@@ -46,7 +46,7 @@ public:
 	static bool exportDriver(const QString &name, Driver* driver);
 	/**
 	 * Tries to return the driver with the given name. If there is currently no
-	 * driver with that name registered, it tries to load `libqsld<name>.so`. If
+	 * driver with that name registered, it tries to load `libspisd<name>.so`. If
 	 * this fails as well, 0 is returned.
 	 */
 	static Driver* driver(const QString &name);

@@ -6,7 +6,7 @@ if (DOXYGEN_FOUND)
 		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 		COMMENT "Generating Documentation using Doxygen"
 		VERBATIM)
-	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/doc/qsl)
+	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/doc/spis)
 else()
 	message("Doxygen not found, won't build documentation")
 endif()

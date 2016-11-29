@@ -1,8 +1,8 @@
-QT = core QSL
+QT = core SPIS
 CONFIG += c++11
 
 TARGET = simple
 
 SOURCES = main.cpp
 HEADERS = ../exampleglobal.h
-DATABASES = example.qsl
+DATABASES = example.spis

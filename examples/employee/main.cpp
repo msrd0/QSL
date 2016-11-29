@@ -6,7 +6,7 @@
 
 using namespace std;
 using namespace std::chrono;
-using namespace qsl;
+using namespace spis;
 
 // A simple struct to store employee data
 struct Employee { string name, address, city, country; system_clock::time_point dob; };
