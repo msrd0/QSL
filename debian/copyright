@@ -1,5 +1,5 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: qsl
+Upstream-Name: spis
 
 Files: *
 Copyright: 2016 Dominic Meiser <meiserdo@web.de>

@@ -1,48 +1,48 @@
-Source: qsl
+Source: spis
 Priority: optional
 Maintainer: Dominic Meiser <meiserdo@web.de>
 Build-Depends: debhelper (>= 9), qtbase5-dev (>= 5.5), cmake (>= 3.1),
  pkg-config, doxygen, graphviz
 Standards-Version: 3.9.8
 Section: libs
-Homepage: https://msrd0.duckdns.org/git/msrd0/QSL
-Vcs-Git: https://msrd0.duckdns.org/git/msrd0/qsl.git
-Vcs-Browser: https://msrd0.duckdns.org/git/msrd0/QSL
+Homepage: https://github.com/msrd0/SPIS
+Vcs-Git: git@github.com:msrd0/SPIS.git
+Vcs-Browser: https://github.com/msrd0/SPIS
 
-Package: libqsl
+Package: libspis
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Recommends: qsl-drivers
-Description: QSL is a SQL library for C++
- QSL is a SQL library for C++
+Recommends: spis-drivers
+Description: SPIS is a SQL library for C++
+ SPIS is a SQL library for C++
 
-Package: libqslparser
+Package: libspisparser
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libqsl (= ${binary:Version})
-Description: QSL is a SQL library for C++
- QSL is a SQL library for C++
+Depends: ${shlibs:Depends}, ${misc:Depends}, libspis (= ${binary:Version})
+Description: SPIS is a SQL library for C++
+ SPIS is a SQL library for C++
 
-Package: qsl-drivers
+Package: spis-drivers
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libqsl (= ${binary:Version})
-Description: QSL is a SQL library for C++
- QSL is a SQL library for C++
+Depends: ${shlibs:Depends}, ${misc:Depends}, libspis (= ${binary:Version})
+Description: SPIS is a SQL library for C++
+ SPIS is a SQL library for C++
 
-Package: libqsl-dev
+Package: libspis-dev
 Architecture: all
-Depends: libqsl (= ${binary:Version}), libqslparser (= ${binary:Version}), qsl (= ${binary:Version}),
+Depends: libspis (= ${binary:Version}), libspisparser (= ${binary:Version}), spis (= ${binary:Version}),
  qtbase5-dev (>= 5.5), cmake (>= 3.1)
-Suggests: qsl-doc
-Description: QSL is a SQL library for C++
- QSL is a SQL library for C++
+Suggests: spis-doc
+Description: SPIS is a SQL library for C++
+ SPIS is a SQL library for C++
 
-Package: qsl
+Package: spis
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libqsl-dev (= ${binary:Version})
-Description: QSL is a SQL library for C++
- QSL is a SQL library for C++
+Depends: ${shlibs:Depends}, ${misc:Depends}, libspis-dev (= ${binary:Version})
+Description: SPIS is a SQL library for C++
+ SPIS is a SQL library for C++
 
-Package: qsl-doc
+Package: spis-doc
 Architecture: all
-Description: QSL is a SQL library for C++
- QSL is a SQL library for C++
+Description: SPIS is a SQL library for C++
+ SPIS is a SQL library for C++

@@ -10,16 +10,16 @@ mount:
 	sshfs alarmpi-debian@msrd0.duckdns.org:/srv/debian mount
 
 clean:
-	rm mount/pool/main/all/q/qsl* || true
-	rm mount/pool/main/all/libq/libqsl* || true
-	rm mount/pool/main/amd64/q/qsl* || true
-	rm mount/pool/main/amd64/libq/libqsl* || true
+	rm mount/pool/main/all/s/spis* || true
+	rm mount/pool/main/all/libs/libspis* || true
+	rm mount/pool/main/amd64/s/spis* || true
+	rm mount/pool/main/amd64/libs/libspis* || true
 
 copy:
-	cp qsl*all*.deb mount/pool/main/all/q/
-	cp libqsl*all*.deb mount/pool/main/all/libq/
-	cp qsl*amd64*.deb mount/pool/main/amd64/q/
-	cp libqsl*amd64*.deb mount/pool/main/amd64/libq/
+	cp spis*all*.deb mount/pool/main/all/s/
+	cp libspis*all*.deb mount/pool/main/all/libs/
+	cp spis*amd64*.deb mount/pool/main/amd64/s/
+	cp libspis*amd64*.deb mount/pool/main/amd64/libs/
 
 sign:
 	ssh alarmpi-debian@msrd0.duckdns.org -o BatchMode=yes -v \

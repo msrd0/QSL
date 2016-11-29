@@ -40,16 +40,16 @@ before_script:
 
 
 script:
-  - version=$(cat debian/changelog | grep -E '^qsl \(.+\) precise' | head -n1 | tr -d '(' | tr '-' ' ' | awk '{print $2}')
-  - echo "QSL $version"
-  - wget "https://github.com/msrd0/QSL/archive/v${version}.tar.gz"
+  - version=$(cat debian/changelog | grep -E '^spis \(.+\) precise' | head -n1 | tr -d '(' | tr '-' ' ' | awk '{print $2}')
+  - echo "SPIS $version"
+  - wget "https://github.com/msrd0/SPIS/archive/v${version}.tar.gz"
   - tar xfz "v${version}.tar.gz"
   - ls -l
-  - pushd "QSL-${version}"
+  - pushd "SPIS-${version}"
   - cp -R ../debian .
   - dpkg-buildpackage -us -uc
   - popd
-  - ls *qsl*
+  - ls *spis*
 
 after_success:
   - make
