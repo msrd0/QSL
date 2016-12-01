@@ -23,4 +23,5 @@ configure_file(../../cmake/SPISVersion.cmake.in SPISDriverConfigVersion.cmake @O
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/SPISDriverConfigVersion.cmake
 	    DESTINATION ${CMAKEDIR}/SPISDriver)
 
+add_subdirectory(mysql)
 add_subdirectory(sqlite)
