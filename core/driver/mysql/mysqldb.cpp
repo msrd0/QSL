@@ -1,4 +1,5 @@
 #include "mysqldb.h"
+#include "mysqltypes.h"
 
 #include <unistd.h>
 
@@ -68,7 +69,8 @@ void MySQLDatabase::loadTableInfo()
 			}
 			else if (columns.value("Key").toString() == "UNI")
 				constraints |= SPIS::unique;
-			SPISColumn col(columns.value("Field").toByteArray(), columns.value("Type").toByteArray(), -1, constraints); // TODO: types
+			auto type = MySQLTypes::fromSQL(columns.value("Type").toByteArray());
+			SPISColumn col(columns.value("Field").toByteArray(), type.first, type.second, constraints); // TODO: types
 			cols << col;
 		}
 		while (columns.next());
