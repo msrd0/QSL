@@ -65,7 +65,7 @@ bool SPISDB::connect()
 {
 	if (!db()->connect())
 		return false;
-	for (SPISTable *tbl : _tables)
+	for (SPISTable *tbl : _tables.values())
 		if (!db()->ensureTable(*tbl))
 		{
 			fprintf(stderr, "SPISDB: Unable to ensure table %s.%s\n", name(), tbl->name().data());
@@ -93,5 +93,10 @@ void SPISDB::registerTable(SPISTable *tbl)
 		fprintf(stderr, "SPISDB: Attempt to add table %s after database was opened\n", tbl->name().data());
 		return;
 	}
-	_tables.append(tbl);
+	_tables.insert(tbl->name(), tbl);
+}
+
+SPISTable* SPISDB::table(const QByteArray &name)
+{
+	return _tables.value(name, 0);
 }

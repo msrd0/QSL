@@ -1,8 +1,10 @@
 #include "diff.h"
+#include "spisdb.h"
 #include "spisnamespace.h"
 
 #include <string.h>
 
+#include <QDebug>
 #include <QHash>
 
 using namespace spis;
@@ -53,6 +55,27 @@ void TableDiff::computeDiff()
 			continue;
 		SPISColumn cola = acols.value(colname, DUMMY_COLUMN);
 		SPISColumn colb = bcols.value(colname, DUMMY_COLUMN);
+		
+		if (cola.type()[0] == '&' || colb.type()[0] == '&')
+		{
+			SPISDB *db = a().db();
+			if (!db)
+				db = b().db();
+			if (db)
+			{
+				QByteArray typea = cola.type(), typeb = colb.type();
+				if (typea.startsWith('&'))
+				{
+					QByteArray tbl = typea.mid(1, typea.indexOf('.') - 1);
+					QByteArray field = typea.mid(tbl.size() + 2);
+					SPISTable *t = db->table(tbl);
+					if (!t)
+						qWarning() << "SPIS[Driver]: Unable to find table" << tbl;
+				}
+			}
+			else
+				qWarning() << "SPIS[Driver]: Unable to find SPISDB for given tables; cannot resolve foreign keys";
+		}
 		
 		if ((cola.minsize() != -1 && colb.minsize() != -1 && cola.minsize() != colb.minsize())
 				|| (strcoll(cola.type(), colb.type()) != 0
