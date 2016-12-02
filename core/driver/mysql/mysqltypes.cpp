@@ -101,3 +101,62 @@ pair<QByteArray, int> MySQLTypes::fromSQL(const QByteArray &type)
 	qCritical() << "SPIS[MySQL]: Critical: Unable to parse SQL type" << type << "(in " __FILE__ " line" << __LINE__ << ")";
 	return {type, -1};
 }
+
+QByteArray MySQLTypes::fromSPIS(const QByteArray &type, int minsize, bool usevar)
+{
+	QByteArray t = type.trimmed().toLower();
+	QByteArray v = usevar ? "var" : "";
+	
+	if (t == "int" || t == "uint")
+	{
+		QByteArray u = t=="uint" ? " unsigned" : "";
+		if (minsize < 0)
+			minsize = 64;
+		if (minsize <= 8)
+			return "tinyint" + u;
+		if (minsize <= 16)
+			return "smallint" + u;
+		if (minsize <= 24)
+			return "mediumint" + u;
+		if (minsize <= 32)
+			return "int" + u;
+		if (minsize <= 64)
+			return "bigint" + u;
+	}
+	
+	if (t == "double")
+	{
+		if (minsize <= 4)
+			return "float";
+		return "double";
+	}
+	
+	if (t == "char")
+		return v + "char(" + QByteArray::number(minsize) + ")";
+	if (t == "byte")
+		return v + "binary(" + QByteArray::number(minsize) + ")";
+	if (t == "text" || t == "blob")
+	{
+		QByteArray pre;
+		if (minsize < 0) // 1<<32 doesn't fit into c++ int
+			pre = "long";
+		else if (minsize <= 1<<8)
+			pre = "tiny";
+		else if (minsize <= 1<<16)
+			pre = "";
+		else if (minsize <= 1<<24)
+			pre = "medium";
+		return pre + t;
+	}
+	if (t == "password")
+		return "text";
+	
+	if (t == "date" || t == "time" || t == "datetime")
+		return t;
+	
+	if (t == "variant")
+		return "blob";
+	
+	qCritical() << "SPIS[MySQL]: Critical: Unable to parse SPIS type" << type << "(in " __FILE__ " line" << __LINE__ << ")";
+	return "";
+}

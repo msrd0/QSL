@@ -1,11 +1,13 @@
 #include "mysqldb.h"
 #include "mysqltypes.h"
+#include "driver/diff.h"
 
 #include <unistd.h>
 
 #include <QDebug>
 #include <QSqlError>
 
+using namespace spis;
 using namespace spis::driver;
 
 static void dumpError(const QSqlQuery &q, const char* file, int line)
@@ -50,7 +52,7 @@ void MySQLDatabase::loadTableInfo()
 		QByteArray pk;
 		
 		QSqlQuery columns(db());
-		if (!columns.exec("SHOW COLUMNS FROM " + tblName + ";"))
+		if (!columns.exec("SHOW COLUMNS FROM `" + tblName + "`;"))
 		{
 			DUMP_ERROR(columns);
 			continue;
@@ -91,9 +93,62 @@ bool MySQLDatabase::ensureTable(const SPISTable &tbl)
 	return success;
 }
 
+static QString mysqlCharset(const QByteArray &charset)
+{
+	if (charset == "utf-8")
+		return "utf8mb4";
+	if (charset == "utf-16" || charset == "utf-16be")
+		return "utf16";
+	if (charset == "utf-16le")
+		return "utf16le";
+	return "";
+}
+
 bool MySQLDatabase::ensureTableImpl(const SPISTable &tbl)
 {
-	qCritical() << "SPIS[MySQL]: Implement " << __PRETTY_FUNCTION__;
+	if (!containsTable(tbl.name()))
+	{
+		QString query = "CREATE TABLE `" + tbl.name() + "` (";
+		for (int i = 0; i < tbl.columns().size(); i++)
+		{
+			if (i != 0)
+				query += ",";
+			auto c = tbl.columns()[i];
+			query += "`" + c.name() + "` " + MySQLTypes::fromSPIS(c.type(), c.minsize(), usevar());
+			if ((c.constraints() & SPIS::notnull) == SPIS::notnull)
+				query += " NOT NULL";
+			if ((c.constraints() & SPIS::unique) == SPIS::unique)
+			{
+				if (strcoll(c.type(), "text") == 0 || strcoll(c.type(), "blob") == 0)
+					qWarning() << "SPIS[MySQL]: Column" << c.name() << "has a unique constraint but mysql doesn't support indexes on text/blob fields";
+				else
+					query += " UNIQUE";
+			}
+		}
+		if (!tbl.primaryKey().isEmpty())
+			query += ", PRIMARY KEY (`" + tbl.primaryKey() + "`)";
+		for (auto c : tbl.columns())
+			if (c.type()[0] == '&')
+			{
+				QByteArray t = c.type()+1;
+				query += ", FOREIGN KEY (`" + c.name() + "`) REFERENCES `" + t.mid(0, t.indexOf('.')) + "`(`" + t.mid(t.indexOf('.')+1) + "`)";
+			}
+		query += ")";
+		QString cs = mysqlCharset(charset());
+		if (!cs.isEmpty())
+			query += " DEFAULT CHARSET=" + cs;
+		query += ";";
+		
+		QSqlQuery createq(db());
+		if (!createq.exec(query))
+		{
+			DUMP_ERROR(createq);
+			return false;
+		}
+		return true;
+	}
+	
+	TableDiff diff(table(tbl.name()), tbl);
 	return false;
 }
 
