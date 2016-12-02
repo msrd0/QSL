@@ -19,7 +19,8 @@ int main(int argc, char **argv)
 	
 	QCommandLineParser parser;
 	parser.setApplicationDescription("Dump SPIS for an existing database");
-	parser.addHelpOption();
+	QCommandLineOption helpOption(QStringList() << "?" << "help", "Display this help.");
+	parser.addOption(helpOption);
 	parser.addVersionOption();
 	QCommandLineOption driverOption(QStringList() << "d" << "driver", "The driver used to connect to the database", "driver", "psql");
 	parser.addOption(driverOption);
@@ -37,6 +38,11 @@ int main(int argc, char **argv)
 	parser.addOption(outputOption);
 	parser.addPositionalArgument("name", "The name (or filename) of the database", "<db-name>");
 	parser.process(app);
+	if (parser.isSet(helpOption))
+	{
+		parser.showHelp(0);
+		return 0;
+	}
 	QStringList args = parser.positionalArguments();
 	if (args.size() != 1)
 	{

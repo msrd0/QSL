@@ -94,9 +94,10 @@ Usage: spisdump [options] <db-name>
 Dump SPIS for an existing database
 
 Options:
-  -h, --help             Displays this help.
+  -?, --help             Display this help.
   -v, --version          Displays version information.
   -d, --driver <driver>  The driver used to connect to the database
+  -h, --host <host>      The host of the database server if required
   -p, --port <port>      The port of the database server if required
   -u, --user <username>  The user used to connect to the database if required
   --password <password>  The password used to connect to the database if
