@@ -1,5 +1,6 @@
 #pragma once
 
+#include "spisnamespace.h"
 #include "spistable.h"
 
 namespace spis {

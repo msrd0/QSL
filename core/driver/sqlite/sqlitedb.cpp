@@ -206,6 +206,8 @@ static QByteArray uniqueConstraintName(const QByteArray &tbl, const QByteArray &
 
 bool SQLiteDatabase::ensureTableImpl(const SPISTable &tbl)
 {
+	Q_ASSERT(tbl.db());
+	
 	bool needsNewTable = !containsTable(tbl.name());
 	const QByteArray backupSuffix = backupSuffixName(tbl.name());
 	bool hasBackup = false;
@@ -373,7 +375,7 @@ bool SQLiteDatabase::ensureTableImpl(const SPISTable &tbl)
 				qDebug() << "SPIS[SQLite]: Adding column" << col.name() << "to table" << tbl.name();
 #endif
 				QSqlQuery alterq(db());
-				if (!alterq.exec("ALTER TABLE \"" + tbl.name() + "\" ADD COLUMN \"" + col.name() + "\" " + SQLiteTypes::fromSPIS(col.type(), col.minsize(), usevar()) + ";"))
+				if (!alterq.exec("ALTER TABLE \"" + tbl.name() + "\" ADD COLUMN \"" + col.name() + "\" " + SQLiteTypes::fromSPIS(tbl.db(), col.type(), col.minsize(), usevar()) + ";"))
 				{
 					DUMP_ERROR(alterq);
 					return false;
@@ -439,7 +441,7 @@ bool SQLiteDatabase::ensureTableImpl(const SPISTable &tbl)
 		if (i!=0)
 			query += ",";
 		SPISColumn col = tbl.columns()[i];
-		query += "\"" + col.name() + "\" " + SQLiteTypes::fromSPIS(col.type(), col.minsize(), usevar());
+		query += "\"" + col.name() + "\" " + SQLiteTypes::fromSPIS(tbl.db(), col.type(), col.minsize(), usevar());
 		if ((col.constraints() & SPIS::notnull) == SPIS::notnull)
 			query += " NOT NULL";
 		if ((col.constraints() & SPIS::unique) == SPIS::unique)

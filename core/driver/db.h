@@ -1,7 +1,7 @@
 #pragma once
 
-#include "spiscolumn.h"
 #include "spisnamespace.h"
+#include "spiscolumn.h"
 #include "spistable.h"
 #include "spisvariant.h"
 

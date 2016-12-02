@@ -4,9 +4,12 @@ Before contributing please read the [contribution guidelines](./Contribution.md)
 
 ## Bugs:
 
-- in SQLite: Database with foreign keys gets updated because "type changed"
+- in SQLite: Database with primary keys that dont specify notnull get updated because sqlite
+  insists on them being notnull
 
 ## Features:
+
+- make `spisdump` (and especially the drivers) detect foreign keys in the database
 
 ### SPIS 0.2.0
 
@@ -14,7 +17,7 @@ SPIS language:
 
 - support default values for columns (especially those with notnull constraint)
 - add an option to use another name in spis than in the db itself (makes renaming easier,
-  currently the old name will be droppend and the new name created)
+  currently the old name will be dropped and the new name created)
 
 Core/Driver library:
 

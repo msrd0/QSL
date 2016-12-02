@@ -1,5 +1,6 @@
 #pragma once
 
+#include "spisnamespace.h"
 #include "db.h"
 #include "spisfilter.h"
 #include "spistable.h"
