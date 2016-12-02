@@ -4,7 +4,8 @@ Before contributing please read the [contribution guidelines](./Contribution.md)
 
 ## Bugs:
 
-- in SQLite: Database with foreign keys gets updated because "type changed"
+- in SQLite: Database with primary keys that dont specify notnull get updated because sqlite
+  insists on them being notnull
 
 ## Features:
 
