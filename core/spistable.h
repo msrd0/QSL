@@ -40,6 +40,8 @@ public:
 	QByteArray primaryKey() const { return _pk; }
 	/// Returns the parent `SPISDB`.
 	SPISDB* db() { return _db; }
+	/// Returns the parent `SPISDB`.
+	const SPISDB* db() const { return _db; }
 	/// Returns all columns in this table.
 	QList<SPISColumn> columns() const { return _columns.values(); }
 	/// Returns the column with the given name.

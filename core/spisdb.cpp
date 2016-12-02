@@ -100,3 +100,8 @@ SPISTable* SPISDB::table(const QByteArray &name)
 {
 	return _tables.value(name, 0);
 }
+
+const SPISTable* SPISDB::table(const QByteArray &name) const
+{
+	return _tables.value(name, 0);
+}

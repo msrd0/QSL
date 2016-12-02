@@ -69,6 +69,8 @@ public:
 	
 	/// Returns the table with the given name, or 0 if no such table exists.
 	SPISTable* table(const QByteArray &name);
+	/// Returns the table with the given name, or 0 if no such table exists.
+	const SPISTable* table(const QByteArray &name) const;
 	
 	/// The underlying database.
 	driver::Database *db();
