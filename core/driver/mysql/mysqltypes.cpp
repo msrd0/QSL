@@ -1,4 +1,6 @@
 #include "mysqltypes.h"
+#include "spiscolumn.h"
+#include "spistable.h"
 
 #include <QDebug>
 
@@ -102,10 +104,39 @@ pair<QByteArray, int> MySQLTypes::fromSQL(const QByteArray &type)
 	return {type, -1};
 }
 
-QByteArray MySQLTypes::fromSPIS(const QByteArray &type, int minsize, bool usevar)
+QByteArray MySQLTypes::fromSPIS(const SPISDB *db, const QByteArray &type, int minsize, bool usevar)
 {
 	QByteArray t = type.trimmed().toLower();
 	QByteArray v = usevar ? "var" : "";
+	
+	if (t[0] == '&')
+	{
+		if (!db)
+		{
+			qCritical() << "SPIS[SQLite]: Null-Database passed to" << __PRETTY_FUNCTION__;
+			return "";
+		}
+		
+		QByteArray tbl = t.mid(1, t.indexOf('.')-1);
+		QByteArray col = t.mid(tbl.size()+2);
+		
+		const SPISTable *table = db->table(tbl);
+		if (!table)
+		{
+			qCritical() << "SPIS[SQLite]: Unable to find table" << tbl;
+			return "";
+		}
+		
+		SPISColumn c = table->column(col);
+		if (strcoll(c.type(), "invalid") == 0)
+		{
+			qCritical() << "SPIS[SQLite]: Unable to find column" << col << "in table" << tbl;
+			return "";
+		}
+		
+		t = QByteArray(c.type()).trimmed().toLower();
+		minsize = c.minsize();
+	}
 	
 	if (t == "int" || t == "uint")
 	{

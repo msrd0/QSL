@@ -114,7 +114,7 @@ bool MySQLDatabase::ensureTableImpl(const SPISTable &tbl)
 			if (i != 0)
 				query += ",";
 			auto c = tbl.columns()[i];
-			query += "`" + c.name() + "` " + MySQLTypes::fromSPIS(c.type(), c.minsize(), usevar());
+			query += "`" + c.name() + "` " + MySQLTypes::fromSPIS(tbl.db(), c.type(), c.minsize(), usevar());
 			if ((c.constraints() & SPIS::notnull) == SPIS::notnull)
 				query += " NOT NULL";
 			if ((c.constraints() & SPIS::unique) == SPIS::unique)
