@@ -6,7 +6,7 @@
 #include "spis_global.h"
 #include "spiscolumn.h"
 
-#include <QList>
+#include <QMap>
 
 namespace spis {
 class SPISDB;
@@ -31,7 +31,7 @@ public:
 	/// to the database using `SPISDB::registerTable()`.
 	void addColumn(const SPISColumn &column)
 	{
-		_columns.append(column);
+		_columns.insert(column.name(), column);
 	}
 	
 	/// Returns the name of the table.
@@ -41,13 +41,15 @@ public:
 	/// Returns the parent `SPISDB`.
 	SPISDB* db() { return _db; }
 	/// Returns all columns in this table.
-	QList<SPISColumn> columns() const { return _columns; }
+	QList<SPISColumn> columns() const { return _columns.values(); }
+	/// Returns the column with the given name.
+	SPISColumn column(const QByteArray &name) const { return _columns.value(name, SPISColumn("invalid", "invalid", -1, SPIS::none)); }
 	
 private:
 	QByteArray _name;
 	QByteArray _pk;
 	SPISDB *_db;
-	QList<SPISColumn> _columns;
+	QMap<QByteArray, SPISColumn> _columns;
 };
 
 }
