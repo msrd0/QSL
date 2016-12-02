@@ -6,6 +6,7 @@
 
 #include "spisnamespace.h"
 
+#include <QMap>
 #include <QSqlDatabase>
 
 namespace spis {
@@ -66,6 +67,11 @@ public:
 	/// Returns true if a connection to the database exists.
 	bool isConnected();
 	
+	/// Returns the table with the given name, or 0 if no such table exists.
+	SPISTable* table(const QByteArray &name);
+	/// Returns the table with the given name, or 0 if no such table exists.
+	const SPISTable* table(const QByteArray &name) const;
+	
 	/// The underlying database.
 	driver::Database *db();
 	
@@ -82,7 +88,7 @@ protected:
 private:
 	const char* _name;
 	driver::Driver *_driver;
-	QList<SPISTable*> _tables;
+	QMap<QByteArray, SPISTable*> _tables;
 	
 	driver::Database *_db;
 	

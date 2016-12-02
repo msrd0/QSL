@@ -1,8 +1,10 @@
 #include "diff.h"
+#include "spisdb.h"
 #include "spisnamespace.h"
 
 #include <string.h>
 
+#include <QDebug>
 #include <QHash>
 
 using namespace spis;
@@ -54,10 +56,58 @@ void TableDiff::computeDiff()
 		SPISColumn cola = acols.value(colname, DUMMY_COLUMN);
 		SPISColumn colb = bcols.value(colname, DUMMY_COLUMN);
 		
-		if ((cola.minsize() != -1 && colb.minsize() != -1 && cola.minsize() != colb.minsize())
-				|| (strcoll(cola.type(), colb.type()) != 0
-					&& !(strcoll(cola.type(), "password") == 0 && strcoll(colb.type(), "text") == 0)
-					&& !(strcoll(cola.type(), "text") == 0 && strcoll(colb.type(), "password") == 0)))
+		QByteArray typea = cola.type(), typeb = colb.type();
+		int minsizea = cola.minsize(), minsizeb = colb.minsize();
+		
+		// resolve foreign keys
+		if (typea[0] == '&' || typeb[0] == '&')
+		{
+			SPISDB *db = a().db();
+			if (!db)
+				db = b().db();
+			if (db)
+			{
+				if (typea.startsWith('&'))
+				{
+					QByteArray tbl = typea.mid(1, typea.indexOf('.') - 1);
+					QByteArray field = typea.mid(tbl.size() + 2);
+					SPISTable *t = db->table(tbl);
+					if (!t)
+						qWarning() << "SPIS[Driver]: Unable to find table" << tbl;
+					else
+					{
+						SPISColumn col = t->column(field);
+						if (strcoll(col.type(), "invalid") == 0)
+							qWarning() << "SPIS[Driver]: Unable to find column" << field << "of table" << tbl;
+						typea = col.type();
+						minsizea = col.minsize();
+					}
+				}
+				if (typeb.startsWith('&'))
+				{
+					QByteArray tbl = typeb.mid(1, typeb.indexOf('.') - 1);
+					QByteArray field = typeb.mid(tbl.size() + 2);
+					SPISTable *t = db->table(tbl);
+					if (!t)
+						qWarning() << "SPIS[Driver]: Unable to find table" << tbl;
+					else
+					{
+						SPISColumn col = t->column(field);
+						if (strcoll(col.type(), "invalid") == 0)
+							qWarning() << "SPIS[Driver]: Unable to find column" << field << "of table" << tbl;
+						typeb = col.type();
+						minsizeb = col.minsize();
+					}
+				}
+			}
+			else
+				qWarning() << "SPIS[Driver]: Unable to find SPISDB for given tables; cannot resolve foreign keys";
+		}
+		
+		if ((minsizea != -1 && minsizeb != -1 && minsizea != minsizeb)
+				|| (typea != typeb
+					&& !(typea == "password" && typeb == "text")
+					&& !(typea == "text" && typeb == "password")))
 			_typeChanged << colb;
 		
 		else if (cola.constraints() != colb.constraints())
