@@ -26,14 +26,7 @@ class SPIS_PUBLIC MutableColumn : public SPISColumn
 public:
 	/// Creates a new column with the given name, type, type's minsize and, if given, constraints
 	/// (see `SPIS::ColumnConstraint`).
-	constexpr MutableColumn(const char* name, const char* type, uint32_t minsize, uint8_t constraints = 0)
-		: SPISColumn(name, type, minsize, constraints)
-	{
-	}
-	
-	/// Creates a new column with the given name, type, type's minsize and, if given, constraints
-	/// (see `SPIS::ColumnConstraint`).
-	MutableColumn(const QByteArray &name, const QByteArray &type, uint32_t minsize, uint8_t constraints = 0)
+	MutableColumn(const QByteArray &name, const QByteArray &type, uint32_t minsize, uint8_t constraints = SPIS::none)
 		: SPISColumn(name, type, minsize, constraints)
 	{
 	}
@@ -41,7 +34,7 @@ public:
 	/** Adds the given constraint to the constraints. This method has no effect if the constraint is already present. */
 	void addConstraint(uint8_t constraint)
 	{
-		_constraints |= constraint;
+		d->constraints |= constraint;
 	}
 	/** Adds the given constraint to the constraints. This method has no effect if the constraint is already present. */
 	void addConstraint(SPIS::ColumnConstraint constraint)

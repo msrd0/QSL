@@ -127,7 +127,7 @@ int main(int argc, char **argv)
 		{
 			int minsize = col.minsize();
 			if (minsize == -1)
-				fprintf(out, "- %s \"%s\"", col.type(), col.name().data());
+				fprintf(out, "- %s \"%s\"", col.type().data(), col.name().data());
 			else
 			{
 				const char* suffix = "";
@@ -146,7 +146,7 @@ int main(int argc, char **argv)
 					suffix = "K";
 					minsize /= 1e3;
 				}
-				fprintf(out, "- %s(%d%s) \"%s\"", col.type(), minsize, suffix, col.name().data());
+				fprintf(out, "- %s(%d%s) \"%s\"", col.type().data(), minsize, suffix, col.name().data());
 			}
 			
 			static const QMetaObject obj = SPIS::staticMetaObject;

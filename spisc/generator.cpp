@@ -259,11 +259,10 @@ bool spis::spisc::generate(Database *db, const QString &filename, const QDir &di
 		for (Column &f : t->fields())
 		{
 			out.write("  private:\n");
-			out.write("    static constexpr const SPISColumn _col_" + f.name() + " = SPISColumn(\"" + f.name() + "\", \"" + f.type() + "\", "
-					  + QByteArray::number(f.minsize()) + ", " + QByteArray::number(f.constraints()) + ");\n");
-			out.write("    static constexpr SPISColumn col_" + f.name() + "()\n");
+			out.write("    static SPISColumn col_" + f.name() + "()\n");
 			out.write("    {\n");
-			out.write("      return _col_" + f.name() + ";\n");
+			out.write("      static SPISColumn col(\"" + f.name() + "\", \"" + f.type() + "\", " + QByteArray::number(f.minsize()) + ", " + QByteArray::number(f.constraints()) + ");\n");
+			out.write("      return col;\n");
 			out.write("    }\n");
 			out.write("    " + f.cppType() + " _" + f.name() + ";\n");
 			out.write("  public:\n");
