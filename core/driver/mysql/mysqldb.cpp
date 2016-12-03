@@ -62,11 +62,11 @@ void MySQLDatabase::loadTableInfo()
 		do
 		{
 			uint8_t constraints = SPIS::none;
-			if (!columns.value("Null").toBool())
+			if (columns.value("Null").toString() == "NO")
 				constraints |= SPIS::notnull;
 			if (columns.value("Key").toString() == "PRI")
 			{
-				constraints |= SPIS::primarykey;
+				constraints |= SPIS::primarykey | SPIS::unique;
 				pk = columns.value("Field").toByteArray();
 			}
 			else if (columns.value("Key").toString() == "UNI")
@@ -190,20 +190,28 @@ bool MySQLDatabase::ensureTableImpl(const SPISTable &tbl)
 	
 	for (auto conDif : diff.constraintsChanged())
 	{
+		auto col = tbl.column(conDif.colName());
+		QByteArray type = col.type();
+		
 		if ((conDif.constraintsAdded() & SPIS::notnull) == SPIS::notnull  ||
 				(conDif.constraintsRemoved() & SPIS::notnull) == SPIS::notnull)
 		{
 			qi++;
-			auto col = tbl.column(conDif.colName());
-			query += "MODIFY COLUMN `" + col.name() + "` " + MySQLTypes::fromSPIS(tbl.db(), col.type(), col.minsize(), usevar());
+			query += "MODIFY COLUMN `" + col.name() + "` " + MySQLTypes::fromSPIS(tbl.db(), type, col.minsize(), usevar());
 			if ((col.constraints() & SPIS::unique) == SPIS::unique)
 			{
-				if (strcoll(col.type(), "text") == 0 || strcoll(col.type(), "blob") == 0)
+				if (type == "text" || type == "blob")
 					qWarning() << "SPIS[MySQL]: Column" << col.name() << "has a unique constraint but mysql doesn't support indexes on text/blob fields";
 				else
 					query += " UNIQUE";
 			}
 			query += ",";
+			continue;
+		}
+		
+		if (type == "text" || type == "blob") // dont need to look at unique
+		{
+			qWarning() << "SPIS[MySQL]: Column" << col.name() << "has a unique constraint but mysql doesn't support indexes on text/blob fields";
 			continue;
 		}
 		
@@ -229,7 +237,7 @@ bool MySQLDatabase::ensureTableImpl(const SPISTable &tbl)
 	if (qi == 0)
 		return true;
 #ifdef CMAKE_DEBUG
-	qDebug() << "SPIS[MySQL]: Altering table" << tbl.name();
+	qDebug() << "SPIS[MySQL]: Altering table" << tbl.name() << query;
 #endif
 	query = query.mid(0, query.size()-1) + ";";
 	QSqlQuery alterq(db());
