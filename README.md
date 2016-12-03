@@ -5,7 +5,7 @@ SPIS is a SQL Database Library for C++, written on top of Qt.
 # The SPIS language
 
 The SPIS language is a simple line-based language that goes from first to last line. Every line
-starting with a `#` will be treated as a comment. Comments at the end of a line are not supported.
+starting with a `#` will be treated as a comment.
 
 ## Database definition
 
