@@ -6,6 +6,7 @@
 #include <unistd.h>
 
 #include <QDebug>
+#include <QRegularExpression>
 #include <QSqlError>
 
 using namespace spis;
@@ -250,6 +251,12 @@ bool MySQLDatabase::ensureTableImpl(const SPISTable &tbl)
 	return true;
 }
 
+bool MySQLDatabase::needsEnquote(const QByteArray &type)
+{
+	QByteArray t = type.trimmed().toLower();
+	return (t=="char" || t=="text" || t=="password" || t=="byte" || t=="blob" || t=="variant" || t=="date" || t=="time" || t=="datetime");
+}
+
 QString MySQLDatabase::filterSQL(const SPISTable &tbl, const SPISFilter &filter)
 {
 	if (filter.op() == SPISFilter::noop)
@@ -258,10 +265,10 @@ QString MySQLDatabase::filterSQL(const SPISTable &tbl, const SPISFilter &filter)
 	
 	if (filter.op() < 0x20)
 	{
-		sql += "(`" + filter.arg(0) + "`";
+		sql += "(`" + tbl.name() + "`.`" + filter.arg(0) + "`";
 		switch (filter.op())
 		{
-		case SPISFilter::eq: sql += " == "; break;
+		case SPISFilter::eq: sql += " =  "; break;
 		case SPISFilter::ne: sql += " <> "; break;
 		case SPISFilter::lt: sql += " <  "; break;
 		case SPISFilter::le: sql += " <= "; break;
@@ -281,14 +288,14 @@ QString MySQLDatabase::filterSQL(const SPISTable &tbl, const SPISFilter &filter)
 		else if (strcoll(tbl.column(arg.toUtf8()).type(), "invalid") == 0)
 			sql += "'" + arg.replace("'", "''") + "'";
 		else
-			sql += "`" + arg + "`";
+			sql += "`" + tbl.name() + "`.`" + arg + "`";
 		
 		sql += ")";
 	}
 	
 	else if (filter.op() < 0x30)
 	{
-		sql += "(`" + filter.arg(0) + "`";
+		sql += "(`" + tbl.name() + "`.`" + filter.arg(0) + "`";
 		switch (filter.op())
 		{
 		case SPISFilter::isnull: sql += " IS NULL "; break;
@@ -352,7 +359,7 @@ SelectResult* MySQLDatabase::selectTable(const SPISTable &tbl, const QList<SPISC
 		qq += " WHERE " + fsql;
 	if (!tbl.primaryKey().isEmpty())
 	{
-		qq += " ORDER BY \"" + tbl.primaryKey() + "\"";
+		qq += " ORDER BY `" + tbl.primaryKey() + "`";
 		if (asc)
 			qq += " ASC";
 		else
@@ -371,8 +378,42 @@ SelectResult* MySQLDatabase::selectTable(const SPISTable &tbl, const QList<SPISC
 
 bool MySQLDatabase::insertIntoTable(const SPISTable &tbl, const QList<SPISColumn> &cols, const QVector<QVector<QVariant> > &rows)
 {
-	qCritical() << "SPIS[MySQL]: Implement " << __PRETTY_FUNCTION__;
-	return false;
+	Q_ASSERT(!cols.empty());
+	
+	QSqlQuery q(db());
+	QString qq = "INSERT INTO `" + tbl.name() + "` (";
+	for (int i = 0; i < cols.size(); i++)
+	{
+		if (i != 0)
+			qq += ",";
+		qq += "`" + cols[i].name() + "`";
+	}
+	qq += ") VALUES ";
+	for (int i = 0; i < rows.size(); i++)
+	{
+		if (i != 0)
+			qq += ",";
+		qq += "(";
+		auto row = rows[i];
+		for (int j = 0; j < cols.size(); j++)
+		{
+			if (j != 0)
+				qq += ",";
+			bool enquote = needsEnquote(cols[j].type());
+			if (enquote)
+				qq += "'" + row[j].toString().replace("'", "''") + "'";
+			else
+				qq += row[j].toString().replace(QRegularExpression("[^0-9a-zA-Z\\.,\\-+]"), "");
+		}
+		qq += ")";
+	}
+	qq += ";";
+	if (!q.exec(qq))
+	{
+		DUMP_ERROR(q);
+		return false;
+	}
+	return true;
 }
 
 bool MySQLDatabase::updateTable(const SPISTable &tbl, const QMap<SPISColumn, QVariant> &values, const QVector<QVariant> &pks)
