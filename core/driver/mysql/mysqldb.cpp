@@ -1,6 +1,7 @@
 #include "mysqldb.h"
 #include "mysqltypes.h"
 #include "driver/diff.h"
+#include "spisfilter.h"
 
 #include <unistd.h>
 
@@ -249,11 +250,123 @@ bool MySQLDatabase::ensureTableImpl(const SPISTable &tbl)
 	return true;
 }
 
+QString MySQLDatabase::filterSQL(const SPISTable &tbl, const SPISFilter &filter)
+{
+	if (filter.op() == SPISFilter::noop)
+		return QString();
+	QString sql;
+	
+	if (filter.op() < 0x20)
+	{
+		sql += "(`" + filter.arg(0) + "`";
+		switch (filter.op())
+		{
+		case SPISFilter::eq: sql += " == "; break;
+		case SPISFilter::ne: sql += " <> "; break;
+		case SPISFilter::lt: sql += " <  "; break;
+		case SPISFilter::le: sql += " <= "; break;
+		case SPISFilter::gt: sql += " >  "; break;
+		case SPISFilter::ge: sql += " >= "; break;
+		case SPISFilter::like: sql += " LIKE "; break;
+		default:
+			fprintf(stderr, "SPIS[MySQL]: Unknown filter operator value 0x%02x\n", filter.op());
+			return QString();
+		}
+		
+		QString arg = filter.arg(1);
+		if (arg.startsWith("int:") || arg.startsWith("double:"))
+			sql += arg.mid(arg.indexOf(':' + 1));
+		else if (arg.startsWith("'") && arg.endsWith("'"))
+			sql += "'" + arg.mid(1, arg.size() - 2).replace("'", "''") + "'";
+		else if (strcoll(tbl.column(arg.toUtf8()).type(), "invalid") == 0)
+			sql += "'" + arg.replace("'", "''") + "'";
+		else
+			sql += "`" + arg + "`";
+		
+		sql += ")";
+	}
+	
+	else if (filter.op() < 0x30)
+	{
+		sql += "(`" + filter.arg(0) + "`";
+		switch (filter.op())
+		{
+		case SPISFilter::isnull: sql += " IS NULL "; break;
+		case SPISFilter::notnull: sql += " IS NOT NULL "; break;
+		default:
+			fprintf(stderr, "SPIS[SQLite]: Unknown filter operator value 0x%02x\n", filter.op());
+			return QString();
+		}
+	}
+	
+	else if (filter.op() < 0x40)
+	{
+		sql += "(" + filterSQL(tbl, filter.filter(0));
+		switch (filter.op())
+		{
+		case SPISFilter::op_and: sql += " AND "; break;
+		case SPISFilter::op_or: sql += " OR "; break;
+		default:
+			fprintf(stderr, "SPIS[SQLite]: Unknown filter operator value 0x%02x\n", filter.op());
+			return QString();
+		}
+		sql += filterSQL(tbl, filter.filter(1)) + ")";
+	}
+	
+	else
+	{
+		switch (filter.op())
+		{
+		case SPISFilter::op_not: sql += "NOT "; break;
+		default:
+			fprintf(stderr, "SPIS[SQLite]: Unknown filter operator value 0x%02x\n", filter.op());
+			return QString();
+		}
+		sql += filterSQL(tbl, filter.filter(0));
+	}
+	
+	return sql;
+}
+
 SelectResult* MySQLDatabase::selectTable(const SPISTable &tbl, const QList<SPISColumn> &cols, const SPISFilter &filter,
 										 const QList<SPISJoinTable> &join, int limit, bool asc)
 {
-	qCritical() << "SPIS[MySQL]: Implement " << __PRETTY_FUNCTION__;
-	return 0;
+	QSqlQuery q(db());
+	QString qq = "SELECT ";
+	for (int i = 0; i < cols.size(); i++)
+	{
+		if (i != 0)
+			qq += ", ";
+		qq += "`" + tbl.name() + "`.`" + cols[i].name() + "` AS `" + cols[i].name() + "`";
+	}
+	for (auto j : join)
+		for (auto col : j.cols)
+			qq += ", `" + j.tbl.name() + "`.`" + col.name() + "` AS `" + j.prefix + col.name() + "`";
+	qq += " FROM `" + tbl.name() + "`";
+	for (auto j : join)
+		qq += " INNER JOIN `" + j.tbl.name() + "` ON `" + tbl.name() + "`.`" + j.on.name()
+				+ "`=`" + j.tbl.name() + "`.`" + j.onTbl.name() + "`";
+	
+	QString fsql = filterSQL(tbl, filter);
+	if (!fsql.isEmpty())
+		qq += " WHERE " + fsql;
+	if (!tbl.primaryKey().isEmpty())
+	{
+		qq += " ORDER BY \"" + tbl.primaryKey() + "\"";
+		if (asc)
+			qq += " ASC";
+		else
+			qq += " DESC";
+	}
+	if (limit > 0)
+		qq += " LIMIT " + QString::number(limit);
+	qq += ";";
+	if (!q.exec(qq))
+	{
+		DUMP_ERROR(q);
+		return 0;
+	}
+	return new QtSelectResult(q);
 }
 
 bool MySQLDatabase::insertIntoTable(const SPISTable &tbl, const QList<SPISColumn> &cols, const QVector<QVector<QVariant> > &rows)

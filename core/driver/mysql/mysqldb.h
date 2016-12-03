@@ -28,7 +28,7 @@ protected:
 	
 	virtual bool ensureTableImpl(const SPISTable &tbl);
 	
-	static QString filterSQL(const SPISFilter &filter);
+	static QString filterSQL(const SPISTable &tbl, const SPISFilter &filter);
 	
 	// key is <tbl-name>.<col-name>
 	QHash<QByteArray, QByteArray> uniqueIndexNames;
