@@ -149,7 +149,96 @@ bool MySQLDatabase::ensureTableImpl(const SPISTable &tbl)
 	}
 	
 	TableDiff diff(table(tbl.name()), tbl);
-	return false;
+	QString query = "ALTER TABLE `" + tbl.name() + "` ";
+	int qi = 0;
+	
+	for (auto col : diff.addedCols())
+	{
+		qi++;
+		query += "ADD COLUMN `" + col.name() + "` " + MySQLTypes::fromSPIS(tbl.db(), col.type(), col.minsize(), usevar());
+		if ((col.constraints() & SPIS::notnull) == SPIS::notnull)
+			query += " NOT NULL";
+		if ((col.constraints() & SPIS::unique) == SPIS::unique)
+		{
+			if (strcoll(col.type(), "text") == 0 || strcoll(col.type(), "blob") == 0)
+				qWarning() << "SPIS[MySQL]: Column" << col.name() << "has a unique constraint but mysql doesn't support indexes on text/blob fields";
+			else
+				query += " UNIQUE";
+		}
+		query += ",";
+	}
+	
+	for (auto col : diff.removedCols())
+	{
+		qi++;
+		query += "DROP COLUMN `" + col.name() + "`,";
+	}
+	
+	for (auto col : diff.typeChanged())
+	{
+		qi++;
+		query += "MODIFY COLUMN `" + col.name() + "` " + MySQLTypes::fromSPIS(tbl.db(), col.type(), col.minsize(), usevar());
+		if ((col.constraints() & SPIS::unique) == SPIS::unique)
+		{
+			if (strcoll(col.type(), "text") == 0 || strcoll(col.type(), "blob") == 0)
+				qWarning() << "SPIS[MySQL]: Column" << col.name() << "has a unique constraint but mysql doesn't support indexes on text/blob fields";
+			else
+				query += " UNIQUE";
+		}
+		query += ",";
+	}
+	
+	for (auto conDif : diff.constraintsChanged())
+	{
+		if ((conDif.constraintsAdded() & SPIS::notnull) == SPIS::notnull  ||
+				(conDif.constraintsRemoved() & SPIS::notnull) == SPIS::notnull)
+		{
+			qi++;
+			auto col = tbl.column(conDif.colName());
+			query += "MODIFY COLUMN `" + col.name() + "` " + MySQLTypes::fromSPIS(tbl.db(), col.type(), col.minsize(), usevar());
+			if ((col.constraints() & SPIS::unique) == SPIS::unique)
+			{
+				if (strcoll(col.type(), "text") == 0 || strcoll(col.type(), "blob") == 0)
+					qWarning() << "SPIS[MySQL]: Column" << col.name() << "has a unique constraint but mysql doesn't support indexes on text/blob fields";
+				else
+					query += " UNIQUE";
+			}
+			query += ",";
+			continue;
+		}
+		
+		if ((conDif.constraintsAdded() & SPIS::unique) == SPIS::unique)
+		{
+			qi++;
+			query += "ADD UNIQUE `" + conDif.colName() + "`,";
+		}
+		
+		if ((conDif.constraintsRemoved() & SPIS::unique) == SPIS::unique)
+		{
+			qi++;
+			query += "DROP INDEX `" + conDif.colName() + "`,";
+		}
+	}
+	
+	if (table(tbl.name()).primaryKey() != tbl.primaryKey())
+	{
+		query += "DROP PRIMARY KEY,ADD PRIMARY KEY `" + tbl.primaryKey() + "`,";
+		qi+=2;
+	}
+	
+	if (qi == 0)
+		return true;
+#ifdef CMAKE_DEBUG
+	qDebug() << "SPIS[MySQL]: Altering table" << tbl.name();
+#endif
+	query = query.mid(0, query.size()-1) + ";";
+	QSqlQuery alterq(db());
+	if (!alterq.exec(query))
+	{
+		DUMP_ERROR(alterq);
+		return false;
+	}
+	return true;
 }
 
 SelectResult* MySQLDatabase::selectTable(const SPISTable &tbl, const QList<SPISColumn> &cols, const SPISFilter &filter,
