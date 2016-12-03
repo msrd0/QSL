@@ -4,6 +4,8 @@ Before contributing please read the [contribution guidelines](./Contribution.md)
 
 ## Bugs:
 
+### Severity = LOW
+
 - in SQLite: Database with primary keys that dont specify notnull get updated because sqlite
   insists on them being notnull
 
@@ -24,16 +26,18 @@ Core/Driver library:
 - implement order by columns other than the primary key
 - pass errors to the application instead of just printing them to the command line
 - add filters that are usefull but don't exist in SQL like contains or startsWith
-- use qts plugin system instead of linux dynamic linker
 
 Drivers:
 
-- recursive forein key support (a foreign ref to a table containing another foreign ref)
-
+- MySQL support (see [mysql](https://github.com/msrd0/SPIS/tree/mysql) branch)
 
 ### future
 
-- add support for PostgreSQL, MySQL and maybe other database servers
+- use qts plugin system instead of linux dynamic linker
+- recursive forein key support (a foreign ref to a table containing another foreign ref)
+- add support for PostgreSQL and maybe other database servers
+- add option for spisdump to not only print schema but also the data inside the table. this can be either
+  accomplished by extending qsl language or specifying a backup-file where the data is exported.
 
 qmake problems:
 
