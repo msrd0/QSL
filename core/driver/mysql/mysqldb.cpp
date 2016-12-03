@@ -449,14 +449,41 @@ bool MySQLDatabase::updateTable(const SPISTable &tbl, const QMap<SPISColumn, QVa
 	return true;
 }
 
-bool MySQLDatabase::deleteFromTable(const SPISTable &tbl, const QVector<QVariant> &pks)
-{
-	qCritical() << "SPIS[MySQL]: Implement " << __PRETTY_FUNCTION__;
-	return false;
-}
-
 bool MySQLDatabase::deleteFromTable(const SPISTable &tbl, const SPISFilter &filter)
 {
-	qCritical() << "SPIS[MySQL]: Implement " << __PRETTY_FUNCTION__;
-	return false;
+	QSqlQuery q(db());
+	QString qq = "DELETE FROM `" + tbl.name() + "`";
+	QString fsql = filterSQL(tbl, filter);
+	if (!fsql.isEmpty())
+		qq += " WHERE " + fsql;
+	qq += ";";
+	if (!q.exec(qq))
+	{
+		DUMP_ERROR(q);
+		return false;
+	}
+	return true;
+}
+
+bool MySQLDatabase::deleteFromTable(const SPISTable &tbl, const QVector<QVariant> &pks)
+{
+	Q_ASSERT(!tbl.primaryKey().isEmpty());
+	if (pks.empty())
+		return true;
+	
+	QSqlQuery q(db());
+	QString qq = "DELETE FROM `" + tbl.name() + "` WHERE ";
+	for (int i = 0; i < pks.size(); i++)
+	{
+		if (i != 0)
+			qq += " OR ";
+		qq += "(`" + tbl.name() + "`.`" + tbl.primaryKey() + "`=" + QByteArray::number(pks[i].toInt()) + ")"; // note that currently only int and uint as pks are allowed
+	}
+	qq += ";";
+	if (!q.exec(qq))
+	{
+		DUMP_ERROR(q);
+		return false;
+	}
+	return true;
 }
