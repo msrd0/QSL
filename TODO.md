@@ -13,6 +13,10 @@ Before contributing please read the [contribution guidelines](./Contribution.md)
 
 - make `spisdump` (and especially the drivers) detect foreign keys in the database
 
+### SPIS 0.1.3
+
+- add foreign keys to sqlite driver in `ensureTable()`
+
 ### SPIS 0.2.0
 
 SPIS language:
