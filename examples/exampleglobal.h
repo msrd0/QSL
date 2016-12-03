@@ -15,15 +15,12 @@ db_t* connect (int argc, char **argv)
 	else
 	{
 		db = new db_t(driver);
+		db->setName("test");
 		db->setHost("localhost");
 		if (strcmp(driver, "psql") == 0)
 		{
 			db->setUser("postgres");
 			db->setPassword("postgres");
-		}
-		else
-		{
-			db->setUser("root");
 		}
 	}
 	
