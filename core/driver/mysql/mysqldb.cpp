@@ -418,8 +418,35 @@ bool MySQLDatabase::insertIntoTable(const SPISTable &tbl, const QList<SPISColumn
 
 bool MySQLDatabase::updateTable(const SPISTable &tbl, const QMap<SPISColumn, QVariant> &values, const QVector<QVariant> &pks)
 {
-	qCritical() << "SPIS[MySQL]: Implement " << __PRETTY_FUNCTION__;
-	return false;
+	if (pks.empty() || values.empty())
+		return true;
+	
+	QSqlQuery q(db());
+	
+	QString qq = "UPDATE `" + tbl.name() + "` SET ";
+	for (auto key : values.keys())
+	{
+		qq += "`" + key.name() + "`=";
+		if (needsEnquote(key.type()))
+			qq += "'" + values[key].toString().replace("'", "''") + "'";
+		else
+			qq += values[key].toString().replace(QRegularExpression("[^0-9a-zA-Z\\.,\\-+]"), "");
+		qq += ",";
+	}
+	qq = qq.mid(0, qq.size()-1);
+	
+	qq += " WHERE ";
+	for (auto pk : pks)
+		qq += "(`" + tbl.primaryKey() + "`=" + QByteArray::number(pk.toInt()) + ") OR "; // note that currently only int and uint as pks are allowed
+	qq = qq.mid(0, qq.size()-4);
+	
+	qq += ";";
+	if (!q.exec(qq))
+	{
+		DUMP_ERROR(q);
+		return false;
+	}
+	return true;
 }
 
 bool MySQLDatabase::deleteFromTable(const SPISTable &tbl, const QVector<QVariant> &pks)
