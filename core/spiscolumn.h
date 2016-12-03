@@ -40,15 +40,6 @@ public:
 		_type = ntype;
 	}
 	
-	~SPISColumn()
-	{
-		if (malloced)
-		{
-			delete[] _name;
-			delete[] _type;
-		}
-	}
-	
 	/// Returns the name of the column.
 	QByteArray name() const { return _name; }
 	/// Returns the type of the column.
