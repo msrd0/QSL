@@ -72,9 +72,9 @@ QVariant CopySelectResult::value(const QString &col) const
 SelectResult* Database::selectTable(const SPISTable &tbl,
 									const SPISFilter &filter,
 									const QList<SPISJoinTable> &join,
-									int limit, bool asc)
+									int limit, bool asc, const QByteArray &orderBy)
 {
-	return selectTable(tbl, tbl.columns(), filter, join, limit, asc);
+	return selectTable(tbl, tbl.columns(), filter, join, limit, asc, orderBy);
 }
 
 bool Database::insertIntoTable(const SPISTable &tbl, const QList<SPISColumn> &cols, const QVector<QVariant> &values)

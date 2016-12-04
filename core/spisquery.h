@@ -5,9 +5,9 @@
 
 #include "spisfilter.h"
 #include "spisnamespace.h"
+#include "spistable.h"
 
 namespace spis {
-class SPISTable;
 
 namespace driver { class Driver; }
 
@@ -24,6 +24,7 @@ public:
 	/// Creates a new `SPISQuery` for the given `SPISTable` with the given type.
 	SPISQuery(SPISTable *tbl)
 		: _tbl(tbl)
+		, _orderBy(tbl->primaryKey())
 	{
 		Q_ASSERT(tbl);
 	}
@@ -37,6 +38,8 @@ public:
 	void applyAsc() { _asc = true; }
 	/// Return result of `SELECT` queries in descending order.
 	void applyDesc() { _asc = false; }
+	/// Order by the given column.
+	void applyOrderBy(const QByteArray &col) { _orderBy = col; }
 	
 protected:
 	
@@ -48,6 +51,9 @@ protected:
 	int _limit = -1;
 	/// If true, a SELECT query will return in ascending order, otherwise descending.
 	bool _asc = true;
+	/// The name of the column by that the query should be ordered. Default is the primary
+	/// key or none if the table doesn't have a pk.
+	QByteArray _orderBy;
 };
 
 /**

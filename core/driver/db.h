@@ -193,7 +193,8 @@ public:
 									  const QList<SPISColumn> &cols,
 									  const SPISFilter &filter,
 									  const QList<SPISJoinTable> &join = QList<SPISJoinTable>(),
-									  int limit = -1, bool asc = true) = 0;
+									  int limit = -1, bool asc = true,
+									  const QByteArray &orderBy = QByteArray()) = 0;
 	/**
 	 * Selects all columns from the table joining the given tables that apply to
 	 * the given filter. If `limit` is greater than 0, a maximum of `limit` rows
@@ -202,7 +203,8 @@ public:
 	virtual SelectResult* selectTable(const SPISTable &tbl,
 									  const SPISFilter &filter,
 									  const QList<SPISJoinTable> &join = QList<SPISJoinTable>(),
-									  int limit = -1, bool asc = true);
+									  int limit = -1, bool asc = true,
+									  const QByteArray &orderBy = QByteArray());
 	
 	/**
 	 * Inserts `values.size` rows into the given table, while for each row the

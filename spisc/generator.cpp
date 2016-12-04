@@ -404,7 +404,7 @@ bool spis::spisc::generate(Database *db, const QString &filename, const QDir &di
 		out.write("      applyFilter(f);\n");
 		out.write("    }\n\n");
 		
-		// limit, asc, desc
+		// limit, asc, desc, orderBy
 		out.write("  public:\n");
 		out.write("    " + t->name() + "_q& limit(int l)\n");
 		out.write("    {\n");
@@ -419,6 +419,11 @@ bool spis::spisc::generate(Database *db, const QString &filename, const QDir &di
 		out.write("    " + t->name() + "_q& desc()\n");
 		out.write("    {\n");
 		out.write("      applyDesc();\n");
+		out.write("      return *this;\n");
+		out.write("    }\n");
+		out.write("    " + t->name() + "_q& orderBy(const QByteArray &col)\n");
+		out.write("    {\n");
+		out.write("      applyOrderBy(col);\n");
 		out.write("      return *this;\n");
 		out.write("    }\n\n");
 		

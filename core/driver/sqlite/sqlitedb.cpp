@@ -662,7 +662,7 @@ QString SQLiteDatabase::filterSQL(const SPISFilter &filter)
 
 SelectResult* SQLiteDatabase::selectTable(const SPISTable &tbl, const QList<SPISColumn> &cols,
 										  const SPISFilter &filter, const QList<SPISJoinTable> &join,
-										  int limit, bool asc)
+										  int limit, bool asc, const QByteArray &orderBy)
 {
 	QSqlQuery q(db());
 	QString qq = "SELECT ";
@@ -693,14 +693,10 @@ SelectResult* SQLiteDatabase::selectTable(const SPISTable &tbl, const QList<SPIS
 	QString fsql = filterSQL(filter);
 	if (!fsql.isEmpty())
 		qq += " WHERE " + fsql;
-	if (!tbl.primaryKey().isEmpty())
-	{
-		qq += " ORDER BY \"" + tbl.primaryKey() + "\"";
-		if (asc)
-			qq += " ASC";
-		else
-			qq += " DESC";
-	}
+	if (!orderBy.isEmpty())
+		qq += " ORDER BY \"" + orderBy + "\" " + (asc ? "ASC" : "DESC");
+	else if (!tbl.primaryKey().isEmpty())
+		qq += " ORDER BY \"" + tbl.primaryKey() + "\" " + (asc ? "ASC" : "DESC");
 	if (limit > 0)
 		qq += " LIMIT " + QString::number(limit);
 	qq += ";";

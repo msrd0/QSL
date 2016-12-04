@@ -26,7 +26,6 @@ SPIS language:
 
 Core/Driver library:
 
-- implement order by columns other than the primary key
 - pass errors to the application instead of just printing them to the command line
 - add filters that are usefull but don't exist in SQL like contains or startsWith
 
