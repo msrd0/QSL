@@ -514,7 +514,7 @@ bool spis::spisc::generate(Database *db, const QString &filename, const QDir &di
 			out.write("      for (auto it = begin; it != end; it++)\n");
 			out.write("      {\n");
 			out.write("        " + t->name() + "_t row = *it;\n");
-			out.write("        pks[i] = row." + t->primaryKey() + "();\n");
+			out.write("        pks[i] = spisvariant(row." + t->primaryKey() + "());\n");
 			out.write("        i++;\n");
 			out.write("      }\n");
 			out.write("      return _tbl->db()->db()->deleteFromTable(*_tbl, pks);\n");
