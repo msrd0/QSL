@@ -42,19 +42,18 @@ data type used. The following datatypes are supported:
  - `double`
  - `char`
  - `text`
- - `password`
+ - `password` (special type: automatically hashes and salts the password and can later compare them.
+   it is not possible to restore the value of the password)
  - `byte`
  - `blob`
- - `date`
- - `time`
- - `datetime`
+ - `date` (default value format: yyyy-MM-dd)
+ - `time` (default value format: hh:mm:ss)
+ - `datetime` (default value format: yyyy-MM-dd hh:mm:ss)
  - `variant` (if the sql system doesn't support this, the `blob` type will be used)
  
 Most of them can be followed by a number in parentheses to specify the minimum size of the
 type. Those numbers can also be suffixed with `K`, `M` or `G` to avoid writing to many `0` behind
 the number. Note that there is no guarantee that the minimum size is provided by the database.
-`password` is a special type that automatically hashes and salts the given text and can later
-be used to compare passwords. Note that it is not possible to get the value of the password.
 
 Adding to these default types, you can also refer to other table. This is accomplished by
 foreign keys. The syntax to create a foreign reference to another table of the same database
@@ -71,6 +70,14 @@ table b
 - uint id !primarykey
 # the reference - a foreign key called ref references a.id
 - &a.id ref
+```
+
+To specify a default value for a type, add it prefixed by a `=`. If the value contains whitespaces
+it needs to be enquoted in `"`. A default value could look like this:
+
+```
+- char(1K) user = "msrd0" !notnull
+- char(1K) repo = "SPIS"  !notnull
 ```
 
 The type is followed by the name of the column and finally a list of constraints prefixed with

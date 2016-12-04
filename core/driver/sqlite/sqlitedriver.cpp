@@ -9,7 +9,7 @@ using namespace spis::driver;
 
 Database* SQLiteDriver::newDatabase(const char *charset, bool usevar)
 {
-	return new SQLiteDatabase(charset, usevar);
+	return new SQLiteDatabase(this, charset, usevar);
 }
 
 QDate SQLiteDriver::toQDate(const QVariant &date)

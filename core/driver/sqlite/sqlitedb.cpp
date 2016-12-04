@@ -1,5 +1,6 @@
 #include "spisfilter.h"
 #include "sqlitedb.h"
+#include "sqlitedriver.h"
 #include "sqlitetypes.h"
 #include "driver/diff.h"
 
@@ -33,8 +34,9 @@ static void dumpError(const QSqlQuery &q, const char* file, int line)
 #define DUMP_ERROR(q) dumpError((q), __FILE__, __LINE__);
 
 
-SQLiteDatabase::SQLiteDatabase(const char *charset, bool usevar)
+SQLiteDatabase::SQLiteDatabase(SQLiteDriver *driver, const char *charset, bool usevar)
 	: QtDatabase(charset, usevar, "QSQLITE")
+	, driver(driver)
 {
 }
 
@@ -131,7 +133,7 @@ void SQLiteDatabase::loadTableInfo()
 		do
 		{
 			auto type = SQLiteTypes::fromSQL(tblInfo.value("type").toByteArray());
-			MutableColumn col(tblInfo.value("name").toByteArray(), type.first, type.second);
+			MutableColumn col(tblInfo.value("name").toByteArray(), type.first, type.second, tblInfo.value("dflt_value"));
 #ifdef CMAKE_DEBUG
 			qDebug() << "SPIS[SQLite]: Adding column" << col.name();
 #endif
@@ -251,6 +253,7 @@ bool SQLiteDatabase::ensureTableImpl(const SPISTable &tbl)
 		    3. A column with a not-null constraint was removed
 			4. A column with a primary-key constraint was added
 			5. A unique-constraint was removed that was not created by a CREATE INDEX statement
+			6. A default value changed
 		 => We need to fail if and only if:
 		    A. A new column without a default value but not nullable was added and the table is
 			   not empty
@@ -261,7 +264,8 @@ bool SQLiteDatabase::ensureTableImpl(const SPISTable &tbl)
 		//  (note that currently default values are not supported by SPIS)
 		for (auto col : diff.addedCols())
 		{
-			if ((col.constraints() & SPIS::notnull) == SPIS::notnull)
+			if ((col.constraints() & SPIS::notnull) == SPIS::notnull
+					&& (!col.def().isValid() || col.def().isNull()))
 			{
 				qCritical() << "SPIS[SQLite]: In Table" << tbl.name() << ": ERROR: Column" << col.name() << "was added with !notnull but without a default value";
 				return false;
@@ -274,6 +278,17 @@ bool SQLiteDatabase::ensureTableImpl(const SPISTable &tbl)
 			needsNewTable = true;
 #ifdef CMAKE_DEBUG
 			qDebug() << "SPIS[SQLite]: The types of the following columns changed, need to re-create table" << tbl.name();
+			for (auto col : diff.typeChanged())
+				qDebug() << "             -" << col.name();
+#endif
+		}
+		
+		// check 6.
+		if (!diff.defChanged().isEmpty())
+		{
+			needsNewTable = true;
+#ifdef CMAKE_DEBUG
+			qDebug() << "SPIS[SQLite]: The default values of the following columns changed, need to re-create table" << tbl.name();
 			for (auto col : diff.typeChanged())
 				qDebug() << "             -" << col.name();
 #endif
@@ -450,6 +465,20 @@ bool SQLiteDatabase::ensureTableImpl(const SPISTable &tbl)
 				query += " UNIQUE";
 			else
 				createUniqueIndex.push_back(col.name());
+		}
+		if (col.def().isValid() && !col.def().isNull())
+		{
+			query += " DEFAULT ";
+			if (needsEnquote(col.type()))
+				query += "'" + col.def().toString().replace("'", "''") + "'";
+			else if (col.type() == "date")
+				query += driver->fromQDate(col.def().toDate()).toString();
+			else if (col.type() == "time")
+				query += driver->fromQTime(col.def().toTime()).toString();
+			else if (col.type() == "datetime")
+				query += driver->fromQDateTime(col.def().toDateTime()).toString();
+			else
+				query += col.def().toString().replace(QRegularExpression("[^0-9a-zA-Z\\.,\\-+]"), "");
 		}
 	}
 	if (!tbl.primaryKey().isEmpty())

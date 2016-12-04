@@ -26,8 +26,8 @@ class SPIS_PUBLIC MutableColumn : public SPISColumn
 public:
 	/// Creates a new column with the given name, type, type's minsize and, if given, constraints
 	/// (see `SPIS::ColumnConstraint`).
-	MutableColumn(const QByteArray &name, const QByteArray &type, uint32_t minsize, uint8_t constraints = SPIS::none)
-		: SPISColumn(name, type, minsize, constraints)
+	MutableColumn(const QByteArray &name, const QByteArray &type, uint32_t minsize, const QVariant &def, uint8_t constraints = SPIS::none)
+		: SPISColumn(name, type, minsize, constraints, def)
 	{
 	}
 	

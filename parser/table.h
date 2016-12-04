@@ -14,7 +14,7 @@ class Database;
 class Column
 {	
 public:
-	Column(const QByteArray &name, const QByteArray &type, bool qtype = false);
+	Column(const QByteArray &name, const QByteArray &type, bool qtype = false, QVariant def = QVariant());
 	
 	QByteArray name() const { return _name; }
 	QByteArray type() const { return _type; }
@@ -23,6 +23,7 @@ public:
 	bool cppReference() const { return _cref; }
 	QByteArray cppArgType() const { return (_cref ? "const " + cppType() + "&" : cppType()); }
 	uint8_t constraints() const { return _constraints; }
+	QVariant def() const { return _def; }
 	
 	void setConstraint(SPIS::ColumnConstraint constraint) { _constraints |= constraint; }
 	int setConstraint(const QByteArray &constraint);
@@ -40,6 +41,8 @@ private:
 	bool _cref;
 	/// The constraints for the field.
 	uint8_t _constraints = SPIS::none;
+	/// The default value of this field.
+	QVariant _def;
 };
 
 class Table

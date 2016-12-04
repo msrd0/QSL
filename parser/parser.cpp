@@ -1,6 +1,7 @@
 #include "parser.h"
 #include "table.h"
 
+#include <QDateTime>
 #include <QFile>
 #include <QRegularExpression>
 #include <QSet>
@@ -272,7 +273,7 @@ Database* spis::spisc::parse(QIODevice *in, const QString &filename, bool qtype)
 			QByteArray name;
 			if (line.startsWith('"'))
 			{
-				if (line.indexOf('"') == -1)
+				if (line.indexOf('"', 1) == -1)
 					error("Missing closing \"")
 				name = line.mid(1, line.indexOf('"', 1) - 1);
 				line = line.mid(2 + name.length()).trimmed();
@@ -284,7 +285,43 @@ Database* spis::spisc::parse(QIODevice *in, const QString &filename, bool qtype)
 			}
 			if (!checkName(name))
 				error("The name of the column (`%s') does not follow the identifier rules", name.data())
-			Column f(name, type, qtype);
+			QVariant def;
+			if (line.startsWith('='))
+			{
+				QByteArray defVal;
+				line = line.mid(1).trimmed();
+				if (line.startsWith('"'))
+				{
+					int in = line.indexOf('"', 1);
+					if (in == -1)
+						error("Missing closing \"")
+					defVal = line.mid(1, in-1);
+					line = line.mid(2 + in).trimmed();
+				}
+				else
+				{
+					defVal = line.mid(0, line.indexOf(' '));
+					line = line.mid(defVal.length()).trimmed();
+				}
+				
+				if (type == "date")
+					def = QDate::fromString(defVal, "yyyy-MM-dd");
+				else if (type == "time")
+					def = QTime::fromString(defVal, "hh:mm:ss");
+				else if (type == "datetime")
+					def = QDateTime::fromString(defVal, "yyyy-MM-dd hh:mm:ss");
+				else if (type == "int")
+					def = defVal.toLongLong();
+				else if (type == "uint")
+					def = defVal.toULongLong();
+				else if (type == "double")
+					def = defVal.toDouble();
+				else
+					def = defVal;
+				if (def.isNull())
+					error("Default value provided in wrong format")
+			}
+			Column f(name, type, qtype, def);
 			while (!line.isEmpty())
 			{
 				if (!line.startsWith('!'))

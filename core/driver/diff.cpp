@@ -10,7 +10,7 @@
 using namespace spis;
 using namespace spis::driver;
 
-#define DUMMY_COLUMN SPISColumn("dummy", "dummy", -1, SPIS::none)
+#define DUMMY_COLUMN SPISColumn("dummy", "dummy", -1, SPIS::none, QVariant())
 
 
 ConstraintDifference::ConstraintDifference(const SPISColumn &a, const SPISColumn &b)
@@ -112,5 +112,8 @@ void TableDiff::computeDiff()
 		
 		else if (cola.constraints() != colb.constraints())
 			_constraintsChanged << ConstraintDifference(cola, colb);
+		
+		else if (cola.def().toString() != colb.def().toString())
+			_defChanged << colb;
 	}
 }

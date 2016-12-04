@@ -70,8 +70,9 @@ static std::pair<QByteArray, bool> toCppType(const QByteArray &t, uint32_t minsi
 	}
 }
 
-Column::Column(const QByteArray &name, const QByteArray &type, bool qtype) 
+Column::Column(const QByteArray &name, const QByteArray &type, bool qtype, QVariant def) 
 	: _name(name)
+	, _def(def)
 {
 	_type = type;
 	if (_type.contains('('))

@@ -6,6 +6,7 @@
 #include "spisnamespace.h"
 
 #include <QSharedDataPointer>
+#include <QVariant>
 
 namespace spis {
 
@@ -17,11 +18,12 @@ namespace spis {
 class SPIS_PRIVATE SPISColumnData : public QSharedData
 {
 public:
-	SPISColumnData(const QByteArray &name, const QByteArray &type, int minsize, uint8_t constraints)
+	SPISColumnData(const QByteArray &name, const QByteArray &type, int minsize, uint8_t constraints, const QVariant &def)
 		: name(name)
 		, type(type)
 		, minsize(minsize)
 		, constraints(constraints)
+		, def(def)
 	{
 	}
 	
@@ -29,6 +31,8 @@ public:
 	QByteArray type;
 	int minsize;
 	uint8_t constraints;
+	
+	QVariant def;
 };
 
 /**
@@ -40,8 +44,8 @@ public:
 	
 	/// Creates a new column with the given name, type, type's minsize and constraints
 	/// (see `SPIS::ColumnConstraint`).
-	SPISColumn(const QByteArray &name, const QByteArray &type, int minsize, uint8_t constraints)
-		: d(new SPISColumnData(name, type, minsize, constraints))
+	SPISColumn(const QByteArray &name, const QByteArray &type, int minsize, uint8_t constraints, const QVariant &def)
+		: d(new SPISColumnData(name, type, minsize, constraints, def))
 	{
 	}
 	
@@ -53,6 +57,9 @@ public:
 	int minsize() const { return d->minsize; }
 	/// Returns the constraints of the column.
 	uint8_t constraints() const { return d->constraints; }
+	
+	/// Returns the default value of the column.
+	QVariant def() const { return d->def; }
 	
 	// these functions are present to enable the use of SPISColumn inside a map
 	/** Compares the name of this column to the name of the other column. See `QByteArray::operator<`. */

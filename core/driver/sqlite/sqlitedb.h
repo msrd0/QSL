@@ -6,11 +6,12 @@
 
 namespace spis {
 namespace driver {
+class SQLiteDriver;
 
 class SPIS_PRIVATE SQLiteDatabase : public QtDatabase
 {
 public:
-	SQLiteDatabase(const char *charset, bool usevar);
+	SQLiteDatabase(SQLiteDriver *driver, const char *charset, bool usevar);
 	
 	virtual bool connect() override;
 	
@@ -37,6 +38,8 @@ protected:
 	
 private:
 	bool needsEnquote(const QByteArray &type);
+	
+	SQLiteDriver *driver;
 };
 
 }

@@ -6,8 +6,8 @@ charset "utf-8"
 usevar
 
 # this table has no primary key! spisc should print a warning
-table nopk
-- text noindex
+table "nopk"
+- text "noindex"
 
 # this table contains every possibility of datatypes. note that there are other values
 # as minsize possible, but these are the most common.
@@ -37,6 +37,17 @@ table datatypes
 - date     d_date
 - time     d_time
 - datetime d_datetime
+
+# this table tests default values
+table defvals
+- uint pk !primarykey
+- int i = -5 !notnull
+- uint u = 5 !notnull
+- double pi = 3.14159265358979323846 !notnull
+- text name = "Max Mustermann" !notnull
+- date xmas = 2016-12-24
+- time lunch = 13:00:00
+- datetime xmaslunch = "2016-12-24 13:00:00"
 
 # this table tests foreign keys.
 table a_fk
