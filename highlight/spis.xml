@@ -40,13 +40,17 @@
 				<DetectChar attribute="Comment" context="Comment" char="#" />
 			</context>
 			<context attribute="Normal" lineEndContext="#pop" name="Column">
-				<keyword attribute="DataType" context="#stay" String="types" />
-				<DetectChar attribute="Normal" context="MinSize" char="(" />
+				<keyword attribute="DataType" context="DataType" String="types" />
+				<RegExpr attribute="DataType" context="#stay" String="&amp;\S+\.\S+" />
 				<DetectChar attribute="String" context="String" char="&quot;" />
+				<RegExpr attribute="Number" context="#stay" String=" -?\d+(\.\d+)?( |$)" />
+				<RegExpr attribute="Number" context="#stay" String=" \d+-\d+-\d+( |$)" />
+				<RegExpr attribute="Number" context="#stay" String=" \d+:\d+:\d+( |$)" />
 				<DetectChar attribute="Keyword" context="Constraint" char="!" />
 			</context>
-			<context attribute="Number" lineEndContext="#pop" name="MinSize">
-				<DetectChar attribute="Normal" context="#pop" char=")" />
+			<context attribute="Normal" lineEndContext="#pop" name="DataType">
+				<AnyChar attribute="Number" context="#stay" String="0123456789KMG" />
+				<AnyChar attribute="Normal" context="#pop" String=" )" />
 			</context>
 			<context attribute="Normal" lineEndContext="#pop" name="Constraint">
 				<keyword attribute="Keyword" context="#pop" String="constraints" />
@@ -60,6 +64,7 @@
 		
 		<itemDatas>
 			<itemData name="Normal" defStyleNum="dsNormal"/>
+			<itemData name="Symbol" defStyleNum="dsControlFlow"/>
 			<itemData name="String" defStyleNum="dsString"/>
 			<itemData name="Number" defStyleNum="dsDecVal"/>
 			<itemData name="Keyword" defStyleNum="dsKeyword"/>
