@@ -524,7 +524,7 @@ bool spis::spisc::generate(Database *db, const QString &filename, const QDir &di
 		if (t->primaryKey().isEmpty())
 		{
 			out.write("      fprintf(stderr, \"SPIS[Generated]: Sorry, but the table '" + t->name() + "' does not contain a primary key. You\\n\"\n");
-			out.write("                      \"                cannot remove rows from a table without a primary key.\\n\");\n");
+			out.write("                      \"                 cannot remove rows from a table without a primary key.\\n\");\n");
 			out.write("      return false;\n");
 		}
 		else
@@ -538,7 +538,7 @@ bool spis::spisc::generate(Database *db, const QString &filename, const QDir &di
 		if (t->primaryKey().isEmpty())
 		{
 			out.write("      fprintf(stderr, \"SPIS[Generated]: Sorry, but the table '" + t->name() + "' does not contain a primary key. You\\n\"\n");
-			out.write("                      \"                cannot remove rows from a table without a primary key.\\n\");\n");
+			out.write("                      \"                 cannot remove rows from a table without a primary key.\\n\");\n");
 			out.write("      return false;\n");
 		}
 		else

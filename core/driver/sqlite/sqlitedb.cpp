@@ -71,7 +71,7 @@ bool SQLiteDatabase::connect()
 	else
 	{
 		qWarning() << "SPIS[SQLite]: Encoding" << enc << "is currently not supported. Please only report if";
-		qWarning() << "             the encoding is listet at http://www.sqlite.org/pragma.html#pragma_encoding";
+		qWarning() << "              the encoding is listet at http://www.sqlite.org/pragma.html#pragma_encoding";
 		enc = "";
 	}
 	if (!enc.isEmpty())
