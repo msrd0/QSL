@@ -21,7 +21,6 @@ Before contributing please read the [contribution guidelines](./Contribution.md)
 
 SPIS language:
 
-- support default values for columns (especially those with notnull constraint)
 - add an option to use another name in spis than in the db itself (makes renaming easier,
   currently the old name will be dropped and the new name created)
 
@@ -34,6 +33,10 @@ Core/Driver library:
 Drivers:
 
 - MySQL support (see [mysql](https://github.com/msrd0/SPIS/tree/mysql) branch)
+
+SPISC:
+
+- respect default values in ctor for `<table>_t` for insert queries
 
 ### future
 
