@@ -46,6 +46,7 @@
 				<RegExpr attribute="Number" context="#stay" String=" -?\d+(\.\d+)?( |$)" />
 				<RegExpr attribute="Number" context="#stay" String=" \d+-\d+-\d+( |$)" />
 				<RegExpr attribute="Number" context="#stay" String=" \d+:\d+:\d+( |$)" />
+				<RegExpr attribute="Extension" context="#stay" String="\+(&quot;[^&quot;]*&quot;|[^\s\],]+)(?=[,\]])" />
 				<DetectChar attribute="Keyword" context="Constraint" char="!" />
 			</context>
 			<context attribute="Normal" lineEndContext="#pop" name="DataType">
@@ -69,6 +70,7 @@
 			<itemData name="Number" defStyleNum="dsDecVal"/>
 			<itemData name="Keyword" defStyleNum="dsKeyword"/>
 			<itemData name="DataType" defStyleNum="dsDataType"/>
+			<itemData name="Extension" defStyleNum="dsExtension"/>
 			<itemData name="Comment" defStyleNum="dsComment"/>
 		</itemDatas>
 		
