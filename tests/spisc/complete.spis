@@ -54,3 +54,9 @@ table a_fk
 - uint(64) f_pk !primarykey
 - text name
 - &datatypes.d_pk datatype
+
+# this table tests the use of different sql names
+table names
+- uint id(pk) !primarykey
+- text user[username, email] !notnull
+- text addr[+address] !notnull
