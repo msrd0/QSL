@@ -257,6 +257,8 @@ Database* spis::spisc::parse(QIODevice *in, const QString &filename, bool qtype)
 			if (!tbl)
 				error("Defining a field without a table")
 			line = line.mid(1).trimmed();
+			
+			// parse type
 			if (line.indexOf(' ') < 0)
 				error("Syntax error")
 			QByteArray type = line.mid(0, line.indexOf(' '));
@@ -270,6 +272,8 @@ Database* spis::spisc::parse(QIODevice *in, const QString &filename, bool qtype)
 				// TODO check that the table has the references column
 			}
 			line = line.mid(type.length()).trimmed();
+			
+			// parse name
 			QByteArray name;
 			if (line.startsWith('"'))
 			{
@@ -280,11 +284,95 @@ Database* spis::spisc::parse(QIODevice *in, const QString &filename, bool qtype)
 			}
 			else
 			{
-				name = line.mid(0, line.indexOf(' ')); // indexOf can return -1 but this will match the entire string so this is fine
+				name = line.mid(0, QString::fromUtf8(line).indexOf(QRegularExpression("[ \(\[]"))); // indexOf can return -1 but this will match the entire string so this is fine
 				line = line.mid(name.length()).trimmed();
 			}
 			if (!checkName(name))
-				error("The name of the column (`%s') does not follow the identifier rules", name.data())
+				error("The name of the column (`%s') does not follow the identifier rules", name.data());
+			if (tbl->takenNames.contains(name))
+				error("The name of the column (`%s') was already assigned to another column", name.data());
+			tbl->takenNames.insert(name);
+			
+			Column f(name, type, qtype);
+			
+			// parse alternate names
+			if (line.startsWith('('))
+			{
+				f.enableRename(false);
+				
+				// TODO: if the next ')' is enquoted than this will lead to an error
+				int in = line.indexOf(')');
+				if (in < 0)
+					error("Missing closing `)'");
+				QByteArray p = line.mid(1, in-1);
+				line = line.mid(in+1).trimmed();
+				
+				// TODO: if the name contains a "," (which is not valid but may happen) and is enquoted this doesnt work
+				QList<QByteArray> names = p.split(',');
+				for (QByteArray &n : names)
+				{
+					n = n.trimmed();
+					
+					if (n.startsWith('"'))
+					{
+						if (!n.endsWith('"'))
+							error("Enquoted names may not contain a ',' (not implemented), fix it at " __FILE__ ":%d", __LINE__);
+						n = n.mid(1, n.size()-2);
+					}
+					
+					// TODO: do I need to check name here?
+					if (!checkName(n))
+						error("The name `%s' does not follow the identifier rules", n.data());
+					
+					if (tbl->takenNames.contains(n))
+						error("The name of the column (`%s') was already assigned to another column", n.data());
+					tbl->takenNames.insert(n);
+					f.addAlternateName(n);
+				}
+			}
+			else if (line.startsWith('['))
+			{
+				f.enableRename();
+				
+				// TODO: if the next ']' is enquoted than this will lead to an error
+				int in = line.indexOf(']');
+				if (in < 0)
+					error("Missing closing `]'");
+				QByteArray p = line.mid(1, in-1);
+				line = line.mid(in+1).trimmed();
+				
+				// TODO: if the name contains a "," (which is not valid but may happen) and is enquoted this doesnt work
+				QList<QByteArray> names = p.split(',');
+				for (QByteArray &n : names)
+				{
+					n = n.trimmed();
+					
+					if (n.startsWith('"'))
+					{
+						if (!n.endsWith('"'))
+							error("Enquoted names may not contain a ',' (not implemented), fix it at " __FILE__ ":%d", __LINE__);
+						n = n.mid(1, n.size()-2);
+					}
+					bool rename = n.startsWith('+');
+					if (rename)
+						n = n.mid(1);
+					// TODO: do I need to check name here?
+					if (!checkName(n))
+						error("The name `%s' does not follow the identifier rules", n.data());
+					
+					if (tbl->takenNames.contains(n))
+						error("The name of the column (`%s') was already assigned to another column", n.data());
+					tbl->takenNames.insert(n);
+					if (rename && f.nameInDb() != f.name())
+						error("This column already has another database name `%s'", n.data());
+					
+					f.addAlternateName(n);
+					if (rename)
+						f.setNameInDb(n);
+				}
+			}
+			
+			// parse default value
 			QVariant def;
 			if (line.startsWith('='))
 			{
@@ -321,7 +409,9 @@ Database* spis::spisc::parse(QIODevice *in, const QString &filename, bool qtype)
 				if (def.isNull())
 					error("Default value provided in wrong format")
 			}
-			Column f(name, type, qtype, def);
+			f.setDefault(def);
+			
+			// parse constraints
 			while (!line.isEmpty())
 			{
 				if (!line.startsWith('!'))

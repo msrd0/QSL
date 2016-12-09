@@ -70,14 +70,16 @@ static std::pair<QByteArray, bool> toCppType(const QByteArray &t, uint32_t minsi
 	}
 }
 
-Column::Column(const QByteArray &name, const QByteArray &type, bool qtype, QVariant def) 
-	: _name(name)
-	, _def(def)
+Column::Column(const QByteArray &name, const QByteArray &type, bool qtype)
 {
-	_type = type;
-	if (_type.contains('('))
+	d->name = name;
+	d->nameInDb = name;
+	d->def = QVariant(); // invalid qvariant
+	
+	d->type = type;
+	if (d->type.contains('('))
 	{
-		QByteArray ms = _type.mid(_type.indexOf('(')+1, _type.indexOf(')')-_type.indexOf('(')-1);
+		QByteArray ms = d->type.mid(d->type.indexOf('(')+1, d->type.indexOf(')')-d->type.indexOf('(')-1);
 		uint factor = 1;
 		if (ms.endsWith("K"))
 			factor = 1e3;
@@ -87,11 +89,11 @@ Column::Column(const QByteArray &name, const QByteArray &type, bool qtype, QVari
 			factor = 1e9;
 		if (factor != 1)
 			ms = ms.mid(0, ms.size()-1);
-		_minsize = ms.toUInt() * factor;
+		d->minsize = ms.toUInt() * factor;
 		
-		_type = _type.mid(0, _type.indexOf('('));
+		d->type = d->type.mid(0, d->type.indexOf('('));
 	}
-	auto ct = toCppType(_type, _minsize, qtype);
+	auto ct = toCppType(d->type, d->minsize, qtype);
 	_ctype = ct.first;
 	_cref  = ct.second;
 }
@@ -100,7 +102,7 @@ int Column::setConstraint(const QByteArray &constraint)
 {
 	static QMetaEnum e = SPIS::staticMetaObject.enumerator(SPIS::staticMetaObject.indexOfEnumerator("ColumnConstraint"));
 	int val = e.keyToValue(constraint);
-	_constraints |= val;
+	d->constraints |= val;
 	return val;
 }
 
