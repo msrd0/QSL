@@ -63,6 +63,11 @@ public:
 	 * `constraintsChanged()`.
 	 */
 	QList<SPISColumn> typeChanged() const { return _typeChanged; }
+	/**
+	 * Returns the columns that were present in both tables `a` and `b` but whose default
+	 * values have changed.
+	 */
+	QList<SPISColumn> defChanged() const { return _defChanged; }
 	
 protected:
 	virtual void computeDiff();
@@ -71,6 +76,7 @@ protected:
 	QList<SPISColumn> _removedCols;
 	QList<ConstraintDifference> _constraintsChanged;
 	QList<SPISColumn> _typeChanged;
+	QList<SPISColumn> _defChanged;
 	
 private:
 	SPISTable _a, _b;

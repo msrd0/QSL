@@ -26,22 +26,15 @@ class SPIS_PUBLIC MutableColumn : public SPISColumn
 public:
 	/// Creates a new column with the given name, type, type's minsize and, if given, constraints
 	/// (see `SPIS::ColumnConstraint`).
-	constexpr MutableColumn(const char* name, const char* type, uint32_t minsize, uint8_t constraints = 0)
-		: SPISColumn(name, type, minsize, constraints)
-	{
-	}
-	
-	/// Creates a new column with the given name, type, type's minsize and, if given, constraints
-	/// (see `SPIS::ColumnConstraint`).
-	MutableColumn(const QByteArray &name, const QByteArray &type, uint32_t minsize, uint8_t constraints = 0)
-		: SPISColumn(name, type, minsize, constraints)
+	MutableColumn(const QByteArray &name, const QByteArray &type, uint32_t minsize, const QVariant &def, uint8_t constraints = SPIS::none)
+		: SPISColumn(name, type, minsize, constraints, def)
 	{
 	}
 	
 	/** Adds the given constraint to the constraints. This method has no effect if the constraint is already present. */
 	void addConstraint(uint8_t constraint)
 	{
-		_constraints |= constraint;
+		d->constraints |= constraint;
 	}
 	/** Adds the given constraint to the constraints. This method has no effect if the constraint is already present. */
 	void addConstraint(SPIS::ColumnConstraint constraint)
@@ -200,7 +193,8 @@ public:
 									  const QList<SPISColumn> &cols,
 									  const SPISFilter &filter,
 									  const QList<SPISJoinTable> &join = QList<SPISJoinTable>(),
-									  int limit = -1, bool asc = true) = 0;
+									  int limit = -1, bool asc = true,
+									  const QByteArray &orderBy = QByteArray()) = 0;
 	/**
 	 * Selects all columns from the table joining the given tables that apply to
 	 * the given filter. If `limit` is greater than 0, a maximum of `limit` rows
@@ -209,7 +203,8 @@ public:
 	virtual SelectResult* selectTable(const SPISTable &tbl,
 									  const SPISFilter &filter,
 									  const QList<SPISJoinTable> &join = QList<SPISJoinTable>(),
-									  int limit = -1, bool asc = true);
+									  int limit = -1, bool asc = true,
+									  const QByteArray &orderBy = QByteArray());
 	
 	/**
 	 * Inserts `values.size` rows into the given table, while for each row the

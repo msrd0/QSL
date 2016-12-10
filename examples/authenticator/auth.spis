@@ -4,6 +4,6 @@ charset "utf-8"
 # an example table to store users with their name, mail and password
 table "users"
 - uint(64) "id" !primarykey
-- text "name" !unique !notnull
-- text "mail" !unique !notnull
-- password "pw" !notnull
+- text "name"[user, +username] !unique !notnull
+- text "email"(mail) !unique !notnull
+- password "pw"[+password] !notnull

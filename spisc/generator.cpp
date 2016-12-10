@@ -3,7 +3,9 @@
 #include "parser/database.h"
 #include "parser/table.h"
 
+#include <QDateTime>
 #include <QFile>
+#include <QMetaType>
 #include <QSet>
 
 bool spis::spisc::generate(Database *db, const QString &filename, const QDir &dir, bool qtype)
@@ -158,7 +160,7 @@ bool spis::spisc::generate(Database *db, const QString &filename, const QDir &di
 		{
 			if (f.type() == "password")
 			{
-				out.write("      , _" + f.name() + "(PasswordEntry{result->value(prefix + \"" + f.name() + "\").toByteArray()})\n");
+				out.write("      , _" + f.name() + "(PasswordEntry{result->value(prefix + QStringLiteral(\"" + f.name() + "\")).toByteArray()})\n");
 				continue;
 			}
 			
@@ -166,19 +168,19 @@ bool spis::spisc::generate(Database *db, const QString &filename, const QDir &di
 			{
 				out.write("      , _" + f.name() + "(parent->db()->driver()->to" + (qtype ? "Q" : "Chrono") +
 						  (f.type() == "date" ? "Date" : (f.type() == "time" ? "Time" : "DateTime")) +
-						  "(result->value(prefix + \"" + f.name() + "\")))\n");
+						  "(result->value(prefix + QStringLiteral(\"" + f.name() + "\"))))\n");
 				continue;
 			}
 			
 			if (f.type().startsWith('&'))
 			{
 				const QByteArray table = f.type().mid(1, f.type().indexOf('.') - 1);
-				out.write("      , _" + f.name() + "(db, &db->_tbl_" + table + ", result, prefix + \"spis_fkey_" + f.name() + "_\")\n");
+				out.write("      , _" + f.name() + "(db, &db->_tbl_" + table + ", result, prefix + QStringLiteral(\"spis_fkey_" + f.name() + "_\"))\n");
 				continue;
 			}
 			
 			
-			out.write("      , _" + f.name() + "(result->value(prefix + \"" + f.name() + "\")\n");
+			out.write("      , _" + f.name() + "(result->value(prefix + QStringLiteral(\"" + f.name() + "\"))\n");
 			if (f.type() == "int")
 			{
 				if (f.minsize() >= 0 && f.minsize() < 64)
@@ -259,11 +261,49 @@ bool spis::spisc::generate(Database *db, const QString &filename, const QDir &di
 		for (Column &f : t->fields())
 		{
 			out.write("  private:\n");
-			out.write("    static constexpr const SPISColumn _col_" + f.name() + " = SPISColumn(\"" + f.name() + "\", \"" + f.type() + "\", "
-					  + QByteArray::number(f.minsize()) + ", " + QByteArray::number(f.constraints()) + ");\n");
-			out.write("    static constexpr SPISColumn col_" + f.name() + "()\n");
+			out.write("    static SPISColumn col_" + f.name() + "()\n");
 			out.write("    {\n");
-			out.write("      return _col_" + f.name() + ";\n");
+			out.write("      static const QSet<QByteArray> alternateNames({\n");
+			for (QByteArray b : f.alternateNames())
+				out.write("        \"" + b + "\",\n");
+			out.write("        \"" + f.name() + "\"\n");
+			out.write("      });\n");
+			out.write("      static const SPISColumn col(\"" + f.name() + "\", \"" + f.nameInDb() + "\", alternateNames, " + (f.rename() ? "true" : "false")
+					  + ", \"" + f.type() + "\", " + QByteArray::number(f.minsize()) + ", " + QByteArray::number(f.constraints()) + ", ");
+			if (!f.def().isValid() || f.def().isNull())
+				out.write("QVariant()");
+			else
+			{
+				auto type = f.def().type();
+				if (type == QMetaType::QDate)
+				{
+					QDate d = f.def().toDate();
+					out.write("spisvariant(QDate(" + QByteArray::number(d.year()) + "," + QByteArray::number(d.month()) + "," + QByteArray::number(d.day()) + "))");
+				}
+				else if (type == QMetaType::QTime)
+				{
+					QTime t = f.def().toTime();
+					out.write("spisvariant(QTime(" + QByteArray::number(t.hour()) + "," + QByteArray::number(t.minute()) + "," + QByteArray::number(t.second()) + "))");
+				}
+				else if (type == QMetaType::QDateTime)
+				{
+					QDateTime dt = f.def().toDateTime();
+					QDate d = dt.date();
+					QTime t = dt.time();
+					out.write("spisvariant(QDateTime(QDate(" + QByteArray::number(d.year()) + "," + QByteArray::number(d.month()) + "," + QByteArray::number(d.day())
+							  + "),QTime(" + QByteArray::number(t.hour()) + "," + QByteArray::number(t.minute()) + "," + QByteArray::number(t.second()) + ")))");
+				}
+				else if (type == QMetaType::Int || type == QMetaType::Long || type == QMetaType::LongLong || type == QMetaType::Short)
+					out.write("spisvariant((qlonglong)" + QByteArray::number(f.def().toLongLong()) + "L)");
+				else if (type == QMetaType::UInt || type == QMetaType::ULong || type == QMetaType::ULongLong || type == QMetaType::UShort)
+					out.write("spisvariant((qulonglong)" + QByteArray::number(f.def().toULongLong()) + "L)");
+				else if (type == QMetaType::Float || type == QMetaType::Double)
+					out.write("spisvariant(" + QByteArray::number(f.def().toDouble()) + ")");
+				else
+					out.write("spisvariant(QStringLiteral(\"" + f.def().toString().toUtf8() + "\"))");
+			}
+			out.write(");\n");
+			out.write("      return col;\n");
 			out.write("    }\n");
 			out.write("    " + f.cppType() + " _" + f.name() + ";\n");
 			out.write("  public:\n");
@@ -370,7 +410,7 @@ bool spis::spisc::generate(Database *db, const QString &filename, const QDir &di
 		out.write("      applyFilter(f);\n");
 		out.write("    }\n\n");
 		
-		// limit, asc, desc
+		// limit, asc, desc, orderBy
 		out.write("  public:\n");
 		out.write("    " + t->name() + "_q& limit(int l)\n");
 		out.write("    {\n");
@@ -385,6 +425,11 @@ bool spis::spisc::generate(Database *db, const QString &filename, const QDir &di
 		out.write("    " + t->name() + "_q& desc()\n");
 		out.write("    {\n");
 		out.write("      applyDesc();\n");
+		out.write("      return *this;\n");
+		out.write("    }\n");
+		out.write("    " + t->name() + "_q& orderBy(const QByteArray &col)\n");
+		out.write("    {\n");
+		out.write("      applyOrderBy(col);\n");
 		out.write("      return *this;\n");
 		out.write("    }\n\n");
 		
@@ -490,7 +535,7 @@ bool spis::spisc::generate(Database *db, const QString &filename, const QDir &di
 		if (t->primaryKey().isEmpty())
 		{
 			out.write("      fprintf(stderr, \"SPIS[Generated]: Sorry, but the table '" + t->name() + "' does not contain a primary key. You\\n\"\n");
-			out.write("                      \"                cannot remove rows from a table without a primary key.\\n\");\n");
+			out.write("                      \"                 cannot remove rows from a table without a primary key.\\n\");\n");
 			out.write("      return false;\n");
 		}
 		else
@@ -504,7 +549,7 @@ bool spis::spisc::generate(Database *db, const QString &filename, const QDir &di
 		if (t->primaryKey().isEmpty())
 		{
 			out.write("      fprintf(stderr, \"SPIS[Generated]: Sorry, but the table '" + t->name() + "' does not contain a primary key. You\\n\"\n");
-			out.write("                      \"                cannot remove rows from a table without a primary key.\\n\");\n");
+			out.write("                      \"                 cannot remove rows from a table without a primary key.\\n\");\n");
 			out.write("      return false;\n");
 		}
 		else
@@ -515,7 +560,7 @@ bool spis::spisc::generate(Database *db, const QString &filename, const QDir &di
 			out.write("      for (auto it = begin; it != end; it++)\n");
 			out.write("      {\n");
 			out.write("        " + t->name() + "_t row = *it;\n");
-			out.write("        pks[i] = row." + t->primaryKey() + "();\n");
+			out.write("        pks[i] = spisvariant(row." + t->primaryKey() + "());\n");
 			out.write("        i++;\n");
 			out.write("      }\n");
 			out.write("      return _tbl->db()->db()->deleteFromTable(*_tbl, pks);\n");

@@ -6,17 +6,20 @@
 
 namespace spis {
 namespace driver {
+class SQLiteDriver;
 
 class SPIS_PRIVATE SQLiteDatabase : public QtDatabase
 {
 public:
-	SQLiteDatabase(const char *charset, bool usevar);
+	SQLiteDatabase(SQLiteDriver *driver, const char *charset, bool usevar);
 	
 	virtual bool connect() override;
 	
 	virtual bool ensureTable(const SPISTable &tbl) override;
 	
-	virtual SelectResult* selectTable(const SPISTable &tbl, const QList<SPISColumn> &cols, const SPISFilter &filter, const QList<SPISJoinTable> &join, int limit, bool asc) override;
+	virtual SelectResult* selectTable(const SPISTable &tbl, const QList<SPISColumn> &cols,
+									  const SPISFilter &filter, const QList<SPISJoinTable> &join,
+									  int limit, bool asc, const QByteArray &orderBy) override;
 	
 	virtual bool insertIntoTable(const SPISTable &tbl, const QList<SPISColumn> &cols, const QVector<QVector<QVariant>> &rows) override;
 	
@@ -37,6 +40,8 @@ protected:
 	
 private:
 	bool needsEnquote(const QByteArray &type);
+	
+	SQLiteDriver *driver;
 };
 
 }

@@ -19,7 +19,8 @@ int main(int argc, char **argv)
 	
 	QCommandLineParser parser;
 	parser.setApplicationDescription("Dump SPIS for an existing database");
-	parser.addHelpOption();
+	QCommandLineOption helpOption(QStringList() << "?" << "help", "Display this help.");
+	parser.addOption(helpOption);
 	parser.addVersionOption();
 	QCommandLineOption driverOption(QStringList() << "d" << "driver", "The driver used to connect to the database", "driver", "psql");
 	parser.addOption(driverOption);
@@ -37,6 +38,11 @@ int main(int argc, char **argv)
 	parser.addOption(outputOption);
 	parser.addPositionalArgument("name", "The name (or filename) of the database", "<db-name>");
 	parser.process(app);
+	if (parser.isSet(helpOption))
+	{
+		parser.showHelp(0);
+		return 0;
+	}
 	QStringList args = parser.positionalArguments();
 	if (args.size() != 1)
 	{
@@ -121,7 +127,7 @@ int main(int argc, char **argv)
 		{
 			int minsize = col.minsize();
 			if (minsize == -1)
-				fprintf(out, "- %s \"%s\"", col.type(), col.name().data());
+				fprintf(out, "- %s \"%s\"", col.type().data(), col.name().data());
 			else
 			{
 				const char* suffix = "";
@@ -140,7 +146,37 @@ int main(int argc, char **argv)
 					suffix = "K";
 					minsize /= 1e3;
 				}
-				fprintf(out, "- %s(%d%s) \"%s\"", col.type(), minsize, suffix, col.name().data());
+				fprintf(out, "- %s(%d%s) \"%s\"", col.type().data(), minsize, suffix, col.name().data());
+			}
+			
+			if (col.def().isValid() && !col.def().isNull())
+			{
+				auto type = col.def().type();
+				if (type == QMetaType::Int || type == QMetaType::Long || type == QMetaType::LongLong || type == QMetaType::Short)
+					fprintf(out, " = %lld", col.def().toLongLong());
+				else if (type == QMetaType::UInt || type == QMetaType::ULong || type == QMetaType::ULongLong || type == QMetaType::UShort)
+					fprintf(out, " = %llu", col.def().toULongLong());
+				else if (type == QMetaType::Float || type == QMetaType::Double)
+					fprintf(out, " = %f", col.def().toDouble());
+				else if (type == QMetaType::QDate)
+				{
+					QDate d = col.def().toDate();
+					fprintf(out, "= %d-%d-%d", d.year(), d.month(), d.day());
+				}
+				else if (type == QMetaType::QTime)
+				{
+					QTime t = col.def().toTime();
+					fprintf(out, "= %d:%d:%d", t.hour(), t.minute(), t.second());
+				}
+				else if (type  == QMetaType::QDateTime)
+				{
+					QDateTime dt = col.def().toDateTime();
+					QDate d = dt.date();
+					QTime t = dt.time();
+					fprintf(out, "= \"%d-%d-%d %d:%d:%d\"", d.year(), d.month(), d.day(), t.hour(), t.minute(), t.second());
+				}
+				else
+					fprintf(out, " = \"%s\"", col.def().toString().toUtf8().data());
 			}
 			
 			static const QMetaObject obj = SPIS::staticMetaObject;

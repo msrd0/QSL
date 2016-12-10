@@ -5,4 +5,4 @@ usevar
 # a very easy table
 table "foo"
 - uint "id" !primarykey !unique !notnull
-- char(50) "bar" !unique
+- char(50) "bar" = "abc" !notnull !unique

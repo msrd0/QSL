@@ -45,7 +45,7 @@ public:
 	/// Returns all columns in this table.
 	QList<SPISColumn> columns() const { return _columns.values(); }
 	/// Returns the column with the given name.
-	SPISColumn column(const QByteArray &name) const { return _columns.value(name, SPISColumn("invalid", "invalid", -1, SPIS::none)); }
+	SPISColumn column(const QByteArray &name) const { return _columns.value(name, SPISColumn("invalid", "invalid", -1, SPIS::none, QVariant())); }
 	
 private:
 	QByteArray _name;

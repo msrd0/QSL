@@ -11,35 +11,29 @@ namespace spis {
 namespace spisc {
 class Database;
 
-class Column
+class Column : public SPISColumn
 {	
 public:
 	Column(const QByteArray &name, const QByteArray &type, bool qtype = false);
 	
-	QByteArray name() const { return _name; }
-	QByteArray type() const { return _type; }
-	int minsize() const { return _minsize; }
 	QByteArray cppType() const { return _ctype; }
 	bool cppReference() const { return _cref; }
 	QByteArray cppArgType() const { return (_cref ? "const " + cppType() + "&" : cppType()); }
-	uint8_t constraints() const { return _constraints; }
 	
-	void setConstraint(SPIS::ColumnConstraint constraint) { _constraints |= constraint; }
+	void setConstraint(SPIS::ColumnConstraint constraint) { d->constraints |= constraint; }
 	int setConstraint(const QByteArray &constraint);
 	
+	void setDefault(const QVariant &def) { d->def = def; }
+	
+	void enableRename(bool flag = true) { d->rename = flag; }
+	void setNameInDb(const QByteArray &name) { d->nameInDb = name; }
+	void addAlternateName(const QByteArray &name) { d->alternateNames.insert(name); }
+	
 private:
-	/// The name of the field.
-	QByteArray _name;
-	/// The type of the field.
-	QByteArray _type;
-	/// The minimum required size of the type, or the maximum value if not specified.
-	int _minsize = -1;
 	/// The type of the field as a C++ typename.
 	QByteArray _ctype;
 	/// Whether the type should be passed via const reference.
 	bool _cref;
-	/// The constraints for the field.
-	uint8_t _constraints = SPIS::none;
 };
 
 class Table
@@ -55,6 +49,8 @@ public:
 	void setPrimaryKey(const QByteArray &pk) { _pk = pk; }
 	
 	void addField(const Column &field);
+	
+	QSet<QByteArray> takenNames;
 	
 private:
 	/// The database containing this table.
