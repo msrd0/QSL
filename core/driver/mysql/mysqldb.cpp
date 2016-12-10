@@ -159,7 +159,7 @@ bool MySQLDatabase::ensureTableImpl(const SPISTable &tbl)
 		for (auto c : tbl.columns())
 			if (c.type()[0] == '&')
 			{
-				QByteArray t = c.type()+1;
+				QByteArray t = c.type().mid(1);
 				query += ", FOREIGN KEY (`" + c.name() + "`) REFERENCES `" + t.mid(0, t.indexOf('.')) + "`(`" + t.mid(t.indexOf('.')+1) + "`)";
 			}
 		query += ")";
