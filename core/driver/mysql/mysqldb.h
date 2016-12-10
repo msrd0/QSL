@@ -14,7 +14,8 @@ public:
 	
 	virtual bool ensureTable(const SPISTable &tbl) override;
 	
-	virtual SelectResult* selectTable(const SPISTable &tbl, const QList<SPISColumn> &cols, const SPISFilter &filter, const QList<SPISJoinTable> &join, int limit, bool asc) override;
+	virtual SelectResult* selectTable(const SPISTable &tbl, const QList<SPISColumn> &cols, const SPISFilter &filter,
+									  const QList<SPISJoinTable> &join, int limit, bool asc, const QByteArray &order) override;
 	
 	virtual bool insertIntoTable(const SPISTable &tbl, const QList<SPISColumn> &cols, const QVector<QVector<QVariant>> &rows) override;
 	

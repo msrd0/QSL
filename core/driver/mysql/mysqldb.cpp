@@ -336,7 +336,7 @@ QString MySQLDatabase::filterSQL(const SPISTable &tbl, const SPISFilter &filter)
 }
 
 SelectResult* MySQLDatabase::selectTable(const SPISTable &tbl, const QList<SPISColumn> &cols, const SPISFilter &filter,
-										 const QList<SPISJoinTable> &join, int limit, bool asc)
+										 const QList<SPISJoinTable> &join, int limit, bool asc, const QByteArray &order)
 {
 	QSqlQuery q(db());
 	QString qq = "SELECT ";
