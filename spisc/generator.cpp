@@ -263,7 +263,13 @@ bool spis::spisc::generate(Database *db, const QString &filename, const QDir &di
 			out.write("  private:\n");
 			out.write("    static SPISColumn col_" + f.name() + "()\n");
 			out.write("    {\n");
-			out.write("      static SPISColumn col(\"" + f.name() + "\", \"" + f.type() + "\", " + QByteArray::number(f.minsize()) + ", " + QByteArray::number(f.constraints()) + ", ");
+			out.write("      static const QSet<QByteArray> alternateNames({\n");
+			for (QByteArray b : f.alternateNames())
+				out.write("        \"" + b + "\",\n");
+			out.write("        \"" + f.name() + "\"\n");
+			out.write("      });\n");
+			out.write("      static const SPISColumn col(\"" + f.name() + "\", \"" + f.nameInDb() + "\", alternateNames, " + (f.rename() ? "true" : "false")
+					  + ", \"" + f.type() + "\", " + QByteArray::number(f.minsize()) + ", " + QByteArray::number(f.constraints()) + ", ");
 			if (!f.def().isValid() || f.def().isNull())
 				out.write("QVariant()");
 			else
