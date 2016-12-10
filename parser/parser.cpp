@@ -11,11 +11,19 @@ using namespace spis::spisc;
 #define error(...) \
 	{ \
 	if (!filename.isEmpty()) \
-		fprintf(stderr, "%s:%d: ", qPrintable(filename), ll); \
+		fprintf(stderr, "%s:%d: ERROR: ", qPrintable(filename), ll); \
 	fprintf(stderr, __VA_ARGS__); \
 	fprintf(stderr, "\n"); \
 	if (db) delete db; \
 	return 0; \
+	}
+
+#define warning(...) \
+	{ \
+	if (!filename.isEmpty()) \
+		fprintf(stderr, "%s:%d: WARNING: ", qPrintable(filename), ll); \
+	fprintf(stderr, __VA_ARGS__); \
+	fprintf(stderr, "\n"); \
 	}
 
 // from http://en.cppreference.com/w/cpp/keyword
@@ -418,7 +426,8 @@ Database* spis::spisc::parse(QIODevice *in, const QString &filename, bool qtype)
 					error("Syntax error near %s", line.mid(0,10).data())
 				line = line.mid(1);
 				QByteArray constraint = line.mid(0, line.indexOf(' '));
-				if (f.setConstraint(constraint) == SPIS::primarykey)
+				int con = f.setConstraint(constraint);
+				if (con == SPIS::primarykey)
 				{
 					if (!tbl->primaryKey().isEmpty())
 						error("A table may only have one primary key, but two columns with primary key found: %s and %s", tbl->primaryKey().data(), f.name().data());
@@ -428,6 +437,8 @@ Database* spis::spisc::parse(QIODevice *in, const QString &filename, bool qtype)
 					// pkey implies unique
 					f.setConstraint(SPIS::unique);
 				}
+				if ((f.type() == "text" || f.type() == "blob") && con == SPIS::unique)
+					warning("Not all drivers support unique indexes on text/blob fields; consider using char/byte instead");
 				line = line.mid(constraint.length()).trimmed();
 			}
 			tbl->addField(f);
