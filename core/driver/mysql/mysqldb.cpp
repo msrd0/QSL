@@ -364,9 +364,9 @@ SelectResult* MySQLDatabase::selectTable(const SPISTable &tbl, const QList<SPISC
 	QString fsql = filterSQL(tbl, filter);
 	if (!fsql.isEmpty())
 		qq += " WHERE " + fsql;
-	if (!tbl.primaryKey().isEmpty())
+	if (!order.isEmpty() || !tbl.primaryKey().isEmpty())
 	{
-		qq += " ORDER BY `" + tbl.primaryKey() + "`";
+		qq += " ORDER BY `" + tbl.name() + "`.`" + (order.isEmpty() ? tbl.primaryKey() : order) + "`";
 		if (asc)
 			qq += " ASC";
 		else
