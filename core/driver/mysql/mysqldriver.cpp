@@ -8,7 +8,7 @@ using namespace std::chrono;
 
 Database* MySQLDriver::newDatabase(const char *charset, bool usevar)
 {
-	return new MySQLDatabase(charset, usevar);
+	return new MySQLDatabase(this, charset, usevar);
 }
 
 

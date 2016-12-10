@@ -1,4 +1,5 @@
 #include "mysqldb.h"
+#include "mysqldriver.h"
 #include "mysqltypes.h"
 #include "driver/diff.h"
 #include "spisfilter.h"
@@ -29,8 +30,9 @@ static void dumpError(const QSqlQuery &q, const char* file, int line)
 }
 #define DUMP_ERROR(q) dumpError((q), __FILE__, __LINE__);
 
-MySQLDatabase::MySQLDatabase(const char *charset, bool usevar)
+MySQLDatabase::MySQLDatabase(MySQLDriver *driver, const char *charset, bool usevar)
 	: QtDatabase(charset, usevar, "QMYSQL")
+	, driver(driver)
 {
 }
 
@@ -74,7 +76,7 @@ void MySQLDatabase::loadTableInfo()
 			else if (columns.value("Key").toString() == "UNI")
 				constraints |= SPIS::unique;
 			auto type = MySQLTypes::fromSQL(columns.value("Type").toByteArray());
-			SPISColumn col(columns.value("Field").toByteArray(), type.first, type.second, constraints); // TODO: types
+			SPISColumn col(columns.value("Field").toByteArray(), type.first, type.second, constraints, columns.value("Default"));
 			cols << col;
 		}
 		while (columns.next());
@@ -106,6 +108,41 @@ static QString mysqlCharset(const QByteArray &charset)
 	return "";
 }
 
+QString MySQLDatabase::typeDefinition(const SPISTable &tbl, const SPISColumn &col)
+{
+	QString td = "`" + col.name() + "` " + MySQLTypes::fromSPIS(tbl.db(), col.type(), col.minsize(), usevar());
+	if ((col.constraints() & SPIS::notnull) == SPIS::notnull)
+		td += " NOT NULL";
+	if ((col.constraints() & SPIS::unique) == SPIS::unique)
+	{
+		if (strcoll(col.type(), "text") == 0 || strcoll(col.type(), "blob") == 0)
+			qWarning() << "SPIS[MySQL]: Column" << col.name() << "has a unique constraint but mysql doesn't support indexes on text/blob fields";
+		else
+			td += " UNIQUE";
+	}
+	if (col.def().isValid() && !col.def().isNull())
+	{
+		td += " DEFAULT ";
+		if (col.type() == "date")
+			td += "'" + driver->fromQDate(col.def().toDate()).toString() + "'";
+		else if (col.type() == "time")
+			td += "'" + driver->fromQTime(col.def().toTime()).toString() + "'";
+		else if (col.type() == "datetime")
+			td += "'" + driver->fromQDateTime(col.def().toDateTime()).toString() + "'";
+		else if (needsEnquote(col.type()))
+			td += "'" + col.def().toString().replace("'", "''") + "'";
+		else
+		{
+#ifdef CMAKE_DEBUG
+			if (QRegularExpression("[^0-9a-zA-Z\\.,\\-+]").match(col.def().toString()).hasPartialMatch())
+				qDebug(__FILE__":%d: Though needsEnquote() returned false the default value contains non-alphanumerical chars, type is: %d", __LINE__, col.def().type());
+#endif
+			td += col.def().toString().replace(QRegularExpression("[^0-9a-zA-Z\\.,\\-+]"), "");
+		}
+	}
+	return td;
+}
+
 bool MySQLDatabase::ensureTableImpl(const SPISTable &tbl)
 {
 	if (!containsTable(tbl.name()))
@@ -115,17 +152,7 @@ bool MySQLDatabase::ensureTableImpl(const SPISTable &tbl)
 		{
 			if (i != 0)
 				query += ",";
-			auto c = tbl.columns()[i];
-			query += "`" + c.name() + "` " + MySQLTypes::fromSPIS(tbl.db(), c.type(), c.minsize(), usevar());
-			if ((c.constraints() & SPIS::notnull) == SPIS::notnull)
-				query += " NOT NULL";
-			if ((c.constraints() & SPIS::unique) == SPIS::unique)
-			{
-				if (strcoll(c.type(), "text") == 0 || strcoll(c.type(), "blob") == 0)
-					qWarning() << "SPIS[MySQL]: Column" << c.name() << "has a unique constraint but mysql doesn't support indexes on text/blob fields";
-				else
-					query += " UNIQUE";
-			}
+			query += typeDefinition(tbl, tbl.columns()[i]);
 		}
 		if (!tbl.primaryKey().isEmpty())
 			query += ", PRIMARY KEY (`" + tbl.primaryKey() + "`)";
@@ -157,17 +184,7 @@ bool MySQLDatabase::ensureTableImpl(const SPISTable &tbl)
 	for (auto col : diff.addedCols())
 	{
 		qi++;
-		query += "ADD COLUMN `" + col.name() + "` " + MySQLTypes::fromSPIS(tbl.db(), col.type(), col.minsize(), usevar());
-		if ((col.constraints() & SPIS::notnull) == SPIS::notnull)
-			query += " NOT NULL";
-		if ((col.constraints() & SPIS::unique) == SPIS::unique)
-		{
-			if (strcoll(col.type(), "text") == 0 || strcoll(col.type(), "blob") == 0)
-				qWarning() << "SPIS[MySQL]: Column" << col.name() << "has a unique constraint but mysql doesn't support indexes on text/blob fields";
-			else
-				query += " UNIQUE";
-		}
-		query += ",";
+		query += "ADD COLUMN " + typeDefinition(tbl, col) + ",";
 	}
 	
 	for (auto col : diff.removedCols())
@@ -176,18 +193,16 @@ bool MySQLDatabase::ensureTableImpl(const SPISTable &tbl)
 		query += "DROP COLUMN `" + col.name() + "`,";
 	}
 	
-	for (auto col : diff.typeChanged())
+	for (auto col : diff.typeChanged()) // TODO what if the new type is a fkey
 	{
 		qi++;
-		query += "MODIFY COLUMN `" + col.name() + "` " + MySQLTypes::fromSPIS(tbl.db(), col.type(), col.minsize(), usevar());
-		if ((col.constraints() & SPIS::unique) == SPIS::unique)
-		{
-			if (strcoll(col.type(), "text") == 0 || strcoll(col.type(), "blob") == 0)
-				qWarning() << "SPIS[MySQL]: Column" << col.name() << "has a unique constraint but mysql doesn't support indexes on text/blob fields";
-			else
-				query += " UNIQUE";
-		}
-		query += ",";
+		query += "MODIFY COLUMN " + typeDefinition(tbl, col) + ",";
+	}
+	
+	for (auto col : diff.defChanged())
+	{
+		qi++;
+		query += "MODIFY COLUMN " + typeDefinition(tbl, col) + ",";
 	}
 	
 	for (auto conDif : diff.constraintsChanged())
@@ -199,15 +214,7 @@ bool MySQLDatabase::ensureTableImpl(const SPISTable &tbl)
 				(conDif.constraintsRemoved() & SPIS::notnull) == SPIS::notnull)
 		{
 			qi++;
-			query += "MODIFY COLUMN `" + col.name() + "` " + MySQLTypes::fromSPIS(tbl.db(), type, col.minsize(), usevar());
-			if ((col.constraints() & SPIS::unique) == SPIS::unique)
-			{
-				if (type == "text" || type == "blob")
-					qWarning() << "SPIS[MySQL]: Column" << col.name() << "has a unique constraint but mysql doesn't support indexes on text/blob fields";
-				else
-					query += " UNIQUE";
-			}
-			query += ",";
+			query += "MODIFY COLUMN " + typeDefinition(tbl, col) + ",";
 			continue;
 		}
 		

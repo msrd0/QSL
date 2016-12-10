@@ -6,11 +6,12 @@
 
 namespace spis {
 namespace driver {
+class MySQLDriver;
 
 class SPIS_PRIVATE MySQLDatabase : public QtDatabase
 {
 public:
-	MySQLDatabase(const char *charset, bool usevar);
+	MySQLDatabase(MySQLDriver *driver, const char *charset, bool usevar);
 	
 	virtual bool ensureTable(const SPISTable &tbl) override;
 	
@@ -27,6 +28,7 @@ public:
 protected:
 	virtual void loadTableInfo() override;
 	
+	virtual QString typeDefinition(const SPISTable &tbl, const SPISColumn &col);
 	virtual bool ensureTableImpl(const SPISTable &tbl);
 	
 	static QString filterSQL(const SPISTable &tbl, const SPISFilter &filter);
@@ -36,6 +38,8 @@ protected:
 	
 private:
 	bool needsEnquote(const QByteArray &type);
+	
+	MySQLDriver *driver;
 };
 
 }
