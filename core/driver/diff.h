@@ -54,18 +54,17 @@ public:
 	/**
 	 * Returns the columns that were present in both tables `a` and `b` but whose constraints
 	 * were changed. For more information about constraints see `SPIS::ColumnConstraint`.
-	 * Note that these columns may also appear in `typeChanged()`.
+	 * Note that columns won't appear if already in `typeChanged()` or `defChanged()`.
 	 */
 	QList<ConstraintDifference> constraintsChanged() const { return _constraintsChanged; }
 	/**
 	 * Returns the columns that were present in both tables `a` and `b` but whose type (or
-	 * the minsize of the type) has changed. Note that these columns may also appear in
-	 * `constraintsChanged()`.
+	 * the minsize of the type) has changed.
 	 */
 	QList<SPISColumn> typeChanged() const { return _typeChanged; }
 	/**
 	 * Returns the columns that were present in both tables `a` and `b` but whose default
-	 * values have changed.
+	 * values have changed. Note that columns won't appear if already in `typeChanged()`.
 	 */
 	QList<SPISColumn> defChanged() const { return _defChanged; }
 	

@@ -110,10 +110,10 @@ void TableDiff::computeDiff()
 					&& !(typea == "text" && typeb == "password")))
 			_typeChanged << colb;
 		
-		else if (cola.constraints() != colb.constraints())
-			_constraintsChanged << ConstraintDifference(cola, colb);
-		
 		else if (cola.def().toString() != colb.def().toString())
 			_defChanged << colb;
+		
+		else if (cola.constraints() != colb.constraints())
+			_constraintsChanged << ConstraintDifference(cola, colb);
 	}
 }
