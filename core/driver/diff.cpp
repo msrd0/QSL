@@ -24,11 +24,19 @@ ConstraintDifference::ConstraintDifference(const SPISColumn &a, const SPISColumn
 }
 
 
-TableDiff::TableDiff(const SPISTable &a, const SPISTable &b)
+TableDiff::TableDiff(const SPISTable &a, SPISTable &b)
 	: _a(a)
-	, _b(b)
+	, _b(&b)
 {
 	computeDiff();
+}
+
+static SPISColumn findCol(const SPISColumn &col, const QHash<QByteArray, SPISColumn> &tbl)
+{
+	for (auto name : col.alternateNames())
+		if (tbl.contains(name))
+			return tbl.value(name, DUMMY_COLUMN);
+	return DUMMY_COLUMN;
 }
 
 void TableDiff::computeDiff()
@@ -41,20 +49,21 @@ void TableDiff::computeDiff()
 	
 	// added cols
 	for (QByteArray col : bcols.keys())
-		if (!acols.contains(col))
+		if (findCol(bcols.value(col, DUMMY_COLUMN), acols).type() == "dummy")
 			_addedCols << bcols.value(col, DUMMY_COLUMN);
 	// removed cols
 	for (QByteArray col : acols.keys())
-		if (!bcols.contains(col))
+		if (findCol(acols.value(col, DUMMY_COLUMN), bcols).type() == "dummy")
 			_removedCols << acols.value(col, DUMMY_COLUMN);
 	
 	// compare cols that are present in both tables
 	for (QByteArray colname : acols.keys())
 	{
-		if (!bcols.contains(colname))
-			continue;
 		SPISColumn cola = acols.value(colname, DUMMY_COLUMN);
-		SPISColumn colb = bcols.value(colname, DUMMY_COLUMN);
+		Q_ASSERT(cola.type() != "dummy");
+		SPISColumn colb = findCol(cola, bcols);
+		if (colb.type() == "dummy")
+			continue;
 		
 		QByteArray typea = cola.type(), typeb = colb.type();
 		int minsizea = cola.minsize(), minsizeb = colb.minsize();

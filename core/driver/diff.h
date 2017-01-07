@@ -27,6 +27,8 @@ private:
  */
 class SPIS_PUBLIC TableDiff
 {
+	Q_DISABLE_COPY(TableDiff)
+	
 public:
 	/**
 	 * Computes the difference of table `a` and table `b`. There are four different
@@ -36,10 +38,12 @@ public:
 	 * - `constraintsChanged()`
 	 * - `typeChanged()`
 	 */
-	TableDiff(const SPISTable &a, const SPISTable &b);
+	TableDiff(const SPISTable &a, SPISTable &b);
 	
+	SPISTable& a() { return _a; }
+	SPISTable& b() { return *_b; }
 	SPISTable a() const { return _a; }
-	SPISTable b() const { return _b; }
+	SPISTable b() const { return *_b; }
 	
 	/**
 	 * Returns the columns that were not present in table `a` but are present in table
@@ -79,7 +83,7 @@ protected:
 	QList<SPISColumn> _defChanged;
 	
 private:
-	SPISTable _a, _b;
+	SPISTable _a, *_b;
 };
 
 }
