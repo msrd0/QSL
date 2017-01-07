@@ -51,6 +51,8 @@ public:
 	/// When an alternative name is found in the db and this flag is set to true, the column
 	/// is renamed to `nameInDb`.
 	bool rename = false;
+	/// The name that is used in the current database. Required by the driver.
+	QByteArray usedName;
 	
 	/// The SPIS type of the column.
 	QByteArray type;
@@ -107,6 +109,12 @@ public:
 	/// When an alternative name is found in the db and this method returns true, the column
 	/// should be renamed to `nameInDb`.
 	bool rename() const { return d->rename; }
+	/// The name that is used in the current db. This value is automatically updated by the
+	/// driver and should never be changed manually.
+	QByteArray usedName() const { return d->usedName; }
+	/// The driver calls this method to remember the name that is currently used in the database.
+	/// Never call this from outside the driver.
+	void setUsedName(const QByteArray &name) { d->usedName = name; }
 	
 	/// Returns the type of the column.
 	QByteArray type() const { return d->type; }
