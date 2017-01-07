@@ -190,9 +190,10 @@ void SQLiteDatabase::loadTableInfo()
 
 bool SQLiteDatabase::ensureTable(const SPISTable &tbl)
 {
-	bool success = ensureTableImpl(tbl);
+	SPISTable tbl0 = tbl;
+	bool success = ensureTableImpl(tbl0);
 	if (success)
-		addTable(tbl); // otherwise subsequent calls to ensureTable will repeat the changes
+		addTable(tbl0); // otherwise subsequent calls to ensureTable will repeat the changes
 	return success;
 }
 
@@ -206,7 +207,7 @@ static QByteArray uniqueConstraintName(const QByteArray &tbl, const QByteArray &
 	return "spis_sqlite_driver_constraint_unique_" + name + "_" + QCryptographicHash::hash(tbl + "." + name + " !unique"  + " @ " + QDateTime::currentDateTime().toString().toUtf8(), QCryptographicHash::Md5).toHex();
 }
 
-bool SQLiteDatabase::ensureTableImpl(const SPISTable &tbl)
+bool SQLiteDatabase::ensureTableImpl(SPISTable &tbl)
 {
 	Q_ASSERT(tbl.db());
 	
@@ -609,7 +610,7 @@ QString SQLiteDatabase::filterSQL(const SPISFilter &filter)
 		
 		QString arg = filter.arg(1);
 		if (arg.startsWith("int:") || arg.startsWith("double:"))
-			sql += arg.mid(arg.indexOf(':' + 1));
+			sql += arg.mid(arg.indexOf(':') + 1);
 		else if (arg.startsWith("'") && arg.endsWith("'"))
 			sql += "'" + arg.mid(1, arg.size() - 2).replace("'", "''") + "'";
 		else

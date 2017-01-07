@@ -31,7 +31,7 @@ public:
 protected:
 	virtual void loadTableInfo() override;
 	
-	virtual bool ensureTableImpl(const SPISTable &tbl);
+	virtual bool ensureTableImpl(SPISTable &tbl);
 	
 	static QString filterSQL(const SPISFilter &filter);
 	
