@@ -289,7 +289,7 @@ QString MySQLDatabase::filterSQL(const SPISTable &tbl, const SPISFilter &filter)
 		
 		QString arg = filter.arg(1);
 		if (arg.startsWith("int:") || arg.startsWith("double:"))
-			sql += arg.mid(arg.indexOf(':' + 1));
+			sql += arg.mid(arg.indexOf(':') + 1);
 		else if (arg.startsWith("'") && arg.endsWith("'"))
 			sql += "'" + arg.mid(1, arg.size() - 2).replace("'", "''") + "'";
 		else if (strcoll(tbl.column(arg.toUtf8()).type(), "invalid") == 0)
