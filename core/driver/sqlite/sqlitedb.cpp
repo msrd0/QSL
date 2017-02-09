@@ -455,8 +455,10 @@ bool SQLiteDatabase::ensureTableImpl(const SPISTable &tbl)
 	if (!tbl.primaryKey().isEmpty())
 		query += ",PRIMARY KEY(\"" + tbl.primaryKey() + "\")";
 	query += ")";
+#ifndef SPIS_SQLITE_NO_ROWID
 	if (!tbl.primaryKey().isEmpty())
 		query += " WITHOUT ROWID";
+#endif
 	query += ";";
 	if (!createq.exec(query))
 	{

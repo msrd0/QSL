@@ -8,6 +8,11 @@ else()
 	set(SPIS_LIB_TYPE STATIC)
 endif()
 
+option(SQLITE_NO_ROWID "The SQLite driver doesn't support WITHOUT ROWID tables" OFF)
+if (SQLITE_NO_ROWID)
+	add_definitions(-DSPIS_SQLITE_NO_ROWID)
+endif()
+
 set(LIBDIR "lib/" CACHE STRING "Installation path of the libraries")
 set(BINDIR "bin/" CACHE STRING "Installation path of the binaries")
 set(CMAKEDIR "lib/cmake" CACHE STRING "Installation path of the cmake config")
