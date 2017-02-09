@@ -12,4 +12,4 @@ override_dh_auto_configure:
 		 -DLIBDIR=lib/$(DEB_HOST_MULTIARCH) \
 		 -DCMAKEDIR=lib/$(DEB_HOST_MULTIARCH)/cmake \
 		 -DQMAKEDIR=lib/$(DEB_HOST_MULTIARCH)/qt5/mkspecs \
-		 -DSQLITE_NO_ROWID
+		 -DSQLITE_NO_ROWID=ON
