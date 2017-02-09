@@ -11,4 +11,5 @@ override_dh_auto_configure:
 		 -DCMAKE_INSTALL_PREFIX=/usr \
 		 -DLIBDIR=lib/$(DEB_HOST_MULTIARCH) \
 		 -DCMAKEDIR=lib/$(DEB_HOST_MULTIARCH)/cmake \
-		 -DQMAKEDIR=lib/$(DEB_HOST_MULTIARCH)/qt5/mkspecs
+		 -DQMAKEDIR=lib/$(DEB_HOST_MULTIARCH)/qt5/mkspecs \
+		 -DSQLITE_NO_ROWID
