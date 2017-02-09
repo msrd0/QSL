@@ -22,7 +22,7 @@ set(KATEPART5DIR "/usr/share/katepart5" CACHE STRING "Data path of KatePart5 to 
 
 set(SPIS_MAJOR 0)
 set(SPIS_MINOR 1)
-set(SPIS_PATCH 2)
+set(SPIS_PATCH 3)
 set(SPIS_VERSION ${SPIS_MAJOR}.${SPIS_MINOR}.${SPIS_PATCH})
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
