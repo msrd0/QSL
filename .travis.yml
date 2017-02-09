@@ -18,6 +18,7 @@ addons:
          - debhelper
          - doxygen
          - dpkg-dev
+         - fakeroot
          - g++-5
          - gcc-5
          - graphviz
