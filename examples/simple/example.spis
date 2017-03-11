@@ -1,8 +1,0 @@
-database "spis_example"
-charset "utf-8"
-usevar
-
-# a very easy table
-table "foo"
-- uint "id" !primarykey !unique !notnull
-- char(50) "bar" !unique
